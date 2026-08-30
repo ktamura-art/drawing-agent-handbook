@@ -86,6 +86,16 @@ a{color:var(--accent)}
 .card .what{margin:0 0 8px;font-size:13px;color:var(--ink2)}
 .card .fix{margin:0;font-size:13px}
 .card .fix b{color:var(--ok)}
+.step .link{margin:0 0 10px}
+.step .link a{font-family:"IBM Plex Mono",monospace;font-size:12px;word-break:break-all}
+.cards2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.card2{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:12px;padding:16px 18px;box-shadow:var(--sh)}
+.card2 h4{margin:0 0 9px;font-size:14.5px}
+.card2 p{margin:0 0 9px;font-size:13.5px;color:var(--ink2)}
+.card2 p:last-child{margin-bottom:0}
+.card2 b{color:var(--ink)}
+.card2 .note{font-size:12.5px;color:var(--ink3)}
 .note-box{background:var(--card);border:1px dashed var(--line);border-radius:10px;
   padding:13px 16px;font-size:13px;color:var(--ink2)}
 .note-box b{color:var(--ink)}
@@ -131,6 +141,42 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:12.5px;color:
 <tr><td class='mono'>OAS-726 / SP9742</td><td>天井</td><td>サンゲツ</td><td><span class='c un'>不明</span></td><td><span class='k un'>品番検索</span><div class='sub'><a href='https://www.sangetsu.co.jp/product/list/part/SP9742' target='_blank' rel='noopener'>https://www.sangetsu.co.jp/product/list/part/SP9742</a></div><div class='sub'>旧品番照会 <a href='https://sangetsu.my.salesforce-sites.com/sscp' target='_blank' rel='noopener'>新旧品番対照検索</a></div></td><td class='sub'>現行カタログに該当なし</td></tr>
     </tbody>
   </table></div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>GCPの画面でやること</h2><span class="hint">最初に一度だけ。5分ほど</span></div>
+  <div class="note-box">
+    <b>リンクはすべてクリックできます。</b>開くとGoogle Cloudの該当画面に直接飛びます。
+    プロジェクトを複数お持ちの場合は、画面上部で目的のプロジェクトが選ばれているか
+    必ず確認してください。
+  </div>
+<section class='step'><div class='n'>1</div><div class='body'><h3>プロジェクトを選ぶ</h3><p>画面上部の青いバーに、いまどのプロジェクトを開いているかが出ています。ここが目的のプロジェクトになっているか確認してください。違っていたら名前の部分をクリックして選び直します。</p><p class='link'><a href='https://console.cloud.google.com/projectselector2/home/dashboard' target='_blank' rel='noopener'>https://console.cloud.google.com/projectselector2/home/dashboard</a></p><p class='note'>プロジェクトIDを控えておいてください。あとで使います。</p></div></section>
+<section class='step'><div class='n'>2</div><div class='body'><h3>Vertex AI API を有効にする</h3><p>上のリンクを開くと「Vertex AI API」のページが出ます。青い「有効にする」ボタンを押してください。すでに有効な場合は「管理」と表示されているので、そのままで結構です。</p><p class='link'><a href='https://console.cloud.google.com/apis/library/aiplatform.googleapis.com' target='_blank' rel='noopener'>https://console.cloud.google.com/apis/library/aiplatform.googleapis.com</a></p><p class='note'>これが図面を読ませるための本体です。ほかのAPIは当面要りません。</p></div></section>
+<section class='step'><div class='n'>3</div><div class='body'><h3>課金アカウントを紐づける</h3><p>左メニューの「お支払い」を開きます。このプロジェクトに課金アカウントが紐づいていないと、APIを呼んだ時点でエラーになります。「請求先アカウントをリンク」から設定してください。</p><p class='link'><a href='https://console.cloud.google.com/billing' target='_blank' rel='noopener'>https://console.cloud.google.com/billing</a></p><p class='note'>図面1枚あたり1〜3円程度です。無料枠の範囲で試せます。</p></div></section>
+<section class='step'><div class='n'>4</div><div class='body'><h3>操作する人に権限を付ける</h3><p>左メニューの「IAMと管理」→「IAM」を開きます。「アクセスを許可」を押し、担当者のGoogleアカウントを入力して、ロールに「Vertex AI ユーザー」を選んで保存します。</p><p class='link'><a href='https://console.cloud.google.com/iam-admin/iam' target='_blank' rel='noopener'>https://console.cloud.google.com/iam-admin/iam</a></p><p class='note'>オーナー権限は不要です。読み取りと実行だけで動きます。</p></div></section>
+<section class='step'><div class='n'>5</div><div class='body'><h3>動いているか確かめる</h3><p>左メニューの「Vertex AI」→「Vertex AI Studio」を開き、何か文章を入れて返事が返ってくるか見てください。ここで返事が返れば、プログラムからも呼べる状態です。</p><p class='link'><a href='https://console.cloud.google.com/vertex-ai' target='_blank' rel='noopener'>https://console.cloud.google.com/vertex-ai</a></p><p class='note'>返らない場合は、2〜4のどれかが未完了です。</p></div></section>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>エージェントはどこにあるのか</h2></div>
+  <div class="cards2">
+    <div class="card2">
+      <h4>いまの形 ― 作る必要はありません</h4>
+      <p>エージェントの実体は<b>手元のプログラム</b>です。
+         GCPの画面に「エージェント」という項目が増えるわけではありません。</p>
+      <p>GCP側は、そのプログラムから<b>Geminiを呼ぶことを許可している</b>だけです。
+         画面で作るものは何もなく、上の1〜4を済ませれば動きます。</p>
+    </div>
+    <div class="card2">
+      <h4>外部のシステムから呼びたい場合</h4>
+      <p>「別のシステムからAPIで呼びたい」という場合は、
+         エージェントをGoogle Cloudに<b>置きに行く作業</b>が必要になります。</p>
+      <p>Vertex AI は Gemini Enterprise Agent Platform に統合され、
+         ADKで作ったエージェントは <code>agents-cli deploy</code> で配置できます。
+         配置するとURLが発行され、そこに対して呼び出せるようになります。</p>
+      <p class="note">この配置はまだ行っていません。必要になった時点で進めます。</p>
+    </div>
+  </div>
 </section>
 
 <section class="blk">
