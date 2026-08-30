@@ -1,0 +1,112 @@
+<title>クロス品番 チェック結果</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F7F8;--card:#FFF;--sunk:#F0F3F4;--ink:#151A1D;--ink2:#525E63;--ink3:#879499;
+  --line:#DEE4E6;--line2:#EDF1F2;--accent:#1B4F72;
+  --ok:#1A6B4F;--ok-bg:#E9F4EF;--ok-line:#A9D0BF;
+  --warn:#8B4A05;--warn-bg:#FCF1E3;--warn-line:#E7C596;
+  --sh:0 1px 2px rgba(21,26,29,.05),0 10px 26px -18px rgba(21,26,29,.3);
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1113;--card:#151A1D;--sunk:#1B2226;--ink:#E7ECEE;--ink2:#9CAAAF;--ink3:#6E7C83;
+  --line:#242D31;--line2:#1C2427;--accent:#7FB0D6;
+  --ok:#6FC2A0;--ok-bg:#0F251E;--ok-line:#204439;
+  --warn:#E0A75E;--warn-bg:#251B0F;--warn-line:#463318;
+  --sh:0 1px 2px rgba(0,0,0,.5),0 10px 26px -18px rgba(0,0,0,.8);}}
+:root[data-theme="dark"]{
+  --bg:#0D1113;--card:#151A1D;--sunk:#1B2226;--ink:#E7ECEE;--ink2:#9CAAAF;--ink3:#6E7C83;
+  --line:#242D31;--line2:#1C2427;--accent:#7FB0D6;
+  --ok:#6FC2A0;--ok-bg:#0F251E;--ok-line:#204439;
+  --warn:#E0A75E;--warn-bg:#251B0F;--warn-line:#463318;
+  --sh:0 1px 2px rgba(0,0,0,.5),0 10px 26px -18px rgba(0,0,0,.8);}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",Meiryo,system-ui,sans-serif;
+ font-size:15px;line-height:1.75}
+.mono,.code,.big{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:840px;margin:0 auto;padding:40px 20px 72px;display:flex;flex-direction:column;gap:32px}
+h1{margin:.3rem 0 .4rem;font-size:25px;letter-spacing:-.01em}
+.meta{margin:0;color:var(--ink2);font-size:13px}
+.eyebrow{margin:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+ border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--sh)}
+.cell{background:var(--card);padding:16px 18px}
+.cell .l{font-size:11.5px;color:var(--ink2)}
+.cell .big{font-size:30px;font-weight:600;line-height:1.15}
+.cell.a .big{color:var(--ok)} .cell.b .big{color:var(--warn)}
+.lead{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 18px;
+ font-size:14.5px;box-shadow:var(--sh)}
+.lead b{color:var(--warn)}
+h2{margin:0;font-size:15px}
+.sh{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.sh .c{font-size:12px;color:var(--ink2)}
+.sh .hint{margin-left:auto;font-size:12px;color:var(--ink3)}
+section{display:flex;flex-direction:column;gap:12px}
+.row{background:var(--card);border:1px solid var(--line);border-radius:11px;
+ padding:14px 17px;box-shadow:var(--sh)}
+.row.ok{border-left:3px solid var(--ok)}
+.row.ng{border-left:3px solid var(--warn)}
+.hd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:9px}
+.code{font-size:16px;font-weight:600}
+.part{font-size:13px;color:var(--ink2)}
+.mk{margin-left:auto;font-size:11.5px;color:var(--ink3)}
+dl{display:grid;grid-template-columns:88px 1fr;gap:5px 14px;margin:0;font-size:13.5px}
+dt{color:var(--ink2);font-size:12.5px}
+dd{margin:0}
+dd b{color:var(--ok)}
+.row.ng dd b{color:var(--warn)}
+a{color:var(--accent)}
+.none{margin:0;color:var(--ink3);font-size:13.5px}
+footer{border-top:1px solid var(--line);padding-top:16px;font-size:12.5px;color:var(--ink3)}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">チェック結果</p>
+  <h1>クロス品番 リピート属性の確認</h1>
+  <p class="meta">クロス貼り分け図 2ページ目 ／ 自動処理の結果です</p>
+</header>
+
+<div class="strip">
+  <div class="cell"><div class="l">図面から読み取った品番</div><div class="big">10</div></div>
+  <div class="cell a"><div class="l">確認できたもの</div><div class="big">4</div></div>
+  <div class="cell b"><div class="l">ご確認をお願いするもの</div><div class="big">6</div></div>
+</div>
+
+<div class="lead">
+  10件を自動で調べ、4件はメーカーの商品ページで裏付けが取れました。
+  <b>残り6件のご確認をお願いします。</b>
+  下に、それぞれ何が分からなかったのかと、次にどこを見ればよいかを記載しています。
+</div>
+
+<section>
+  <div class="sh"><h2>ご確認をお願いするもの</h2><span class="c">6件</span>
+    <span class="hint">ここだけ見ていただければ済みます</span></div>
+<div class='row ng'><div class='hd'><span class='code'>LL-7246</span><span class='part'>2階柱・梁</span><span class='mk'>リリカラ</span></div><dl><dt>状況</dt><dd>メーカーの現行カタログに商品ページが見つかりません。旧品番の可能性があります。</dd><dt>次にすること</dt><dd><a href='https://www.lilycolor.co.jp/interior/search/search.php?cmd=keyword&amp;text=LL-7246' target='_blank' rel='noopener'>メーカーのページで確認する</a></dd></dl></div>
+<div class='row ng'><div class='hd'><span class='code'>OAS-721 / SP9734</span><span class='part'>壁</span><span class='mk'>サンゲツ</span></div><dl><dt>状況</dt><dd>メーカーの現行カタログに商品ページが見つかりません。旧品番の可能性があります。</dd><dt>次にすること</dt><dd><a href='https://sangetsu.my.salesforce-sites.com/sscp' target='_blank' rel='noopener'>新旧品番対照検索で調べる</a></dd></dl></div>
+<div class='row ng'><div class='hd'><span class='code'>OAS-726 / SP9742</span><span class='part'>天井</span><span class='mk'>サンゲツ</span></div><dl><dt>状況</dt><dd>メーカーの現行カタログに商品ページが見つかりません。旧品番の可能性があります。</dd><dt>次にすること</dt><dd><a href='https://sangetsu.my.salesforce-sites.com/sscp' target='_blank' rel='noopener'>新旧品番対照検索で調べる</a></dd></dl></div>
+<div class='row ng'><div class='hd'><span class='code'>TH32729</span><span class='part'>ニッチ正面壁</span><span class='mk'>サンゲツ</span></div><dl><dt>状況</dt><dd>メーカーの現行カタログに商品ページが見つかりません。旧品番の可能性があります。</dd><dt>次にすること</dt><dd><a href='https://sangetsu.my.salesforce-sites.com/sscp' target='_blank' rel='noopener'>新旧品番対照検索で調べる</a></dd></dl></div>
+<div class='row ng'><div class='hd'><span class='code'>TH32071</span><span class='part'>書斎：壁</span><span class='mk'>サンゲツ</span></div><dl><dt>状況</dt><dd>メーカーの現行カタログに商品ページが見つかりません。旧品番の可能性があります。</dd><dt>次にすること</dt><dd><a href='https://sangetsu.my.salesforce-sites.com/sscp' target='_blank' rel='noopener'>新旧品番対照検索で調べる</a></dd></dl></div>
+<div class='row ng'><div class='hd'><span class='code'>OAS-726 / SP9742</span><span class='part'>天井</span><span class='mk'>サンゲツ</span></div><dl><dt>状況</dt><dd>メーカーの現行カタログに商品ページが見つかりません。旧品番の可能性があります。</dd><dt>次にすること</dt><dd><a href='https://sangetsu.my.salesforce-sites.com/sscp' target='_blank' rel='noopener'>新旧品番対照検索で調べる</a></dd></dl></div>
+</section>
+
+<section>
+  <div class="sh"><h2>確認できたもの</h2><span class="c">4件</span>
+    <span class="hint">メーカーの商品ページで裏付けが取れています</span></div>
+<div class='row ok'><div class='hd'><span class='code'>RE55621</span><span class='part'>アクセント壁</span><span class='mk'>サンゲツ</span></div><dl><dt>リピート</dt><dd><b>リピートあり</b></dd><dt>根拠</dt><dd>タテ63.8cm ヨコ92cm</dd><dt>確認先</dt><dd><a href='https://www.sangetsu.co.jp/product/detail/RE55621/' target='_blank' rel='noopener'>メーカーの商品ページ</a></dd></dl></div>
+<div class='row ok'><div class='hd'><span class='code'>RE55664</span><span class='part'>アクセント壁</span><span class='mk'>サンゲツ</span></div><dl><dt>リピート</dt><dd><b>リピートあり</b></dd><dt>根拠</dt><dd>タテ31.6cm ヨコ46.1cm</dd><dt>確認先</dt><dd><a href='https://www.sangetsu.co.jp/product/detail/RE55664/' target='_blank' rel='noopener'>メーカーの商品ページ</a></dd></dl></div>
+<div class='row ok'><div class='hd'><span class='code'>RE55622</span><span class='part'>折り下げ天井</span><span class='mk'>サンゲツ</span></div><dl><dt>リピート</dt><dd><b>リピートあり</b></dd><dt>根拠</dt><dd>タテ63.8cm ヨコ92cm</dd><dt>確認先</dt><dd><a href='https://www.sangetsu.co.jp/product/detail/RE55622/' target='_blank' rel='noopener'>メーカーの商品ページ</a></dd></dl></div>
+<div class='row ok'><div class='hd'><span class='code'>RE55506</span><span class='part'>洗面脱衣室</span><span class='mk'>サンゲツ</span></div><dl><dt>リピート</dt><dd><b>リピートあり</b></dd><dt>根拠</dt><dd>タテ32cm ヨコ46.3cm</dd><dt>確認先</dt><dd><a href='https://www.sangetsu.co.jp/product/detail/RE55506/' target='_blank' rel='noopener'>メーカーの商品ページ</a></dd></dl></div>
+</section>
+
+<footer>
+  リピートの有無は、メーカーの商品ページに書かれていた記載をそのまま根拠にしています。
+  記載を見つけられなかったものは、推測せず「確認が必要」として扱っています。<br>
+  株式会社デジライズ
+</footer>
+
+</div>
