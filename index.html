@@ -88,6 +88,19 @@ a{color:var(--accent)}
 .card .fix b{color:var(--ok)}
 .step .link{margin:0 0 10px}
 .step .link a{font-family:"IBM Plex Mono",monospace;font-size:12px;word-break:break-all}
+.embed{margin:12px 0 0;border:1px solid var(--line);border-radius:9px;
+  background:var(--sunk);overflow:hidden}
+.embed summary{cursor:pointer;padding:10px 14px;font-size:13px;font-weight:600;
+  list-style:none;color:var(--accent)}
+.embed summary::-webkit-details-marker{display:none}
+.embed summary::before{content:"▸ ";font-size:11px}
+.embed[open] summary::before{content:"▾ "}
+.embed-bar{padding:0 14px 10px;display:flex;gap:8px}
+.copy{font-family:inherit;font-size:12px;font-weight:600;color:var(--card);
+  background:var(--accent);border:0;border-radius:7px;padding:7px 14px;cursor:pointer}
+.copy.done{background:var(--ok)}
+pre.full{max-height:420px;overflow:auto;margin:0;border-radius:0;border:0;
+  border-top:1px solid var(--line);font-size:11.5px;line-height:1.6}
 .cards2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
 .card2{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);
   border-radius:12px;padding:16px 18px;box-shadow:var(--sh)}
@@ -185,20 +198,725 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:12.5px;color:
 組み立てる方 … 以下を1回だけ実施する（30分ほど）</code></pre><p class='note'>パソコンに入れるものはありません。ブラウザだけで完結します。</p></div></section>
 <section class='step'><div class='n'>02</div><div class='body'><h3>コードを貼り付ける</h3><p>Apps Script の新規プロジェクトを開き、お渡しするコードを貼り付けます。script.new を開くと空のプロジェクトが作られます。</p><pre><code>1. https://script.new を開く
 2. 既定の myFunction ごと消す
-3. お渡しした「コード.gs」の内容をすべて貼り付ける
-4. 保存する（Ctrl + S）</code></pre><p class='note'>左のファイル一覧に「コード.gs」があれば成功です。</p></div></section>
+3. 下の「コード.gs」をすべてコピーして貼り付ける
+4. 保存する（Ctrl + S）</code></pre><details class='embed'><summary>コード.gs を開く（679行）</summary><div class='embed-bar'><button class='copy' data-target='pre-code'>すべてコピー</button></div><pre id='pre-code' class='full'><code>/**
+ * 図面チェック（作図基準）― 1ファイル版
+ *
+ * Apps Script のエディタに、この内容をまるごと貼り付けて使う。
+ *
+ * 手順:
+ *   1. https://script.new を開く
+ *   2. 既定の myFunction ごと消して、この内容を貼り付けて保存
+ *   3. ⚙プロジェクトの設定 →「appsscript.json をエディタで表示する」にチェック
+ *      → appsscript.json を差し替える（権限の指定。これが無いと403になる）
+ *   4. setupProperties() を実行する
+ *   5. runCheck() を実行して動作を確認する
+ *   6. デプロイ → 新しいデプロイ → ウェブアプリ で公開する
+ *
+ * 3を飛ばすと Vertex AI の呼び出しが HTTP 403 で失敗する。
+ * コードから cloud-platform の権限は推測されないため、必ず明示する。
+ *
+ * 保守は分割版（Config / VertexAI / Items / Check / Ui）で行う。
+ */
+
+// ====================================================================
+// Config.gs
+// ====================================================================
+
+/**
+ * 設定値。スクリプトプロパティに入れておく。
+ *
+ * コードに直接書かないのは、先方環境へ移すときに
+ * ここだけ差し替えれば済むようにするため。
+ */
+const CONFIG_KEYS = {
+  GCP_PROJECT_ID: &#x27;GCP_PROJECT_ID&#x27;,     // 例 sapient-stacker-504215-u4
+  VERTEX_LOCATION: &#x27;VERTEX_LOCATION&#x27;,   // 例 asia-northeast1
+  VERTEX_MODEL: &#x27;VERTEX_MODEL&#x27;,         // 例 gemini-3.5-flash
+  ITEMS_SHEET_ID: &#x27;ITEMS_SHEET_ID&#x27;,     // チェック項目表のスプレッドシートID
+  ITEMS_SHEET_NAME: &#x27;ITEMS_SHEET_NAME&#x27;, // 既定は「チェック項目」
+  RESULT_SHEET_NAME: &#x27;RESULT_SHEET_NAME&#x27;, // 既定は「チェック結果」
+  DRAWING_FOLDER_ID: &#x27;DRAWING_FOLDER_ID&#x27; // 図面PDFを置くフォルダ
+};
+
+function getConfig() {
+  const p = PropertiesService.getScriptProperties().getProperties();
+  const cfg = {
+    projectId: p[CONFIG_KEYS.GCP_PROJECT_ID],
+    location: p[CONFIG_KEYS.VERTEX_LOCATION] || &#x27;asia-northeast1&#x27;,
+    model: p[CONFIG_KEYS.VERTEX_MODEL] || &#x27;gemini-3.5-flash&#x27;,
+    itemsSheetId: p[CONFIG_KEYS.ITEMS_SHEET_ID],
+    itemsSheetName: p[CONFIG_KEYS.ITEMS_SHEET_NAME] || &#x27;チェック項目&#x27;,
+    resultSheetName: p[CONFIG_KEYS.RESULT_SHEET_NAME] || &#x27;チェック結果&#x27;,
+    drawingFolderId: p[CONFIG_KEYS.DRAWING_FOLDER_ID]
+  };
+  if (!cfg.projectId) {
+    throw new Error(
+      &#x27;GCP_PROJECT_ID が未設定です。&#x27; +
+      &#x27;「プロジェクトの設定」→「スクリプト プロパティ」で設定してください。&#x27;);
+  }
+  return cfg;
+}
+
+/**
+ * 初回の設定を、この関数を実行して行う。
+ * 値を自社のものに書き換えてから実行すること。
+ */
+function setupProperties() {
+  PropertiesService.getScriptProperties().setProperties({
+    GCP_PROJECT_ID: &#x27;sapient-stacker-504215-u4&#x27;,
+    VERTEX_LOCATION: &#x27;asia-northeast1&#x27;,
+    VERTEX_MODEL: &#x27;gemini-3.5-flash&#x27;,
+    ITEMS_SHEET_ID: &#x27;1VnSjSglooBExX4PFZTU9fMEXapu7xdlhHUWuIwfGTmY&#x27;,
+    ITEMS_SHEET_NAME: &#x27;チェック項目&#x27;,
+    RESULT_SHEET_NAME: &#x27;チェック結果&#x27;,
+    DRAWING_FOLDER_ID: &#x27;1_ntllUpiQGWmbQFgue9N3dEu6D55eZZ4&#x27;
+  }, true);
+  Logger.log(&#x27;設定を保存しました。値を自社のものに書き換えてから使ってください。&#x27;);
+}
+
+// ====================================================================
+// VertexAI.gs
+// ====================================================================
+
+/**
+ * Vertex AI（Gemini）を呼ぶ。
+ *
+ * APIキーは使わない。実行している人のGoogleアカウントの権限で呼ぶため、
+ * 鍵の管理が要らず、権限はGCP側のIAMで一元的に決められる。
+ *
+ * PDFはそのまま渡せる。画像への変換は不要。
+ */
+
+/**
+ * 図面PDFとプロンプトを渡して、JSONで受け取る。
+ *
+ * @param {Blob} pdfBlob 図面のPDF
+ * @param {string} prompt 指示文
+ * @param {Object} cfg getConfig() の戻り値
+ * @return {Object} モデルが返したJSON
+ */
+function askWithPdf(pdfBlob, prompt, cfg) {
+  const body = {
+    contents: [{
+      role: &#x27;user&#x27;,
+      parts: [
+        { inlineData: { mimeType: &#x27;application/pdf&#x27;,
+                        data: Utilities.base64Encode(pdfBlob.getBytes()) } },
+        { text: prompt }
+      ]
+    }],
+    generationConfig: { temperature: 0.2, responseMimeType: &#x27;application/json&#x27; }
+  };
+  return callVertex_(body, cfg);
+}
+
+/**
+ * 文字だけを渡して、JSONで受け取る。工程2以降で使う。
+ */
+function askText(prompt, cfg) {
+  const body = {
+    contents: [{ role: &#x27;user&#x27;, parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.2, responseMimeType: &#x27;application/json&#x27; }
+  };
+  return callVertex_(body, cfg);
+}
+
+function callVertex_(body, cfg) {
+  const url = &#x27;https://&#x27; + cfg.location + &#x27;-aiplatform.googleapis.com/v1/projects/&#x27; +
+    cfg.projectId + &#x27;/locations/&#x27; + cfg.location +
+    &#x27;/publishers/google/models/&#x27; + cfg.model + &#x27;:generateContent&#x27;;
+
+  const res = UrlFetchApp.fetch(url, {
+    method: &#x27;post&#x27;,
+    contentType: &#x27;application/json&#x27;,
+    headers: { Authorization: &#x27;Bearer &#x27; + ScriptApp.getOAuthToken() },
+    payload: JSON.stringify(body),
+    muteHttpExceptions: true
+  });
+
+  const code = res.getResponseCode();
+  if (code !== 200) {
+    throw new Error(&#x27;Vertex AI の呼び出しに失敗しました（HTTP &#x27; + code + &#x27;）\n&#x27; +
+                    res.getContentText().slice(0, 500));
+  }
+  const data = JSON.parse(res.getContentText());
+  const text = ((((data.candidates || [])[0] || {}).content || {}).parts || [])
+    .map(function (p) { return p.text || &#x27;&#x27;; }).join(&#x27;&#x27;);
+  return parseJson_(text);
+}
+
+/**
+ * モデルの出力からJSONを取り出す。前後に説明が付くことがある。
+ *
+ * JSONを返すよう指示していても、配列で包んで返してくることがある。
+ * そのまま渡すと後段が壊れるため、配列なら中のオブジェクトを取り出す。
+ */
+function parseJson_(text) {
+  if (!text) return null;
+  const m = text.match(/[\[{][\s\S]*[\]}]/);
+  if (!m) return null;
+  let data;
+  try {
+    data = JSON.parse(m[0]);
+  } catch (e) {
+    return null;
+  }
+  if (Array.isArray(data)) {
+    for (let i = 0; i &lt; data.length; i++) {
+      if (data[i] &amp;&amp; typeof data[i] === &#x27;object&#x27; &amp;&amp; !Array.isArray(data[i])) {
+        return data[i];
+      }
+    }
+    return null;
+  }
+  return data;
+}
+
+// ====================================================================
+// Items.gs
+// ====================================================================
+
+/**
+ * チェック項目を、スプレッドシートから毎回読む。
+ *
+ * 項目をコードに書くと、1つ増やすたびに開発と再公開が要る。
+ * 表の行として持てば、担当者が行を足すだけで次の実行から効く。
+ */
+
+const ITEM_ALIASES = {
+  no: [&#x27;No&#x27;, &#x27;no&#x27;, &#x27;番号&#x27;],
+  target: [&#x27;対象&#x27;, &#x27;target&#x27;, &#x27;対象の図面&#x27;],
+  item: [&#x27;チェック項目&#x27;, &#x27;item&#x27;, &#x27;チェックしたいこと&#x27;],
+  basis: [&#x27;判定の根拠となる基準&#x27;, &#x27;基準&#x27;, &#x27;basis&#x27;, &#x27;どうなっていたらNGか&#x27;],
+  source: [&#x27;出典&#x27;, &#x27;source&#x27;],
+  judge: [&#x27;判定可否&#x27;, &#x27;judge&#x27;],
+  use: [&#x27;採用&#x27;, &#x27;use&#x27;, &#x27;利用&#x27;]
+};
+
+function pick_(row, header, key) {
+  const names = ITEM_ALIASES[key];
+  for (let i = 0; i &lt; names.length; i++) {
+    const idx = header.indexOf(names[i]);
+    if (idx &gt;= 0 &amp;&amp; String(row[idx] || &#x27;&#x27;).trim()) {
+      return String(row[idx]).trim();
+    }
+  }
+  return &#x27;&#x27;;
+}
+
+/**
+ * 項目を読む。対象を指定すると、その図面向けと全図面共通のものを返す。
+ */
+function loadItems(target, cfg) {
+  cfg = cfg || getConfig();
+  // 指定した名前のシートが無ければ、先頭のシートを使う。
+  // CSVから作ったスプレッドシートはシート名がファイル名になるなど、
+  // 名前が揃わないことが多いため、そこで止めない。
+  const ss = SpreadsheetApp.openById(cfg.itemsSheetId);
+  const sh = ss.getSheetByName(cfg.itemsSheetName) || ss.getSheets()[0];
+  if (!sh) throw new Error(&#x27;シートが1つもありません。&#x27;);
+  const values = sh.getDataRange().getValues();
+  if (values.length &lt; 2) return [];
+
+  const header = values[0].map(function (h) { return String(h).trim(); });
+  const rows = [];
+  for (let i = 1; i &lt; values.length; i++) {
+    const item = pick_(values[i], header, &#x27;item&#x27;);
+    if (!item) continue;
+
+    // 「採用」欄が × の行は使わない。空欄は採用とみなす。
+    const use = pick_(values[i], header, &#x27;use&#x27;);
+    if ([&#x27;×&#x27;, &#x27;x&#x27;, &#x27;X&#x27;, &#x27;対象外&#x27;, &#x27;なし&#x27;].indexOf(use) &gt;= 0) continue;
+
+    rows.push({
+      no: pick_(values[i], header, &#x27;no&#x27;) || String(rows.length + 1),
+      target: pick_(values[i], header, &#x27;target&#x27;) || &#x27;全図面&#x27;,
+      item: item,
+      basis: pick_(values[i], header, &#x27;basis&#x27;),
+      source: pick_(values[i], header, &#x27;source&#x27;),
+      judge: pick_(values[i], header, &#x27;judge&#x27;) || &#x27;自動&#x27;
+    });
+  }
+
+  const filtered = target
+    ? rows.filter(function (r) { return r.target === target || r.target === &#x27;全図面&#x27;; })
+    : rows;
+
+  // 判定方法が固まっているものを先に並べる
+  const order = { &#x27;自動&#x27;: 0, &#x27;半自動&#x27;: 1, &#x27;要検討&#x27;: 2 };
+  filtered.sort(function (a, b) {
+    return (order[a.judge] === undefined ? 9 : order[a.judge]) -
+           (order[b.judge] === undefined ? 9 : order[b.judge]);
+  });
+  return filtered;
+}
+
+function itemsAsText(items) {
+  return items.map(function (r) {
+    return r.no + &#x27;. &#x27; + r.item + &#x27;\n    基準: &#x27; + (r.basis || &#x27;―&#x27;);
+  }).join(&#x27;\n&#x27;);
+}
+
+/** 表に出てくる対象の一覧。画面の選択肢に使う。 */
+function listTargets() {
+  const rows = loadItems(null);
+  const seen = [];
+  rows.forEach(function (r) {
+    if (r.target !== &#x27;全図面&#x27; &amp;&amp; seen.indexOf(r.target) &lt; 0) seen.push(r.target);
+  });
+  return seen;
+}
+
+// ====================================================================
+// Check.gs
+// ====================================================================
+
+/**
+ * 作図基準のチェック本体。
+ *
+ * 工程1 読み取る   図面の記載を、位置つきで抜き出す（Gemini）
+ * 工程2 判定する   表の行を1つずつ見て判定する（Gemini）
+ * 工程3 検証する   根拠が工程1の結果に実在するか（JavaScript）
+ * 工程4 まとめる   確定・要確認・棄却に振り分ける（JavaScript）
+ *
+ * 工程3・4をAIに任せない。自分の出した根拠を自分で検証させても、
+ * 実在しない文言をそのまま通してしまう。
+ *
+ * Apps Script の実行は6分までなので、この2回の呼び出しで収める。
+ * 品番ごとにメーカーを調べる処理は件数分の呼び出しになり6分に収まらないため、
+ * そちらは別立てにする（Batch.gs）。
+ */
+
+function extractPrompt_(pageNo) {
+  return &#x27;この図面の&#x27; + pageNo + &#x27;ページ目に書かれている内容を、&#x27; +
+  &#x27;そのまま構造化して抜き出してください。\n\n&#x27; +
+  &#x27;厳守事項:\n&#x27; +
+  &#x27;・図面に書かれていないことを補わない。推測で埋めない。\n&#x27; +
+  &#x27;・読み取れなかった箇所は、読み取れなかったと明記する。\n&#x27; +
+  &#x27;・各記載には図面上の位置を box_2d で付ける。\n&#x27; +
+  &#x27;  box_2d は [y0, x0, y1, x1] の順で、0〜1000 に正規化した値とする。\n\n&#x27; +
+  &#x27;次の JSON だけを出力してください。\n&#x27; +
+  &#x27;{&quot;drawing_title&quot;:&quot;図面の名称&quot;,&quot;drawing_number&quot;:&quot;図面番号。無ければ空&quot;,&#x27; +
+  &#x27;&quot;scale&quot;:&quot;縮尺。無ければ空&quot;,&#x27; +
+  &#x27;&quot;texts&quot;:[{&quot;text&quot;:&quot;記載されている文字列&quot;,&quot;box_2d&quot;:[0,0,0,0]}],&#x27; +
+  &#x27;&quot;unreadable&quot;:[&quot;読み取れなかった箇所&quot;]}&#x27;;
+}
+
+function judgePrompt_(extracted, items) {
+  return &#x27;あなたは作図基準に照らして図面を確認する担当です。\n\n&#x27; +
+    &#x27;# 工程1の抽出結果\n&#x27; + JSON.stringify(extracted) + &#x27;\n\n&#x27; +
+    &#x27;# チェック項目\n&#x27; + itemsAsText(items) + &#x27;\n\n&#x27; +
+    &#x27;この抽出結果だけを根拠に、項目を1件ずつ判定してください。\n&#x27; +
+    &#x27;図面を見直さず、抽出結果に無いことは「要確認」としてください。\n\n&#x27; +
+    &#x27;判定は3つから選びます。\n&#x27; +
+    &#x27;  適合    基準を満たす記載が抽出結果にある\n&#x27; +
+    &#x27;  要確認  記載が見当たらない、または満たすか判断できない\n&#x27; +
+    &#x27;  対象外  この図面には当てはまらない項目\n\n&#x27; +
+    &#x27;厳守事項:\n&#x27; +
+    &#x27;・根拠には、抽出結果に含まれる文字列をそのまま引用する。\n&#x27; +
+    &#x27;・引用できないときは根拠を空にする。引用文を作らない。\n\n&#x27; +
+    &#x27;次の JSON だけを出力してください。\n&#x27; +
+    &#x27;{&quot;results&quot;:[{&quot;no&quot;:&quot;項目番号&quot;,&quot;verdict&quot;:&quot;適合|要確認|対象外&quot;,&#x27; +
+    &#x27;&quot;evidence&quot;:&quot;抽出結果から引用した文字列&quot;,&quot;reason&quot;:&quot;判定の理由&quot;}]}&#x27;;
+}
+
+/**
+ * 表記の揺れを吸収して比べる。
+ *
+ * 全角の英数字だけを変換していたら、＝ や ＋ が残って
+ * 「設計GL＝ＢＭ＋１５０」と「設計GL=BM+150」が別物になった。
+ * NFKC 正規化なら記号も含めてまとめて揃う。Python 側と同じ扱いになる。
+ */
+function norm_(s) {
+  return String(s || &#x27;&#x27;).normalize(&#x27;NFKC&#x27;).replace(/\s+/g, &#x27;&#x27;).toLowerCase();
+}
+
+/**
+ * 図面1枚をチェックする。
+ *
+ * @param {string} fileId 図面PDFのDriveファイルID
+ * @param {string} target 図面の種類（例「配置図」）
+ * @param {number} pageNo 対象のページ番号。既定は1
+ * @return {Object} 判定結果
+ */
+function checkDrawing(fileId, target, pageNo) {
+  pageNo = pageNo || 1;
+  const cfg = getConfig();
+  const items = loadItems(target, cfg);
+  if (!items.length) {
+    throw new Error(&#x27;チェック項目が読み込めませんでした。項目表をご確認ください。&#x27;);
+  }
+
+  const blob = DriveApp.getFileById(fileId).getBlob();
+  Logger.log(&#x27;図面 %s（%s KB）／ 項目 %s件&#x27;,
+    blob.getName(), Math.round(blob.getBytes().length / 1024), items.length);
+
+  // 工程1
+  const extracted = askWithPdf(blob, extractPrompt_(pageNo), cfg) || {};
+  const texts = extracted.texts || [];
+  Logger.log(&#x27;工程1 抽出 %s件&#x27;, texts.length);
+
+  // 工程2
+  const judged = askText(judgePrompt_(extracted, items), cfg) || {};
+  const results = judged.results || [];
+  Logger.log(&#x27;工程2 判定 %s件&#x27;, results.length);
+
+  // 工程3・4
+  // 照合先には texts だけでなく、図面名・図面番号・縮尺も含める。
+  // モデルはこれらを根拠に挙げるが、texts には入れないため、
+  // texts だけを見ていると正しい根拠まで棄却してしまう。
+  const hay = norm_([
+    extracted.drawing_title, extracted.drawing_number, extracted.scale
+  ].concat(texts.map(function (t) { return t.text; })).join(&#x27; &#x27;));
+  const byNo = {};
+  items.forEach(function (r) { byNo[String(r.no)] = r; });
+
+  const out = { 確定: [], 要確認: [], 棄却: [] };
+  results.forEach(function (r) {
+    const src = byNo[String(r.no)] || {};
+    const rec = {
+      no: r.no, item: src.item || &#x27;&#x27;, basis: src.basis || &#x27;&#x27;,
+      source: src.source || &#x27;&#x27;, verdict: r.verdict,
+      evidence: r.evidence || &#x27;&#x27;, reason: r.reason || &#x27;&#x27;
+    };
+    if (r.verdict === &#x27;適合&#x27;) {
+      if (!rec.evidence) {
+        rec.drop = &#x27;根拠が示されていません&#x27;;
+        out.棄却.push(rec);
+      } else if (hay.indexOf(norm_(rec.evidence)) &lt; 0) {
+        rec.drop = &#x27;根拠とされた記載が図面から読み取れていません&#x27;;
+        out.棄却.push(rec);
+      } else {
+        out.確定.push(rec);
+      }
+    } else if (r.verdict !== &#x27;対象外&#x27;) {
+      out.要確認.push(rec);
+    }
+  });
+
+  return {
+    fileName: blob.getName(),
+    target: target,
+    drawingTitle: extracted.drawing_title || &#x27;&#x27;,
+    drawingNumber: extracted.drawing_number || &#x27;&#x27;,
+    scale: extracted.scale || &#x27;&#x27;,
+    itemCount: items.length,
+    textCount: texts.length,
+    buckets: out
+  };
+}
+
+/**
+ * 結果をスプレッドシートに書き出す。
+ * 棄却したものも残す。消すと「問題なし」に見えてしまう。
+ */
+function writeResult(result) {
+  const cfg = getConfig();
+  const ss = SpreadsheetApp.openById(cfg.itemsSheetId);
+  let sh = ss.getSheetByName(cfg.resultSheetName);
+  if (!sh) sh = ss.insertSheet(cfg.resultSheetName);
+  sh.clear();
+
+  const COLS = 6;
+  const rows = [
+    [&#x27;実行日時&#x27;, Utilities.formatDate(new Date(), &#x27;Asia/Tokyo&#x27;, &#x27;yyyy/MM/dd HH:mm&#x27;)],
+    [&#x27;図面&#x27;, result.fileName, &#x27;図面名&#x27;, result.drawingTitle,
+     &#x27;図面番号&#x27;, result.drawingNumber],
+    [&#x27;対象&#x27;, result.target, &#x27;縮尺&#x27;, result.scale,
+     &#x27;読み取り件数&#x27;, result.textCount],
+    [],
+    [&#x27;区分&#x27;, &#x27;No&#x27;, &#x27;チェック項目&#x27;, &#x27;根拠 / 理由&#x27;, &#x27;基準&#x27;, &#x27;出典&#x27;]
+  ];
+
+  [&#x27;要確認&#x27;, &#x27;棄却&#x27;, &#x27;確定&#x27;].forEach(function (key) {
+    result.buckets[key].forEach(function (r) {
+      rows.push([
+        key, r.no, r.item,
+        key === &#x27;棄却&#x27; ? r.drop + &#x27;（AIの根拠: &#x27; + (r.evidence || &#x27;なし&#x27;) + &#x27;）&#x27;
+                       : (key === &#x27;確定&#x27; ? r.evidence : r.reason),
+        r.basis, r.source
+      ]);
+    });
+  });
+
+  // setValues は全行が同じ列数であることを求める。
+  // 空行や短い行が1つでもあるとそこで落ちる。実機でこれに当たった。
+  // 原因の行だけ直すのではなく、書く直前に必ず揃える。
+  const padded = rows.map(function (row) {
+    const out = (row || []).slice(0, COLS);
+    while (out.length &lt; COLS) out.push(&#x27;&#x27;);
+    return out.map(function (v) {
+      return (v === null || v === undefined) ? &#x27;&#x27; : v;
+    });
+  });
+
+  sh.getRange(1, 1, padded.length, COLS).setValues(padded);
+  sh.getRange(5, 1, 1, COLS).setFontWeight(&#x27;bold&#x27;).setBackground(&#x27;#EDF1F5&#x27;);
+  sh.setColumnWidth(3, 320);
+  sh.setColumnWidth(4, 360);
+  sh.setColumnWidth(5, 300);
+  sh.setFrozenRows(5);
+  Logger.log(&#x27;結果を「%s」に書き出しました&#x27;, cfg.resultSheetName);
+  return sh.getParent().getUrl() + &#x27;#gid=&#x27; + sh.getSheetId();
+}
+
+
+/**
+ * 動作確認用。図面IDと対象を書き換えて実行する。
+ */
+function runCheck() {
+  const FILE_ID = &#x27;ここに図面PDFのファイルIDを入れる&#x27;;
+  const TARGET = &#x27;配置図&#x27;;
+  const PAGE = 1;
+  const result = checkDrawing(FILE_ID, TARGET, PAGE);
+  const b = result.buckets;
+  Logger.log(&#x27;確定 %s件 / 要確認 %s件 / 棄却 %s件&#x27;,
+    b.確定.length, b.要確認.length, b.棄却.length);
+  Logger.log(&#x27;結果シート: %s&#x27;, writeResult(result));
+}
+
+// ====================================================================
+// Ui.gs
+// ====================================================================
+
+/**
+ * 業務担当者が使う画面。Webアプリとして公開する。
+ *
+ * 担当者にコードもコマンドも触らせない。やることは2つだけにする。
+ *   ・図面を選ぶ
+ *   ・結果を見る
+ *
+ * 指示文は書かせない。書き方で結果が変わってしまい、
+ * 担当者ごとに判定がばらつくため、こちら側で固定する。
+ *
+ * 公開設定は appsscript.json の webapp で決める。
+ *   executeAs USER_DEPLOYING … 公開した人の権限で動く。
+ *                              利用者ひとりひとりにGCPの権限を配らなくて済む。
+ *   access    DOMAIN         … 自社ドメインのアカウントだけが開ける。
+ */
+
+function doGet() {
+  return HtmlService.createHtmlOutput(renderForm_())
+    .setTitle(&#x27;図面チェック&#x27;)
+    .addMetaTag(&#x27;viewport&#x27;, &#x27;width=device-width, initial-scale=1&#x27;);
+}
+
+/** フォルダにある図面PDFの一覧。画面の選択肢に使う。 */
+function listDrawings() {
+  const cfg = getConfig();
+  if (!cfg.drawingFolderId) return [];
+  const it = DriveApp.getFolderById(cfg.drawingFolderId)
+    .getFilesByType(MimeType.PDF);
+  const out = [];
+  while (it.hasNext() &amp;&amp; out.length &lt; 100) {
+    const f = it.next();
+    out.push({ id: f.getId(), name: f.getName(),
+               mb: Math.round(f.getSize() / 1048576 * 10) / 10 });
+  }
+  out.sort(function (a, b) { return a.name.localeCompare(b.name, &#x27;ja&#x27;); });
+  return out;
+}
+
+/**
+ * 画面から呼ばれる本体。google.script.run 経由で実行される。
+ * 結果は画面に返しつつ、スプレッドシートにも書き出す。
+ */
+function runFromUi(fileId, target, pageNo) {
+  const result = checkDrawing(fileId, target, Number(pageNo) || 1);
+  const url = writeResult(result);
+  return {
+    fileName: result.fileName,
+    drawingTitle: result.drawingTitle,
+    drawingNumber: result.drawingNumber,
+    scale: result.scale,
+    textCount: result.textCount,
+    itemCount: result.itemCount,
+    sheetUrl: url,
+    要確認: result.buckets.要確認,
+    棄却: result.buckets.棄却,
+    確定: result.buckets.確定
+  };
+}
+
+function renderForm_() {
+  let drawings = [];
+  let targets = [];
+  let itemCount = 0;
+  let error = &#x27;&#x27;;
+  try {
+    drawings = listDrawings();
+    const all = loadItems(null);
+    itemCount = all.length;
+    targets = listTargets();
+  } catch (e) {
+    error = String(e.message || e);
+  }
+
+  const opts = drawings.map(function (d) {
+    return &#x27;&lt;option value=&quot;&#x27; + d.id + &#x27;&quot;&gt;&#x27; + esc_(d.name) +
+           &#x27;（&#x27; + d.mb + &#x27; MB）&lt;/option&gt;&#x27;;
+  }).join(&#x27;&#x27;);
+  const tOpts = targets.map(function (t) {
+    return &#x27;&lt;option value=&quot;&#x27; + esc_(t) + &#x27;&quot;&gt;&#x27; + esc_(t) + &#x27;&lt;/option&gt;&#x27;;
+  }).join(&#x27;&#x27;);
+
+  return &#x27;&lt;!doctype html&gt;&lt;html lang=&quot;ja&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&#x27; +
+    &#x27;&lt;style&gt;&#x27; + CSS_ + &#x27;&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&#x27; +
+    &#x27;&lt;div class=&quot;wrap&quot;&gt;&#x27; +
+      &#x27;&lt;header&gt;&lt;p class=&quot;eyebrow&quot;&gt;図面チェック&lt;/p&gt;&#x27; +
+      &#x27;&lt;h1&gt;図面を確認します&lt;/h1&gt;&#x27; +
+      &#x27;&lt;p class=&quot;meta&quot;&gt;図面を選んで実行すると、作図基準に沿って記載を確認します。&lt;/p&gt;&lt;/header&gt;&#x27; +
+      (error ? &#x27;&lt;div class=&quot;lead&quot;&gt;&lt;b&gt;&#x27; + esc_(error) + &#x27;&lt;/b&gt;&lt;/div&gt;&#x27; : &#x27;&#x27;) +
+      &#x27;&lt;div class=&quot;card&quot;&gt;&#x27; +
+        &#x27;&lt;label&gt;図面&lt;select id=&quot;file&quot;&gt;&#x27; + opts + &#x27;&lt;/select&gt;&lt;/label&gt;&#x27; +
+        &#x27;&lt;label&gt;図面の種類&lt;select id=&quot;target&quot;&gt;&#x27; + tOpts + &#x27;&lt;/select&gt;&lt;/label&gt;&#x27; +
+        &#x27;&lt;label&gt;対象のページ&lt;input id=&quot;page&quot; type=&quot;number&quot; value=&quot;1&quot; min=&quot;1&quot; max=&quot;99&quot;&gt;&lt;/label&gt;&#x27; +
+        &#x27;&lt;button class=&quot;btn&quot; id=&quot;go&quot;&gt;確認する&lt;/button&gt;&#x27; +
+        &#x27;&lt;p class=&quot;wait&quot; id=&quot;wait&quot;&gt;確認しています。1〜3分かかります。&#x27; +
+        &#x27;この画面のままお待ちください。&lt;/p&gt;&#x27; +
+      &#x27;&lt;/div&gt;&#x27; +
+      &#x27;&lt;div class=&quot;note&quot;&gt;チェック項目はスプレッドシートから読み込んでいます&#x27; +
+      &#x27;（現在 &#x27; + itemCount + &#x27; 項目）。表に行を足せば、次の実行から判定されます。&lt;/div&gt;&#x27; +
+      &#x27;&lt;div id=&quot;out&quot;&gt;&lt;/div&gt;&#x27; +
+      &#x27;&lt;footer&gt;判定の根拠は、図面から読み取った記載をそのまま用います。&#x27; +
+      &#x27;根拠を示せなかったものは、推測せず「確認が必要」として扱います。&lt;br&gt;&#x27; +
+      &#x27;株式会社デジライズ&lt;/footer&gt;&#x27; +
+    &#x27;&lt;/div&gt;&#x27; +
+    &#x27;&lt;script&gt;&#x27; + JS_ + &#x27;&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;&#x27;;
+}
+
+function esc_(s) {
+  return String(s || &#x27;&#x27;).replace(/[&amp;&lt;&gt;&quot;]/g, function (c) {
+    return { &#x27;&amp;&#x27;: &#x27;&amp;amp;&#x27;, &#x27;&lt;&#x27;: &#x27;&amp;lt;&#x27;, &#x27;&gt;&#x27;: &#x27;&amp;gt;&#x27;, &#x27;&quot;&#x27;: &#x27;&amp;quot;&#x27; }[c];
+  });
+}
+
+const CSS_ =
+&#x27;:root{--bg:#F6F7F8;--card:#FFF;--ink:#151A1D;--ink2:#525E63;--ink3:#879499;&#x27; +
+&#x27;--line:#DEE4E6;--accent:#1B4F72;--ok:#1A6B4F;--warn:#8B4A05;&#x27; +
+&#x27;--sh:0 1px 2px rgba(21,26,29,.05),0 10px 26px -18px rgba(21,26,29,.3)}&#x27; +
+&#x27;*{box-sizing:border-box}&#x27; +
+&#x27;body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.75;&#x27; +
+&#x27;font-family:&quot;Hiragino Sans&quot;,&quot;Yu Gothic&quot;,&quot;Noto Sans JP&quot;,Meiryo,system-ui,sans-serif}&#x27; +
+&#x27;.wrap{max-width:820px;margin:0 auto;padding:32px 20px 64px;display:flex;&#x27; +
+&#x27;flex-direction:column;gap:24px}&#x27; +
+&#x27;h1{margin:.2rem 0 .3rem;font-size:24px}&#x27; +
+&#x27;.eyebrow{margin:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;&#x27; +
+&#x27;color:var(--accent);font-weight:700}&#x27; +
+&#x27;.meta{margin:0;color:var(--ink2);font-size:13px}&#x27; +
+&#x27;.card{background:var(--card);border:1px solid var(--line);border-radius:12px;&#x27; +
+&#x27;padding:20px 22px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:14px}&#x27; +
+&#x27;label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink2)}&#x27; +
+&#x27;select,input{padding:9px 11px;border:1px solid var(--line);border-radius:8px;&#x27; +
+&#x27;background:var(--card);color:var(--ink);font-size:14.5px;font-family:inherit}&#x27; +
+&#x27;.btn{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:12px;&#x27; +
+&#x27;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}&#x27; +
+&#x27;.btn:disabled{opacity:.5;cursor:default}&#x27; +
+&#x27;.wait{display:none;margin:0;font-size:13px;color:var(--ink2);text-align:center}&#x27; +
+&#x27;.note{font-size:12.5px;color:var(--ink3);text-align:center}&#x27; +
+&#x27;.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);&#x27; +
+&#x27;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--sh)}&#x27; +
+&#x27;.cell{background:var(--card);padding:15px 17px}&#x27; +
+&#x27;.cell .l{font-size:11.5px;color:var(--ink2)}&#x27; +
+&#x27;.cell .v{font-size:28px;font-weight:600;line-height:1.15}&#x27; +
+&#x27;.cell.a .v{color:var(--ok)}.cell.b .v{color:var(--warn)}&#x27; +
+&#x27;.lead{background:var(--card);border:1px solid var(--line);border-radius:12px;&#x27; +
+&#x27;padding:14px 18px;font-size:14.5px;box-shadow:var(--sh)}&#x27; +
+&#x27;.lead b{color:var(--warn)}&#x27; +
+&#x27;.sh{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);&#x27; +
+&#x27;padding-bottom:8px;margin-top:8px}&#x27; +
+&#x27;.sh h2{margin:0;font-size:15px}.sh .c{font-size:12px;color:var(--ink2)}&#x27; +
+&#x27;.row{background:var(--card);border:1px solid var(--line);border-radius:11px;&#x27; +
+&#x27;padding:13px 16px;box-shadow:var(--sh);margin-top:10px}&#x27; +
+&#x27;.row.ok{border-left:3px solid var(--ok)}.row.ng{border-left:3px solid var(--warn)}&#x27; +
+&#x27;.row .t{font-weight:600;font-size:14.5px}&#x27; +
+&#x27;.row .no{color:var(--ink3);font-size:12px;margin-right:8px}&#x27; +
+&#x27;.row .d{margin-top:6px;font-size:13px;color:var(--ink2)}&#x27; +
+&#x27;.row .s{margin-top:5px;font-size:11.5px;color:var(--ink3)}&#x27; +
+&#x27;a{color:var(--accent)}&#x27; +
+&#x27;footer{border-top:1px solid var(--line);padding-top:14px;font-size:12.5px;color:var(--ink3)}&#x27;;
+
+const JS_ =
+&#x27;var go=document.getElementById(&quot;go&quot;),wait=document.getElementById(&quot;wait&quot;),&#x27; +
+&#x27;out=document.getElementById(&quot;out&quot;);&#x27; +
+&#x27;function esc(s){return String(s==null?&quot;&quot;:s).replace(/[&amp;&lt;&gt;&quot;]/g,function(c){&#x27; +
+&#x27;return {&quot;&amp;&quot;:&quot;&amp;amp;&quot;,&quot;&lt;&quot;:&quot;&amp;lt;&quot;,&quot;&gt;&quot;:&quot;&amp;gt;&quot;,&quot;\\&quot;&quot;:&quot;&amp;quot;&quot;}[c]})}&#x27; +
+&#x27;function rows(list,cls){if(!list.length)return &quot;&lt;p class=\\&quot;note\\&quot;&gt;該当なし&lt;/p&gt;&quot;;&#x27; +
+&#x27;return list.map(function(r){&#x27; +
+&#x27;var body = cls===&quot;ok&quot; ? (&quot;根拠: &quot;+esc(r.evidence)) :&#x27; +
+&#x27;(cls===&quot;drop&quot; ? (esc(r.drop)+&quot;（AIの根拠: &quot;+esc(r.evidence||&quot;なし&quot;)+&quot;）&quot;)&#x27; +
+&#x27;: esc(r.reason));&#x27; +
+&#x27;return &quot;&lt;div class=\\&quot;row &quot;+(cls===&quot;ok&quot;?&quot;ok&quot;:&quot;ng&quot;)+&quot;\\&quot;&gt;&quot;+&#x27; +
+&#x27;&quot;&lt;div&gt;&lt;span class=\\&quot;no\\&quot;&gt;&quot;+esc(r.no)+&quot;&lt;/span&gt;&quot;+&#x27; +
+&#x27;&quot;&lt;span class=\\&quot;t\\&quot;&gt;&quot;+esc(r.item)+&quot;&lt;/span&gt;&lt;/div&gt;&quot;+&#x27; +
+&#x27;&quot;&lt;div class=\\&quot;d\\&quot;&gt;&quot;+body+&quot;&lt;/div&gt;&quot;+&#x27; +
+&#x27;(r.source?&quot;&lt;div class=\\&quot;s\\&quot;&gt;出典: &quot;+esc(r.source)+&quot;&lt;/div&gt;&quot;:&quot;&quot;)+&quot;&lt;/div&gt;&quot;&#x27; +
+&#x27;}).join(&quot;&quot;)}&#x27; +
+&#x27;go.addEventListener(&quot;click&quot;,function(){&#x27; +
+&#x27;var f=document.getElementById(&quot;file&quot;).value;&#x27; +
+&#x27;if(!f){out.innerHTML=&quot;&lt;div class=\\&quot;lead\\&quot;&gt;&lt;b&gt;図面を選んでください。&lt;/b&gt;&lt;/div&gt;&quot;;return}&#x27; +
+&#x27;go.disabled=true;wait.style.display=&quot;block&quot;;out.innerHTML=&quot;&quot;;&#x27; +
+&#x27;google.script.run.withSuccessHandler(function(r){&#x27; +
+&#x27;go.disabled=false;wait.style.display=&quot;none&quot;;&#x27; +
+&#x27;var n1=r.確定.length,n2=r.要確認.length,n3=r.棄却.length;&#x27; +
+&#x27;out.innerHTML=&#x27; +
+&#x27;&quot;&lt;div class=\\&quot;strip\\&quot;&gt;&quot;+&#x27; +
+&#x27;&quot;&lt;div class=\\&quot;cell\\&quot;&gt;&lt;div class=\\&quot;l\\&quot;&gt;確認した項目&lt;/div&gt;&lt;div class=\\&quot;v\\&quot;&gt;&quot;+r.itemCount+&quot;&lt;/div&gt;&lt;/div&gt;&quot;+&#x27; +
+&#x27;&quot;&lt;div class=\\&quot;cell a\\&quot;&gt;&lt;div class=\\&quot;l\\&quot;&gt;満たしているもの&lt;/div&gt;&lt;div class=\\&quot;v\\&quot;&gt;&quot;+n1+&quot;&lt;/div&gt;&lt;/div&gt;&quot;+&#x27; +
+&#x27;&quot;&lt;div class=\\&quot;cell b\\&quot;&gt;&lt;div class=\\&quot;l\\&quot;&gt;ご確認をお願いするもの&lt;/div&gt;&lt;div class=\\&quot;v\\&quot;&gt;&quot;+n2+&quot;&lt;/div&gt;&lt;/div&gt;&quot;+&#x27; +
+&#x27;&quot;&lt;/div&gt;&quot;+&#x27; +
+&#x27;&quot;&lt;div class=\\&quot;lead\\&quot;&gt;&quot;+esc(r.drawingTitle)+&quot;（&quot;+esc(r.drawingNumber)+&quot; ／ &quot;+esc(r.scale)+&quot;）から&quot;+&#x27; +
+&#x27;r.textCount+&quot;件の記載を読み取りました。&lt;b&gt;&quot;+n2+&quot;項目のご確認をお願いします。&lt;/b&gt;&lt;/div&gt;&quot;+&#x27; +
+&#x27;&quot;&lt;div class=\\&quot;sh\\&quot;&gt;&lt;h2&gt;ご確認をお願いするもの&lt;/h2&gt;&lt;span class=\\&quot;c\\&quot;&gt;&quot;+n2+&quot;件&lt;/span&gt;&lt;/div&gt;&quot;+rows(r.要確認,&quot;ng&quot;)+&#x27; +
+&#x27;(n3?(&quot;&lt;div class=\\&quot;sh\\&quot;&gt;&lt;h2&gt;棄却したもの&lt;/h2&gt;&lt;span class=\\&quot;c\\&quot;&gt;&quot;+n3+&quot;件&lt;/span&gt;&lt;/div&gt;&quot;+rows(r.棄却,&quot;drop&quot;)):&quot;&quot;)+&#x27; +
+&#x27;&quot;&lt;div class=\\&quot;sh\\&quot;&gt;&lt;h2&gt;満たしているもの&lt;/h2&gt;&lt;span class=\\&quot;c\\&quot;&gt;&quot;+n1+&quot;件&lt;/span&gt;&lt;/div&gt;&quot;+rows(r.確定,&quot;ok&quot;)+&#x27; +
+&#x27;&quot;&lt;p class=\\&quot;note\\&quot; style=\\&quot;margin-top:18px\\&quot;&gt;&lt;a href=\\&quot;&quot;+r.sheetUrl+&quot;\\&quot; target=\\&quot;_blank\\&quot;&gt;結果をスプレッドシートで開く&lt;/a&gt;&lt;/p&gt;&quot;;&#x27; +
+&#x27;}).withFailureHandler(function(e){&#x27; +
+&#x27;go.disabled=false;wait.style.display=&quot;none&quot;;&#x27; +
+&#x27;out.innerHTML=&quot;&lt;div class=\\&quot;lead\\&quot;&gt;&lt;b&gt;エラー: &quot;+esc(e.message||e)+&quot;&lt;/b&gt;&lt;/div&gt;&quot;;&#x27; +
+&#x27;}).runFromUi(f,document.getElementById(&quot;target&quot;).value,&#x27; +
+&#x27;document.getElementById(&quot;page&quot;).value)});&#x27;;
+
+</code></pre></details><p class='note'>左のファイル一覧に「コード.gs」があれば成功です。</p></div></section>
 <section class='step'><div class='n'>03</div><div class='body'><h3>権限の指定を差し替える</h3><p>コードを貼っただけでは、AIを呼ぶ権限が付きません。設定ファイルに明示する必要があります。ここを飛ばすと必ず失敗します。</p><pre><code>1. 左メニューの ⚙プロジェクトの設定 を開く
 2.「appsscript.json マニフェスト ファイルをエディタで表示する」に
    チェックを入れる
 3. エディタに戻ると appsscript.json が現れるので、
-   お渡しした内容に差し替えて保存する</code></pre><p class='note'>飛ばすと「HTTP 403 insufficient authentication scopes」で止まります。コードから権限は推測されないため、必ず明示します。</p></div></section>
+   下の内容に差し替えて保存する</code></pre><details class='embed'><summary>appsscript.json を開く（15行）</summary><div class='embed-bar'><button class='copy' data-target='pre-manifest'>すべてコピー</button></div><pre id='pre-manifest' class='full'><code>{
+  &quot;timeZone&quot;: &quot;Asia/Tokyo&quot;,
+  &quot;exceptionLogging&quot;: &quot;STACKDRIVER&quot;,
+  &quot;runtimeVersion&quot;: &quot;V8&quot;,
+  &quot;oauthScopes&quot;: [
+    &quot;https://www.googleapis.com/auth/cloud-platform&quot;,
+    &quot;https://www.googleapis.com/auth/script.external_request&quot;,
+    &quot;https://www.googleapis.com/auth/drive.readonly&quot;,
+    &quot;https://www.googleapis.com/auth/spreadsheets&quot;
+  ],
+  &quot;webapp&quot;: {
+    &quot;executeAs&quot;: &quot;USER_DEPLOYING&quot;,
+    &quot;access&quot;: &quot;DOMAIN&quot;
+  }
+}
+</code></pre></details><p class='note'>飛ばすと「HTTP 403 insufficient authentication scopes」で止まります。コードから権限は推測されないため、必ず明示します。</p></div></section>
 <section class='step'><div class='n'>04</div><div class='body'><h3>設定を保存する</h3><p>使うGCPプロジェクトと、チェック項目表の場所を登録します。画面上部の関数名から setupProperties を選んで実行するだけです。</p><pre><code>上部のプルダウン → setupProperties → ▶実行
 
 登録される内容:
   GCP_PROJECT_ID     使用するGCPプロジェクト
   VERTEX_LOCATION    asia-northeast1（東京）
   ITEMS_SHEET_ID     チェック項目表
-  DRAWING_FOLDER_ID  図面を置くフォルダ</code></pre><p class='note'>実行ログに「設定を保存しました。」と出れば成功です。</p></div></section>
+  DRAWING_FOLDER_ID  図面を置くフォルダ</code></pre><details class='embed'><summary>書き換える箇所（コード.gs の中） を開く（11行）</summary><div class='embed-bar'><button class='copy' data-target='pre-setup'>すべてコピー</button></div><pre id='pre-setup' class='full'><code>function setupProperties() {
+  PropertiesService.getScriptProperties().setProperties({
+    GCP_PROJECT_ID: &#x27;sapient-stacker-504215-u4&#x27;,
+    VERTEX_LOCATION: &#x27;asia-northeast1&#x27;,
+    VERTEX_MODEL: &#x27;gemini-3.5-flash&#x27;,
+    ITEMS_SHEET_ID: &#x27;1VnSjSglooBExX4PFZTU9fMEXapu7xdlhHUWuIwfGTmY&#x27;,
+    ITEMS_SHEET_NAME: &#x27;チェック項目&#x27;,
+    RESULT_SHEET_NAME: &#x27;チェック結果&#x27;,
+    DRAWING_FOLDER_ID: &#x27;1_ntllUpiQGWmbQFgue9N3dEu6D55eZZ4&#x27;
+  }, true);
+  Logger.log(&#x27;設定を保存しました。値を自社のものに書き換えてから使ってください。&#x27;);
+}</code></pre></details><p class='note'>実行ログに「設定を保存しました。」と出れば成功です。IDは御社のものに書き換えてから実行してください。</p></div></section>
 <section class='step'><div class='n'>05</div><div class='body'><h3>動作を確認する</h3><p>公開する前に、1枚だけ試します。初回は権限の承認画面が出るので、内容を確認して許可します。</p><pre><code>上部のプルダウン → runCheck → ▶実行
 
 承認画面が出たら:
@@ -239,5 +957,34 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:12.5px;color:
 <footer>
   株式会社デジライズ ／ 本ページに施主名・住所・図面は含みません。
 </footer>
+
+<script>
+ // 貼り付ける中身は長い。手で選択させず、1回押せば全部取れるようにする。
+ document.querySelectorAll(".copy").forEach(function (b) {
+   b.addEventListener("click", function () {
+     var pre = document.getElementById(b.dataset.target);
+     var text = pre.innerText;
+     var done = function () {
+       b.textContent = "コピーしました";
+       b.classList.add("done");
+       setTimeout(function () {
+         b.textContent = "すべてコピー";
+         b.classList.remove("done");
+       }, 2000);
+     };
+     if (navigator.clipboard && window.isSecureContext) {
+       navigator.clipboard.writeText(text).then(done);
+       return;
+     }
+     // クリップボードAPIが使えない環境では、選択状態にして手動コピーに委ねる
+     var r = document.createRange();
+     r.selectNodeContents(pre);
+     var sel = window.getSelection();
+     sel.removeAllRanges();
+     sel.addRange(r);
+     b.textContent = "選択しました。Ctrl+C でコピー";
+   });
+ });
+</script>
 
 </div>
