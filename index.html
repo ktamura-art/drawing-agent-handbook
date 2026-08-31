@@ -151,7 +151,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:12.5px;color:
     必ず確認してください。
   </div>
 <section class='step'><div class='n'>1</div><div class='body'><h3>プロジェクトを選ぶ</h3><p>画面上部の青いバーに、いまどのプロジェクトを開いているかが出ています。ここが目的のプロジェクトになっているか確認してください。違っていたら名前の部分をクリックして選び直します。</p><p class='link'><a href='https://console.cloud.google.com/projectselector2/home/dashboard' target='_blank' rel='noopener'>https://console.cloud.google.com/projectselector2/home/dashboard</a></p><p class='note'>プロジェクトIDを控えておいてください。あとで使います。</p></div></section>
-<section class='step'><div class='n'>2</div><div class='body'><h3>Vertex AI API を有効にする</h3><p>上のリンクを開くと「Vertex AI API」のページが出ます。青い「有効にする」ボタンを押してください。すでに有効な場合は「管理」と表示されているので、そのままで結構です。</p><p class='link'><a href='https://console.cloud.google.com/apis/library/aiplatform.googleapis.com' target='_blank' rel='noopener'>https://console.cloud.google.com/apis/library/aiplatform.googleapis.com</a></p><p class='note'>これが図面を読ませるための本体です。ほかのAPIは当面要りません。</p></div></section>
+<section class='step'><div class='n'>2</div><div class='body'><h3>Vertex AI API を有効にする</h3><p>上のリンクを開くと「Vertex AI API」のページが出ます。青い「有効にする」ボタンを押してください。すでに有効な場合は「管理」と表示されているので、そのままで結構です。</p><p class='link'><a href='https://console.cloud.google.com/apis/library/aiplatform.googleapis.com' target='_blank' rel='noopener'>https://console.cloud.google.com/apis/library/aiplatform.googleapis.com</a></p><p class='note'>これが図面を読ませるための本体です。Apps Script からこのAPIを呼びます。</p></div></section>
 <section class='step'><div class='n'>3</div><div class='body'><h3>課金アカウントを紐づける</h3><p>左メニューの「お支払い」を開きます。このプロジェクトに課金アカウントが紐づいていないと、APIを呼んだ時点でエラーになります。「請求先アカウントをリンク」から設定してください。</p><p class='link'><a href='https://console.cloud.google.com/billing' target='_blank' rel='noopener'>https://console.cloud.google.com/billing</a></p><p class='note'>図面1枚あたり1〜3円程度です。無料枠の範囲で試せます。</p></div></section>
 <section class='step'><div class='n'>4</div><div class='body'><h3>操作する人に権限を付ける</h3><p>左メニューの「IAMと管理」→「IAM」を開きます。「アクセスを許可」を押し、担当者のGoogleアカウントを入力して、ロールに「Vertex AI ユーザー」を選んで保存します。</p><p class='link'><a href='https://console.cloud.google.com/iam-admin/iam' target='_blank' rel='noopener'>https://console.cloud.google.com/iam-admin/iam</a></p><p class='note'>オーナー権限は不要です。読み取りと実行だけで動きます。</p></div></section>
 <section class='step'><div class='n'>5</div><div class='body'><h3>動いているか確かめる</h3><p>左メニューの「Vertex AI」→「Vertex AI Studio」を開き、何か文章を入れて返事が返ってくるか見てください。ここで返事が返れば、プログラムからも呼べる状態です。</p><p class='link'><a href='https://console.cloud.google.com/vertex-ai' target='_blank' rel='noopener'>https://console.cloud.google.com/vertex-ai</a></p><p class='note'>返らない場合は、2〜4のどれかが未完了です。</p></div></section>
@@ -180,46 +180,40 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:12.5px;color:
 </section>
 
 <section class="blk">
-  <div class="sh"><h2>組み立ての手順</h2><span class="hint">Windows での手順。当日はこの順に進めます</span></div>
-<section class='step'><div class='n'>01</div><div class='body'><h3>だれがコマンドを打つのか</h3><p>業務でお使いになる方は、コマンドを打つ必要がありません。できあがった画面のURLを開いて、図面を選ぶだけです。以下の手順は、仕組みを構築して社内に配る方（情報システム担当など）向けです。</p><pre><code>業務担当者   … ブラウザでURLを開くだけ
-構築する担当者 … 以下の手順を1回だけ実施する</code></pre><p class='note'>1度構築すれば、以降は全員が同じURLを使えます。</p></div></section>
-<section class='step'><div class='n'>02</div><div class='body'><h3>PowerShell を開く</h3><p>Windows の場合、コマンドはすべて PowerShell に入力します。画面左下のスタートボタンを押し、そのまま powershell と打つと「Windows PowerShell」が出るので、それをクリックして開きます。</p><pre><code>スタートボタン → powershell と入力 → Windows PowerShell をクリック</code></pre><p class='note'>青または黒い画面が開き、文字を入力できる状態になれば成功です。</p></div></section>
-<section class='step'><div class='n'>03</div><div class='body'><h3>Python を入れる</h3><p>図面を読ませるプログラムを動かすために必要です。下のリンクからインストーラをダウンロードし、実行します。インストール画面で「Add python.exe to PATH」に必ずチェックを入れてください。ここを入れ忘れると、以降のコマンドが動きません。</p><pre><code>https://www.python.org/ftp/python/3.13.7/python-3.13.7-amd64.exe
+  <div class="sh"><h2>組み立ての手順</h2><span class="hint">ブラウザだけで完結します。1回だけ30分ほど</span></div>
+<section class='step'><div class='n'>01</div><div class='body'><h3>だれが何をするのか</h3><p>業務でお使いになる方は、コマンドもコードも触りません。公開されたURLを開いて、図面を選ぶだけです。以下は、仕組みを最初に組み立てる方が1回だけ行う作業です。</p><pre><code>業務担当者   … ブラウザでURLを開く。それだけ
+組み立てる方 … 以下を1回だけ実施する（30分ほど）</code></pre><p class='note'>パソコンに入れるものはありません。ブラウザだけで完結します。</p></div></section>
+<section class='step'><div class='n'>02</div><div class='body'><h3>コードを貼り付ける</h3><p>Apps Script の新規プロジェクトを開き、お渡しするコードを貼り付けます。script.new を開くと空のプロジェクトが作られます。</p><pre><code>1. https://script.new を開く
+2. 既定の myFunction ごと消す
+3. お渡しした「コード.gs」の内容をすべて貼り付ける
+4. 保存する（Ctrl + S）</code></pre><p class='note'>左のファイル一覧に「コード.gs」があれば成功です。</p></div></section>
+<section class='step'><div class='n'>03</div><div class='body'><h3>権限の指定を差し替える</h3><p>コードを貼っただけでは、AIを呼ぶ権限が付きません。設定ファイルに明示する必要があります。ここを飛ばすと必ず失敗します。</p><pre><code>1. 左メニューの ⚙プロジェクトの設定 を開く
+2.「appsscript.json マニフェスト ファイルをエディタで表示する」に
+   チェックを入れる
+3. エディタに戻ると appsscript.json が現れるので、
+   お渡しした内容に差し替えて保存する</code></pre><p class='note'>飛ばすと「HTTP 403 insufficient authentication scopes」で止まります。コードから権限は推測されないため、必ず明示します。</p></div></section>
+<section class='step'><div class='n'>04</div><div class='body'><h3>設定を保存する</h3><p>使うGCPプロジェクトと、チェック項目表の場所を登録します。画面上部の関数名から setupProperties を選んで実行するだけです。</p><pre><code>上部のプルダウン → setupProperties → ▶実行
 
-# 入ったことを確認する（PowerShell に入力）
-py --version</code></pre><p class='note'>Python 3.13.7 のように表示されれば成功。ADK には 3.10 以上が必要です。</p></div></section>
-<section class='step'><div class='n'>04</div><div class='body'><h3>Google Cloud CLI を入れる</h3><p>GCP に接続するための道具です。下のリンクからインストーラを実行します。必要な Python は同梱されているので、追加の設定は要りません。インストール後、PowerShell を一度閉じて開き直してください。</p><pre><code>https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe
+登録される内容:
+  GCP_PROJECT_ID     使用するGCPプロジェクト
+  VERTEX_LOCATION    asia-northeast1（東京）
+  ITEMS_SHEET_ID     チェック項目表
+  DRAWING_FOLDER_ID  図面を置くフォルダ</code></pre><p class='note'>実行ログに「設定を保存しました。」と出れば成功です。</p></div></section>
+<section class='step'><div class='n'>05</div><div class='body'><h3>動作を確認する</h3><p>公開する前に、1枚だけ試します。初回は権限の承認画面が出るので、内容を確認して許可します。</p><pre><code>上部のプルダウン → runCheck → ▶実行
 
-# 入ったことを確認する
-gcloud --version</code></pre><p class='note'>Google Cloud SDK の後にバージョン番号が並べば成功です。</p></div></section>
-<section class='step'><div class='n'>05</div><div class='body'><h3>GCP にログインする</h3><p>2つ実行します。1つ目は操作する人の認証、2つ目はプログラムがGCPを使うための認証です。どちらもブラウザが開くので、会社のGoogleアカウントでログインしてください。</p><pre><code>gcloud auth login
-gcloud auth application-default login
+承認画面が出たら:
+  権限を確認 → アカウントを選択 →
+  「詳細」→「プロジェクトに移動」→ 許可</code></pre><p class='note'>自作のスクリプトのため、確認されていないアプリとして表示されます。1〜3分で結果が出ます。</p></div></section>
+<section class='step'><div class='n'>06</div><div class='body'><h3>社内に公開する</h3><p>ウェブアプリとして公開します。URLが1つ発行され、自社のアカウントを持つ方なら誰でも開けるようになります。</p><pre><code>1. 右上の「デプロイ」→「新しいデプロイ」
+2. 歯車アイコン →「ウェブアプリ」を選ぶ
+3. 次のように設定する
+     次のユーザーとして実行  自分
+     アクセスできるユーザー  &lt;自社ドメイン&gt;内の全員
+4.「デプロイ」を押す</code></pre><p class='note'>発行されたURLが、担当者に配るものです。社外の方はログインしても開けません。</p></div></section>
+<section class='step'><div class='n'>07</div><div class='body'><h3>担当者に配る</h3><p>配るのはURLだけです。担当者側の準備は要りません。図面を選んで「確認する」を押すと、結果が画面に出ます。</p><pre><code>https://script.google.com/a/macros/&lt;ドメイン&gt;/s/……/exec</code></pre><p class='note'>結果はスプレッドシートの「チェック結果」タブにも残ります。</p></div></section>
+<section class='step'><div class='n'>08</div><div class='body'><h3>項目を増やす・減らす</h3><p>チェック項目はスプレッドシートから毎回読み込んでいます。行を足せば次の実行から判定され、「採用」列に × を入れればその項目は外れます。</p><pre><code>チェック項目表を開いて、行を足す／× を入れる
 
-# 使うプロジェクトを指定する
-gcloud config set project &lt;プロジェクトID&gt;</code></pre><p class='note'>ブラウザに「認証が完了しました」と出れば成功です。</p></div></section>
-<section class='step'><div class='n'>06</div><div class='body'><h3>作業用のフォルダを作る</h3><p>デスクトップに作業場所を用意し、そこへ移動します。以降のコマンドは、すべてこのフォルダの中で実行します。</p><pre><code>cd $HOME\Desktop
-mkdir zumen-agent
-cd zumen-agent</code></pre><p class='note'>画面左側の表示が …\Desktop\zumen-agent に変われば成功です。</p></div></section>
-<section class='step'><div class='n'>07</div><div class='body'><h3>プログラムの置き場を用意する</h3><p>Python のプログラムを、この作業用フォルダの中だけで動かすための準備です。他のソフトに影響しません。</p><pre><code>py -m venv .venv
-.venv\Scripts\python.exe -m pip install --upgrade pip
-.venv\Scripts\pip.exe install google-adk fastapi uvicorn python-multipart</code></pre><p class='note'>最後に Successfully installed … と出れば成功。数分かかります。</p></div></section>
-<section class='step'><div class='n'>08</div><div class='body'><h3>部品が入ったか確かめる</h3><p>エージェントの順序を固定するための部品が使えるかを確認します。ここが通れば、環境の準備は完了です。</p><pre><code>.venv\Scripts\python.exe -c &quot;from google.adk.agents import SequentialAgent, LoopAgent, ParallelAgent; print(&#x27;OK&#x27;)&quot;</code></pre><p class='note'>OK と表示されれば成功です。エラーが出る場合は Python のPATH設定を見直してください。</p></div></section>
-<section class='step'><div class='n'>09</div><div class='body'><h3>プログラムを置く</h3><p>弊社からお渡しするファイル一式を、作業用フォルダに展開します。agent.py（工程の定義）、makers.py（メーカー別のURL）、main.py（画面）などが含まれます。</p><pre><code># 配布ファイルを zumen-agent フォルダに展開する
-# 展開後、中身を確認する
-dir</code></pre><p class='note'>main.py、makers.py、requirements.txt などが並んでいれば成功です。</p></div></section>
-<section class='step'><div class='n'>10</div><div class='body'><h3>手元で動かしてみる</h3><p>デプロイの前に、自分のパソコンで画面を出して確認します。問題があればここで分かります。</p><pre><code>.venv\Scripts\uvicorn.exe main:app --port 8090
-
-# ブラウザで開く
-http://localhost:8090/</code></pre><p class='note'>図面を選ぶ画面が出れば成功。止めるときは PowerShell で Ctrl と C を同時に押します。</p></div></section>
-<section class='step'><div class='n'>11</div><div class='body'><h3>社内に配る（デプロイ）</h3><p>Google Cloud に載せて、URLで開けるようにします。初回は10分ほどかかります。&lt;プロジェクトID&gt; は実際の値に置き換えてください。</p><pre><code>gcloud run deploy zumen-check --source=. `
-  --project=&lt;プロジェクトID&gt; --region=asia-northeast1 `
-  --timeout=900 --memory=1Gi --no-allow-unauthenticated --iap `
-  --set-env-vars=GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=&lt;プロジェクトID&gt;,GOOGLE_CLOUD_LOCATION=asia-northeast1</code></pre><p class='note'>最後に Service URL: https://… と表示されます。これが社内に配るURLです。</p></div></section>
-<section class='step'><div class='n'>12</div><div class='body'><h3>社内の人が開けるようにする</h3><p>初期状態では、作った本人も含めて誰も開けません。自社ドメインのアカウントに、アクセス権を付けます。反映に数分かかります。</p><pre><code>gcloud beta iap web add-iam-policy-binding `
-  --resource-type=cloud-run --service=zumen-check `
-  --region=asia-northeast1 --project=&lt;プロジェクトID&gt; `
-  --member=&quot;domain:&lt;自社のドメイン&gt;&quot; `
-  --role=&quot;roles/iap.httpsResourceAccessor&quot;</code></pre><p class='note'>反映後、社内の方がURLを開くとGoogleのログイン画面が出ます。社外の方はログインしても入れません。</p></div></section>
+→ コードの修正も、再公開も不要</code></pre><p class='note'>1項目ずつ開発していては費用が見合わないため、ここが要点になります。</p></div></section>
 </section>
 
 <section class="blk">
@@ -227,6 +221,8 @@ http://localhost:8090/</code></pre><p class='note'>図面を選ぶ画面が出�
   <div class="cards">
 <div class='card'><h4>URLをモデルに答えさせていた</h4><p class='what'>10件中6件が <code>google.com/search?q=…</code> という検索エンジンのURLになった。人が後で確認するためのURLなのに、Google検索に飛ばすだけでは確認にならない。</p><p class='fix'><b>直し方</b> 品番の形からメーカーを判定し、コードがURLを組み立てる形に変えた。検索エンジンのURLはゼロになった。</p></div>
 <div class='card'><h4>検証が甘く、10件すべてが確定に見えた</h4><p class='what'>URLと根拠が「空でないこと」しか見ていなかったため、検索エンジンのURLでも確定として通っていた。</p><p class='fix'><b>直し方</b> メーカーの商品ページに到達したものだけを確定とした。結果は 確定4件 / 要確認6件。こちらが実態。</p></div>
+<div class='card'><h4>権限の指定が足りず、AIを呼べなかった</h4><p class='what'>コードを貼り付けただけでは <code>cloud-platform</code> の権限が付かず、<code>HTTP 403 insufficient authentication scopes</code> で止まった。Apps Script はコードから使う権限を推測するが、外部リクエストの先までは分からない。</p><p class='fix'><b>直し方</b> 設定ファイル（appsscript.json）に権限を明示した。手順にもその工程を入れ、飛ばせないようにした。</p></div>
+<div class='card'><h4>結果の書き出しで落ちた</h4><p class='what'>表に書き込む際、空行だけ列数が0で、「データの列数と範囲の列数が一致しません」で止まった。判定そのものは終わっていたのに、結果が残らなかった。</p><p class='fix'><b>直し方</b> 書き込む直前に全行の列数を揃える処理を入れた。原因の行を直すのではなく、以後どんな行が来ても揃うようにした。</p></div>
 <div class='card'><h4>ループが指定回数まで空回りしていた</h4><p class='what'>待ち行列が尽きたときに <code>escalate</code> でループを抜ける実装にしたが、コールバックからイベントに伝播せず、上限まで回っていた。</p><p class='fix'><b>直し方</b> 抽出を先に走らせ、件数が確定してから <code>max_iterations</code> を決める2段構えにした。</p></div>
   </div>
 </section>
