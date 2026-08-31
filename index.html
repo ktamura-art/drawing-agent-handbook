@@ -180,51 +180,46 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:12.5px;color:
 </section>
 
 <section class="blk">
-  <div class="sh"><h2>組み立ての手順</h2><span class="hint">当日はこの順に進めます</span></div>
-<section class='step'><div class='n'>01</div><div class='body'><h3>環境をつくる</h3><p>Python 3.14 で仮想環境を作り、ADK を入れる。ADK には順序を固定して組むための部品が含まれている。</p><pre><code>python3.14 -m venv .venv
-.venv/bin/pip install google-adk pdf2image pillow
+  <div class="sh"><h2>組み立ての手順</h2><span class="hint">Windows での手順。当日はこの順に進めます</span></div>
+<section class='step'><div class='n'>01</div><div class='body'><h3>だれがコマンドを打つのか</h3><p>業務でお使いになる方は、コマンドを打つ必要がありません。できあがった画面のURLを開いて、図面を選ぶだけです。以下の手順は、仕組みを構築して社内に配る方（情報システム担当など）向けです。</p><pre><code>業務担当者   … ブラウザでURLを開くだけ
+構築する担当者 … 以下の手順を1回だけ実施する</code></pre><p class='note'>1度構築すれば、以降は全員が同じURLを使えます。</p></div></section>
+<section class='step'><div class='n'>02</div><div class='body'><h3>PowerShell を開く</h3><p>Windows の場合、コマンドはすべて PowerShell に入力します。画面左下のスタートボタンを押し、そのまま powershell と打つと「Windows PowerShell」が出るので、それをクリックして開きます。</p><pre><code>スタートボタン → powershell と入力 → Windows PowerShell をクリック</code></pre><p class='note'>青または黒い画面が開き、文字を入力できる状態になれば成功です。</p></div></section>
+<section class='step'><div class='n'>03</div><div class='body'><h3>Python を入れる</h3><p>図面を読ませるプログラムを動かすために必要です。下のリンクからインストーラをダウンロードし、実行します。インストール画面で「Add python.exe to PATH」に必ずチェックを入れてください。ここを入れ忘れると、以降のコマンドが動きません。</p><pre><code>https://www.python.org/ftp/python/3.13.7/python-3.13.7-amd64.exe
+
+# 入ったことを確認する（PowerShell に入力）
+py --version</code></pre><p class='note'>Python 3.13.7 のように表示されれば成功。ADK には 3.10 以上が必要です。</p></div></section>
+<section class='step'><div class='n'>04</div><div class='body'><h3>Google Cloud CLI を入れる</h3><p>GCP に接続するための道具です。下のリンクからインストーラを実行します。必要な Python は同梱されているので、追加の設定は要りません。インストール後、PowerShell を一度閉じて開き直してください。</p><pre><code>https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe
 
 # 入ったことを確認する
-.venv/bin/python -c &quot;from google.adk.agents import \
-  SequentialAgent, LoopAgent, ParallelAgent; print(&#x27;OK&#x27;)&quot;</code></pre><p class='note'>SequentialAgent / LoopAgent / ParallelAgent が import できれば成功。</p></div></section>
-<section class='step'><div class='n'>02</div><div class='body'><h3>GCPにつなぐ</h3><p>Vertex AI を東京リージョンで使う。API キーは使わず、ログイン中のアカウントの権限で動かす。</p><pre><code>gcloud auth application-default login
+gcloud --version</code></pre><p class='note'>Google Cloud SDK の後にバージョン番号が並べば成功です。</p></div></section>
+<section class='step'><div class='n'>05</div><div class='body'><h3>GCP にログインする</h3><p>2つ実行します。1つ目は操作する人の認証、2つ目はプログラムがGCPを使うための認証です。どちらもブラウザが開くので、会社のGoogleアカウントでログインしてください。</p><pre><code>gcloud auth login
+gcloud auth application-default login
 
-export GOOGLE_GENAI_USE_VERTEXAI=TRUE
-export GOOGLE_CLOUD_PROJECT=&lt;プロジェクトID&gt;
-export GOOGLE_CLOUD_LOCATION=asia-northeast1</code></pre><p class='note'>この3つを差し替えるだけで、別のGCPプロジェクトに向く。</p></div></section>
-<section class='step'><div class='n'>03</div><div class='body'><h3>工程1 ― 読み取る</h3><p>図面PDFをそのまま Gemini に渡し、クロス品番と図面上の位置を抜き出す。画像への変換は不要。</p><pre><code>extract_agent = LlmAgent(
-    name=&quot;extract&quot;,
-    model=&quot;gemini-3.5-flash&quot;,
-    instruction=EXTRACT_INSTRUCTION,
-    output_key=&quot;extracted&quot;,
-)</code></pre><p class='note'>抜き出すものと抜き出さないものを指示文に明記する。防火設備の認定番号など、品番と同じ形の別番号を除くため。</p></div></section>
-<section class='step'><div class='n'>04</div><div class='body'><h3>待ち行列に積む</h3><p>抽出結果を Python 側の待ち行列に移す。何件あるかをモデルに数えさせない。</p><pre><code>def build_queue(ctx):
-    data = _json(ctx.state.get(&quot;extracted&quot;)) or {}
-    ctx.state[&quot;queue&quot;]  = data.get(&quot;codes&quot;, [])
-    ctx.state[&quot;cursor&quot;] = 0
-    ctx.state[&quot;found&quot;]  = []
+# 使うプロジェクトを指定する
+gcloud config set project &lt;プロジェクトID&gt;</code></pre><p class='note'>ブラウザに「認証が完了しました」と出れば成功です。</p></div></section>
+<section class='step'><div class='n'>06</div><div class='body'><h3>作業用のフォルダを作る</h3><p>デスクトップに作業場所を用意し、そこへ移動します。以降のコマンドは、すべてこのフォルダの中で実行します。</p><pre><code>cd $HOME\Desktop
+mkdir zumen-agent
+cd zumen-agent</code></pre><p class='note'>画面左側の表示が …\Desktop\zumen-agent に変われば成功です。</p></div></section>
+<section class='step'><div class='n'>07</div><div class='body'><h3>プログラムの置き場を用意する</h3><p>Python のプログラムを、この作業用フォルダの中だけで動かすための準備です。他のソフトに影響しません。</p><pre><code>py -m venv .venv
+.venv\Scripts\python.exe -m pip install --upgrade pip
+.venv\Scripts\pip.exe install google-adk fastapi uvicorn python-multipart</code></pre><p class='note'>最後に Successfully installed … と出れば成功。数分かかります。</p></div></section>
+<section class='step'><div class='n'>08</div><div class='body'><h3>部品が入ったか確かめる</h3><p>エージェントの順序を固定するための部品が使えるかを確認します。ここが通れば、環境の準備は完了です。</p><pre><code>.venv\Scripts\python.exe -c &quot;from google.adk.agents import SequentialAgent, LoopAgent, ParallelAgent; print(&#x27;OK&#x27;)&quot;</code></pre><p class='note'>OK と表示されれば成功です。エラーが出る場合は Python のPATH設定を見直してください。</p></div></section>
+<section class='step'><div class='n'>09</div><div class='body'><h3>プログラムを置く</h3><p>弊社からお渡しするファイル一式を、作業用フォルダに展開します。agent.py（工程の定義）、makers.py（メーカー別のURL）、main.py（画面）などが含まれます。</p><pre><code># 配布ファイルを zumen-agent フォルダに展開する
+# 展開後、中身を確認する
+dir</code></pre><p class='note'>main.py、makers.py、requirements.txt などが並んでいれば成功です。</p></div></section>
+<section class='step'><div class='n'>10</div><div class='body'><h3>手元で動かしてみる</h3><p>デプロイの前に、自分のパソコンで画面を出して確認します。問題があればここで分かります。</p><pre><code>.venv\Scripts\uvicorn.exe main:app --port 8090
 
-extract_agent.after_agent_callback = build_queue</code></pre><p class='note'>ここが「途中で力尽きる」を避ける要。件数の管理をコードが持つ。</p></div></section>
-<section class='step'><div class='n'>05</div><div class='body'><h3>メーカー別に確認先を決める</h3><p>URLはモデルに答えさせない。品番の形からメーカーを判定し、コードが組み立てて、実在するかHTTPで確かめる。</p><pre><code>resolved = makers.resolve(primary)
-ctx.state[&quot;current_url&quot;]   = resolved[&quot;url&quot;]
-ctx.state[&quot;current_maker&quot;] = resolved[&quot;maker&quot;]</code></pre><p class='note'>商品詳細 → 品番検索 → 旧品番照会 の順に降りる。詳細が 404 なら現行カタログに無いということ。</p></div></section>
-<section class='step'><div class='n'>06</div><div class='body'><h3>工程2 ― 1件ずつ調べる</h3><p>LoopAgent が抽出件数ぶん回る。モデルは常に1件だけを見る。件数が増えてもモデルの仕事量は変わらない。</p><pre><code>researcher = LlmAgent(
-    name=&quot;researcher&quot;,
-    tools=[google_search],
-    instruction=RESEARCH_INSTRUCTION,
-    output_key=&quot;research_result&quot;,
-)
-researcher.before_agent_callback = pick_next   # 次の1件を渡す
-researcher.after_agent_callback  = record      # 結果を控える
-
-loop = LoopAgent(name=&quot;research_loop&quot;,
-                 sub_agents=[researcher],
-                 max_iterations=len(queue))</code></pre><p class='note'>max_iterations は抽出できた実件数。繰り返す回数をコードが決める。</p></div></section>
-<section class='step'><div class='n'>07</div><div class='body'><h3>工程3 ― 検証する</h3><p>メーカーの商品ページに到達し、そこに書かれていた記載を根拠に判定が付いたものだけを確定とする。それ以外は人に回す。</p><pre><code>ok = (r[&quot;url_kind&quot;] == &quot;商品ページ&quot;
-      and r[&quot;url_verified&quot;]
-      and r[&quot;repeat&quot;] in (&quot;リピートあり&quot;, &quot;リピートなし&quot;)
-      and r[&quot;evidence&quot;])</code></pre><p class='note'>ここを緩めると「10件すべて確定」に見えてしまう。実際に一度そうなった。</p></div></section>
-<section class='step'><div class='n'>08</div><div class='body'><h3>実行する</h3><p>図面PDFとページ番号を渡すだけ。</p><pre><code>.venv/bin/python run_repeat.py &lt;図面PDF&gt; 2</code></pre><p class='note'>結果は out/repeat_result.json と、画面の一覧に出る。</p></div></section>
+# ブラウザで開く
+http://localhost:8090/</code></pre><p class='note'>図面を選ぶ画面が出れば成功。止めるときは PowerShell で Ctrl と C を同時に押します。</p></div></section>
+<section class='step'><div class='n'>11</div><div class='body'><h3>社内に配る（デプロイ）</h3><p>Google Cloud に載せて、URLで開けるようにします。初回は10分ほどかかります。&lt;プロジェクトID&gt; は実際の値に置き換えてください。</p><pre><code>gcloud run deploy zumen-check --source=. `
+  --project=&lt;プロジェクトID&gt; --region=asia-northeast1 `
+  --timeout=900 --memory=1Gi --no-allow-unauthenticated --iap `
+  --set-env-vars=GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=&lt;プロジェクトID&gt;,GOOGLE_CLOUD_LOCATION=asia-northeast1</code></pre><p class='note'>最後に Service URL: https://… と表示されます。これが社内に配るURLです。</p></div></section>
+<section class='step'><div class='n'>12</div><div class='body'><h3>社内の人が開けるようにする</h3><p>初期状態では、作った本人も含めて誰も開けません。自社ドメインのアカウントに、アクセス権を付けます。反映に数分かかります。</p><pre><code>gcloud beta iap web add-iam-policy-binding `
+  --resource-type=cloud-run --service=zumen-check `
+  --region=asia-northeast1 --project=&lt;プロジェクトID&gt; `
+  --member=&quot;domain:&lt;自社のドメイン&gt;&quot; `
+  --role=&quot;roles/iap.httpsResourceAccessor&quot;</code></pre><p class='note'>反映後、社内の方がURLを開くとGoogleのログイン画面が出ます。社外の方はログインしても入れません。</p></div></section>
 </section>
 
 <section class="blk">
