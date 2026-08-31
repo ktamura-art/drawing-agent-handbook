@@ -88,6 +88,21 @@ a{color:var(--accent)}
 .card .fix b{color:var(--ok)}
 .step .link{margin:0 0 10px}
 .step .link a{font-family:"IBM Plex Mono",monospace;font-size:12px;word-break:break-all}
+.scr{margin:14px 0 0;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;box-shadow:var(--sh);padding:4px 20px 8px;max-width:520px}
+.scr-h{font-size:11.5px;font-weight:700;letter-spacing:.06em;color:var(--ink3);
+  padding:12px 0 4px}
+.st{display:flex;align-items:center;gap:11px;padding:11px 0;font-size:13.5px;
+  color:var(--ink3);border-bottom:1px solid var(--line2)}
+.st:last-child{border-bottom:0}
+.st .ic{width:15px;height:15px;border-radius:50%;border:2px solid var(--line);flex:none}
+.st .sn{flex:1}
+.st .sw{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px;
+  background:var(--sunk);color:var(--ink2)}
+.st .sv{font-size:12px;color:var(--ink3);min-width:56px;text-align:right}
+.st.done,.st.now{color:var(--ink)}
+.st.done .ic{border-color:var(--ok);background:var(--ok)}
+.st.now .ic{border-color:var(--accent);border-right-color:transparent}
 .fig{margin:0;padding:20px 18px 16px;background:var(--card);
   border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh);overflow-x:auto}
 .fig svg{display:block;width:100%;min-width:760px;height:auto;color:var(--ink3)}
@@ -231,13 +246,49 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:12.5px;color:
 </section>
 
 <section class="blk">
+  <div class="sh"><h2>画面はどう作るのか</h2>
+    <span class="hint">Apps Script だけで完結します</span></div>
+  <div class="cards2">
+    <div class="card2">
+      <h4>画面もApps Scriptが配ります</h4>
+      <p><code>doGet</code> が HTML を返し、画面から
+         <code>google.script.run</code> でサーバー側の関数を呼びます。
+         <b>画面用のサーバーは立てません。</b></p>
+      <p>図面の一覧はドライブから、項目数はチェック項目表から
+         その場で読み込むため、増えても画面の直しは要りません。</p>
+    </div>
+    <div class="card2">
+      <h4>チャット画面にはしません</h4>
+      <p>担当者の操作は<b>「図面を選ぶ」「押す」の2つだけ</b>です。
+         指示文はこちら側で固定しています。</p>
+      <p>自由に書ける入力欄にすると、聞き方で結果が変わり、
+         <b>担当者ごとに判定がばらつきます</b>。
+         同じ図面なら誰が動かしても同じ結果になる必要があります。</p>
+    </div>
+  </div>
+  <div class="scr">
+    <div class="scr-h">押したあとに出るもの</div>
+    <div class="st done"><span class="ic"></span><span class="sn">図面を読み取る</span>
+      <span class="sw">AI</span><span class="sv">104件</span></div>
+    <div class="st now"><span class="ic"></span><span class="sn">基準に当てはめる</span>
+      <span class="sw">AI</span><span class="sv">実行中</span></div>
+    <div class="st"><span class="ic"></span><span class="sn">根拠を照合する</span>
+      <span class="sw code">コード</span><span class="sv"></span></div>
+  </div>
+  <p class="note">工程を3つに分けて呼んでいます。1回で最後まで走らせると画面は固まって見え、
+    止まったと思われて再読み込みされます。分けたことで、
+    1回あたりが Apps Script の6分制限にも収まりやすくなります。
+    失敗した工程はそこで止まるため、どこで落ちたかがその場で分かります。</p>
+</section>
+
+<section class="blk">
   <div class="sh"><h2>組み立ての手順</h2><span class="hint">ブラウザだけで完結します。1回だけ30分ほど</span></div>
 <section class='step'><div class='n'>01</div><div class='body'><h3>だれが何をするのか</h3><p>業務でお使いになる方は、コマンドもコードも触りません。公開されたURLを開いて、図面を選ぶだけです。以下は、仕組みを最初に組み立てる方が1回だけ行う作業です。</p><pre><code>業務担当者   … ブラウザでURLを開く。それだけ
 組み立てる方 … 以下を1回だけ実施する（30分ほど）</code></pre><p class='note'>パソコンに入れるものはありません。ブラウザだけで完結します。</p></div></section>
 <section class='step'><div class='n'>02</div><div class='body'><h3>コードを貼り付ける</h3><p>Apps Script の新規プロジェクトを開き、お渡しするコードを貼り付けます。script.new を開くと空のプロジェクトが作られます。</p><pre><code>1. https://script.new を開く
 2. 既定の myFunction ごと消す
 3. 下の「コード.gs」をすべてコピーして貼り付ける
-4. 保存する（Ctrl + S）</code></pre><details class='embed'><summary>コード.gs を開く（679行）</summary><div class='embed-bar'><button class='copy' data-target='pre-code'>すべてコピー</button></div><pre id='pre-code' class='full'><code>/**
+4. 保存する（Ctrl + S）</code></pre><details class='embed'><summary>コード.gs を開く（775行）</summary><div class='embed-bar'><button class='copy' data-target='pre-code'>すべてコピー</button></div><pre id='pre-code' class='full'><code>/**
  * 図面チェック（作図基準）― 1ファイル版
  *
  * Apps Script のエディタに、この内容をまるごと貼り付けて使う。
@@ -571,47 +622,66 @@ function norm_(s) {
 }
 
 /**
- * 図面1枚をチェックする。
+ * 工程1 図面を読み取る。
+ *
+ * 画面から工程ごとに呼ぶため、独立した関数に分けてある。
+ * まとめて1回で呼ぶと、6分の実行時間制限に近づくうえ、
+ * 画面側では「動いているのか止まっているのか」が分からない。
  *
  * @param {string} fileId 図面PDFのDriveファイルID
- * @param {string} target 図面の種類（例「配置図」）
  * @param {number} pageNo 対象のページ番号。既定は1
- * @return {Object} 判定結果
+ * @return {Object} 次の工程に渡す状態
  */
-function checkDrawing(fileId, target, pageNo) {
-  pageNo = pageNo || 1;
+function stepExtract(fileId, pageNo) {
+  const cfg = getConfig();
+  const blob = DriveApp.getFileById(fileId).getBlob();
+  const extracted = askWithPdf(blob, extractPrompt_(pageNo || 1), cfg) || {};
+  const texts = extracted.texts || [];
+  Logger.log(&#x27;工程1 抽出 %s件&#x27;, texts.length);
+  return {
+    fileId: fileId, pageNo: pageNo || 1, fileName: blob.getName(),
+    extracted: extracted, textCount: texts.length,
+    drawingTitle: extracted.drawing_title || &#x27;&#x27;,
+    drawingNumber: extracted.drawing_number || &#x27;&#x27;,
+    scale: extracted.scale || &#x27;&#x27;
+  };
+}
+
+/** 工程2 基準に当てはめる。工程1の抽出結果だけを根拠に判定する。 */
+function stepJudge(state, target) {
   const cfg = getConfig();
   const items = loadItems(target, cfg);
   if (!items.length) {
     throw new Error(&#x27;チェック項目が読み込めませんでした。項目表をご確認ください。&#x27;);
   }
+  const judged = askText(judgePrompt_(state.extracted, items), cfg) || {};
+  Logger.log(&#x27;工程2 判定 %s件&#x27;, (judged.results || []).length);
+  state.target = target;
+  state.items = items;
+  state.results = judged.results || [];
+  state.itemCount = items.length;
+  return state;
+}
 
-  const blob = DriveApp.getFileById(fileId).getBlob();
-  Logger.log(&#x27;図面 %s（%s KB）／ 項目 %s件&#x27;,
-    blob.getName(), Math.round(blob.getBytes().length / 1024), items.length);
-
-  // 工程1
-  const extracted = askWithPdf(blob, extractPrompt_(pageNo), cfg) || {};
-  const texts = extracted.texts || [];
-  Logger.log(&#x27;工程1 抽出 %s件&#x27;, texts.length);
-
-  // 工程2
-  const judged = askText(judgePrompt_(extracted, items), cfg) || {};
-  const results = judged.results || [];
-  Logger.log(&#x27;工程2 判定 %s件&#x27;, results.length);
-
-  // 工程3・4
+/**
+ * 工程3 根拠を照合する。ここだけはAIを使わない。
+ *
+ * AIが根拠として挙げた文字列が、工程1の読み取り結果に実在するか
+ * 突き合わせる。無ければ、判定が正しそうに見えても採用しない。
+ */
+function stepVerify(state) {
   // 照合先には texts だけでなく、図面名・図面番号・縮尺も含める。
   // モデルはこれらを根拠に挙げるが、texts には入れないため、
   // texts だけを見ていると正しい根拠まで棄却してしまう。
-  const hay = norm_([
-    extracted.drawing_title, extracted.drawing_number, extracted.scale
-  ].concat(texts.map(function (t) { return t.text; })).join(&#x27; &#x27;));
+  const ex = state.extracted || {};
+  const texts = ex.texts || [];
+  const hay = norm_([ex.drawing_title, ex.drawing_number, ex.scale]
+    .concat(texts.map(function (t) { return t.text; })).join(&#x27; &#x27;));
   const byNo = {};
-  items.forEach(function (r) { byNo[String(r.no)] = r; });
+  (state.items || []).forEach(function (r) { byNo[String(r.no)] = r; });
 
   const out = { 確定: [], 要確認: [], 棄却: [] };
-  results.forEach(function (r) {
+  (state.results || []).forEach(function (r) {
     const src = byNo[String(r.no)] || {};
     const rec = {
       no: r.no, item: src.item || &#x27;&#x27;, basis: src.basis || &#x27;&#x27;,
@@ -632,17 +702,28 @@ function checkDrawing(fileId, target, pageNo) {
       out.要確認.push(rec);
     }
   });
+  Logger.log(&#x27;工程3 確定%s / 要確認%s / 棄却%s&#x27;,
+    out.確定.length, out.要確認.length, out.棄却.length);
 
   return {
-    fileName: blob.getName(),
-    target: target,
-    drawingTitle: extracted.drawing_title || &#x27;&#x27;,
-    drawingNumber: extracted.drawing_number || &#x27;&#x27;,
-    scale: extracted.scale || &#x27;&#x27;,
-    itemCount: items.length,
-    textCount: texts.length,
-    buckets: out
+    fileName: state.fileName, target: state.target,
+    drawingTitle: state.drawingTitle, drawingNumber: state.drawingNumber,
+    scale: state.scale, itemCount: state.itemCount,
+    textCount: state.textCount, buckets: out
   };
+}
+
+/**
+ * 図面1枚をチェックする。工程1〜3をまとめて実行する。
+ * エディタから runCheck で試すときはこちらを使う。
+ *
+ * @param {string} fileId 図面PDFのDriveファイルID
+ * @param {string} target 図面の種類（例「配置図」）
+ * @param {number} pageNo 対象のページ番号。既定は1
+ * @return {Object} 判定結果
+ */
+function checkDrawing(fileId, target, pageNo) {
+  return stepVerify(stepJudge(stepExtract(fileId, pageNo), target));
 }
 
 /**
@@ -757,11 +838,28 @@ function listDrawings() {
 }
 
 /**
- * 画面から呼ばれる本体。google.script.run 経由で実行される。
- * 結果は画面に返しつつ、スプレッドシートにも書き出す。
+ * 画面から工程ごとに呼ぶ。google.script.run 経由で実行される。
+ *
+ * 1回で最後まで実行すると、画面はただ固まって見える。
+ * 何をしているところなのかが分からないと、担当者は止まったと判断して
+ * 再読み込みしてしまう。工程を分け、終わるたびに画面へ返す。
+ *
+ * 6分の実行時間制限に対しても、1回あたりが短いほうが余裕が出る。
  */
-function runFromUi(fileId, target, pageNo) {
-  const result = checkDrawing(fileId, target, Number(pageNo) || 1);
+function uiExtract(fileId, pageNo) {
+  const s = stepExtract(fileId, Number(pageNo) || 1);
+  return { state: s, textCount: s.textCount, drawingTitle: s.drawingTitle,
+           drawingNumber: s.drawingNumber, scale: s.scale };
+}
+
+function uiJudge(state, target) {
+  const s = stepJudge(state, target);
+  return { state: s, itemCount: s.itemCount, resultCount: s.results.length };
+}
+
+/** 工程3。照合まで終えたら、スプレッドシートにも書き出す。 */
+function uiVerify(state) {
+  const result = stepVerify(state);
   const url = writeResult(result);
   return {
     fileName: result.fileName,
@@ -775,6 +873,11 @@ function runFromUi(fileId, target, pageNo) {
     棄却: result.buckets.棄却,
     確定: result.buckets.確定
   };
+}
+
+/** 工程を分けずに1回で実行する。画面からは使わないが、確認用に残す。 */
+function runFromUi(fileId, target, pageNo) {
+  return uiVerify(stepJudge(stepExtract(fileId, Number(pageNo) || 1), target));
 }
 
 function renderForm_() {
@@ -811,8 +914,19 @@ function renderForm_() {
         &#x27;&lt;label&gt;図面の種類&lt;select id=&quot;target&quot;&gt;&#x27; + tOpts + &#x27;&lt;/select&gt;&lt;/label&gt;&#x27; +
         &#x27;&lt;label&gt;対象のページ&lt;input id=&quot;page&quot; type=&quot;number&quot; value=&quot;1&quot; min=&quot;1&quot; max=&quot;99&quot;&gt;&lt;/label&gt;&#x27; +
         &#x27;&lt;button class=&quot;btn&quot; id=&quot;go&quot;&gt;確認する&lt;/button&gt;&#x27; +
-        &#x27;&lt;p class=&quot;wait&quot; id=&quot;wait&quot;&gt;確認しています。1〜3分かかります。&#x27; +
-        &#x27;この画面のままお待ちください。&lt;/p&gt;&#x27; +
+      &#x27;&lt;/div&gt;&#x27; +
+      // 工程の一覧。押す前から見せておく。
+      // 何をする道具なのかが、押さなくても分かるようにする。
+      &#x27;&lt;div class=&quot;card steps&quot; id=&quot;steps&quot;&gt;&#x27; +
+        &#x27;&lt;div class=&quot;st&quot; data-k=&quot;1&quot;&gt;&lt;span class=&quot;ic&quot;&gt;&lt;/span&gt;&#x27; +
+          &#x27;&lt;span class=&quot;sn&quot;&gt;図面を読み取る&lt;/span&gt;&#x27; +
+          &#x27;&lt;span class=&quot;sw&quot;&gt;AI&lt;/span&gt;&lt;span class=&quot;sv&quot;&gt;&lt;/span&gt;&lt;/div&gt;&#x27; +
+        &#x27;&lt;div class=&quot;st&quot; data-k=&quot;2&quot;&gt;&lt;span class=&quot;ic&quot;&gt;&lt;/span&gt;&#x27; +
+          &#x27;&lt;span class=&quot;sn&quot;&gt;基準に当てはめる&lt;/span&gt;&#x27; +
+          &#x27;&lt;span class=&quot;sw&quot;&gt;AI&lt;/span&gt;&lt;span class=&quot;sv&quot;&gt;&lt;/span&gt;&lt;/div&gt;&#x27; +
+        &#x27;&lt;div class=&quot;st&quot; data-k=&quot;3&quot;&gt;&lt;span class=&quot;ic&quot;&gt;&lt;/span&gt;&#x27; +
+          &#x27;&lt;span class=&quot;sn&quot;&gt;根拠を照合する&lt;/span&gt;&#x27; +
+          &#x27;&lt;span class=&quot;sw code&quot;&gt;コード&lt;/span&gt;&lt;span class=&quot;sv&quot;&gt;&lt;/span&gt;&lt;/div&gt;&#x27; +
       &#x27;&lt;/div&gt;&#x27; +
       &#x27;&lt;div class=&quot;note&quot;&gt;チェック項目はスプレッドシートから読み込んでいます&#x27; +
       &#x27;（現在 &#x27; + itemCount + &#x27; 項目）。表に行を足せば、次の実行から判定されます。&lt;/div&gt;&#x27; +
@@ -851,7 +965,25 @@ const CSS_ =
 &#x27;.btn{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:12px;&#x27; +
 &#x27;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}&#x27; +
 &#x27;.btn:disabled{opacity:.5;cursor:default}&#x27; +
-&#x27;.wait{display:none;margin:0;font-size:13px;color:var(--ink2);text-align:center}&#x27; +
+&#x27;.steps{gap:0;padding:6px 22px}&#x27; +
+&#x27;.st{display:flex;align-items:center;gap:11px;padding:11px 0;font-size:13.5px;&#x27; +
+&#x27;color:var(--ink3);border-bottom:1px solid var(--line)}&#x27; +
+&#x27;.st:last-child{border-bottom:0}&#x27; +
+&#x27;.st .ic{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);&#x27; +
+&#x27;flex:none}&#x27; +
+&#x27;.st .sn{flex:1}&#x27; +
+&#x27;.st .sw{font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:2px 8px;&#x27; +
+&#x27;border-radius:9px;background:var(--line);color:var(--ink2)}&#x27; +
+&#x27;.st .sv{font-size:12px;color:var(--ink3);min-width:66px;text-align:right}&#x27; +
+&#x27;.st.now{color:var(--ink)}&#x27; +
+&#x27;.st.now .ic{border-color:var(--accent);border-right-color:transparent;&#x27; +
+&#x27;animation:sp .7s linear infinite}&#x27; +
+&#x27;@keyframes sp{to{transform:rotate(360deg)}}&#x27; +
+&#x27;@media (prefers-reduced-motion:reduce){.st.now .ic{animation:none}}&#x27; +
+&#x27;.st.done{color:var(--ink)}&#x27; +
+&#x27;.st.done .ic{border-color:var(--ok);background:var(--ok)}&#x27; +
+&#x27;.st.fail .ic{border-color:var(--warn);background:var(--warn)}&#x27; +
+&#x27;.st.done .sv,.st.now .sv{color:var(--ink2)}&#x27; +
 &#x27;.note{font-size:12.5px;color:var(--ink3);text-align:center}&#x27; +
 &#x27;.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);&#x27; +
 &#x27;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--sh)}&#x27; +
@@ -876,8 +1008,13 @@ const CSS_ =
 &#x27;footer{border-top:1px solid var(--line);padding-top:14px;font-size:12.5px;color:var(--ink3)}&#x27;;
 
 const JS_ =
-&#x27;var go=document.getElementById(&quot;go&quot;),wait=document.getElementById(&quot;wait&quot;),&#x27; +
-&#x27;out=document.getElementById(&quot;out&quot;);&#x27; +
+&#x27;var go=document.getElementById(&quot;go&quot;),out=document.getElementById(&quot;out&quot;);&#x27; +
+// 工程の表示。待機→実行中→完了 を出し、終わった工程には結果を添える。
+&#x27;function st(k){return document.querySelector(&quot;.st[data-k=\\&quot;&quot;+k+&quot;\\&quot;]&quot;)}&#x27; +
+&#x27;function mark(k,cls,val){var e=st(k);e.className=&quot;st &quot;+cls;&#x27; +
+&#x27;if(val!=null)e.querySelector(&quot;.sv&quot;).textContent=val}&#x27; +
+&#x27;function reset(){[1,2,3].forEach(function(k){&#x27; +
+&#x27;st(k).className=&quot;st&quot;;st(k).querySelector(&quot;.sv&quot;).textContent=&quot;&quot;})}&#x27; +
 &#x27;function esc(s){return String(s==null?&quot;&quot;:s).replace(/[&amp;&lt;&gt;&quot;]/g,function(c){&#x27; +
 &#x27;return {&quot;&amp;&quot;:&quot;&amp;amp;&quot;,&quot;&lt;&quot;:&quot;&amp;lt;&quot;,&quot;&gt;&quot;:&quot;&amp;gt;&quot;,&quot;\\&quot;&quot;:&quot;&amp;quot;&quot;}[c]})}&#x27; +
 &#x27;function rows(list,cls){if(!list.length)return &quot;&lt;p class=\\&quot;note\\&quot;&gt;該当なし&lt;/p&gt;&quot;;&#x27; +
@@ -891,12 +1028,26 @@ const JS_ =
 &#x27;&quot;&lt;div class=\\&quot;d\\&quot;&gt;&quot;+body+&quot;&lt;/div&gt;&quot;+&#x27; +
 &#x27;(r.source?&quot;&lt;div class=\\&quot;s\\&quot;&gt;出典: &quot;+esc(r.source)+&quot;&lt;/div&gt;&quot;:&quot;&quot;)+&quot;&lt;/div&gt;&quot;&#x27; +
 &#x27;}).join(&quot;&quot;)}&#x27; +
+// 工程を1つ呼ぶ。失敗したらその工程を失敗として止め、以降は動かさない。
+&#x27;function call(name,args,k,ok){&#x27; +
+&#x27;mark(k,&quot;now&quot;,&quot;実行中&quot;);&#x27; +
+&#x27;var r=google.script.run.withSuccessHandler(ok)&#x27; +
+&#x27;.withFailureHandler(function(e){&#x27; +
+&#x27;mark(k,&quot;fail&quot;,&quot;失敗&quot;);go.disabled=false;&#x27; +
+&#x27;out.innerHTML=&quot;&lt;div class=\\&quot;lead\\&quot;&gt;&lt;b&gt;エラー: &quot;+esc(e.message||e)+&quot;&lt;/b&gt;&lt;/div&gt;&quot;});&#x27; +
+&#x27;r[name].apply(r,args)}&#x27; +
 &#x27;go.addEventListener(&quot;click&quot;,function(){&#x27; +
 &#x27;var f=document.getElementById(&quot;file&quot;).value;&#x27; +
 &#x27;if(!f){out.innerHTML=&quot;&lt;div class=\\&quot;lead\\&quot;&gt;&lt;b&gt;図面を選んでください。&lt;/b&gt;&lt;/div&gt;&quot;;return}&#x27; +
-&#x27;go.disabled=true;wait.style.display=&quot;block&quot;;out.innerHTML=&quot;&quot;;&#x27; +
-&#x27;google.script.run.withSuccessHandler(function(r){&#x27; +
-&#x27;go.disabled=false;wait.style.display=&quot;none&quot;;&#x27; +
+&#x27;var tgt=document.getElementById(&quot;target&quot;).value;&#x27; +
+&#x27;go.disabled=true;out.innerHTML=&quot;&quot;;reset();&#x27; +
+&#x27;call(&quot;uiExtract&quot;,[f,document.getElementById(&quot;page&quot;).value],1,function(a){&#x27; +
+&#x27;mark(1,&quot;done&quot;,a.textCount+&quot;件&quot;);&#x27; +
+&#x27;call(&quot;uiJudge&quot;,[a.state,tgt],2,function(b){&#x27; +
+&#x27;mark(2,&quot;done&quot;,b.resultCount+&quot;件&quot;);&#x27; +
+&#x27;call(&quot;uiVerify&quot;,[b.state],3,function(r){&#x27; +
+&#x27;mark(3,&quot;done&quot;,r.確定.length+&quot;件を確定&quot;);&#x27; +
+&#x27;go.disabled=false;&#x27; +
 &#x27;var n1=r.確定.length,n2=r.要確認.length,n3=r.棄却.length;&#x27; +
 &#x27;out.innerHTML=&#x27; +
 &#x27;&quot;&lt;div class=\\&quot;strip\\&quot;&gt;&quot;+&#x27; +
@@ -910,11 +1061,7 @@ const JS_ =
 &#x27;(n3?(&quot;&lt;div class=\\&quot;sh\\&quot;&gt;&lt;h2&gt;棄却したもの&lt;/h2&gt;&lt;span class=\\&quot;c\\&quot;&gt;&quot;+n3+&quot;件&lt;/span&gt;&lt;/div&gt;&quot;+rows(r.棄却,&quot;drop&quot;)):&quot;&quot;)+&#x27; +
 &#x27;&quot;&lt;div class=\\&quot;sh\\&quot;&gt;&lt;h2&gt;満たしているもの&lt;/h2&gt;&lt;span class=\\&quot;c\\&quot;&gt;&quot;+n1+&quot;件&lt;/span&gt;&lt;/div&gt;&quot;+rows(r.確定,&quot;ok&quot;)+&#x27; +
 &#x27;&quot;&lt;p class=\\&quot;note\\&quot; style=\\&quot;margin-top:18px\\&quot;&gt;&lt;a href=\\&quot;&quot;+r.sheetUrl+&quot;\\&quot; target=\\&quot;_blank\\&quot;&gt;結果をスプレッドシートで開く&lt;/a&gt;&lt;/p&gt;&quot;;&#x27; +
-&#x27;}).withFailureHandler(function(e){&#x27; +
-&#x27;go.disabled=false;wait.style.display=&quot;none&quot;;&#x27; +
-&#x27;out.innerHTML=&quot;&lt;div class=\\&quot;lead\\&quot;&gt;&lt;b&gt;エラー: &quot;+esc(e.message||e)+&quot;&lt;/b&gt;&lt;/div&gt;&quot;;&#x27; +
-&#x27;}).runFromUi(f,document.getElementById(&quot;target&quot;).value,&#x27; +
-&#x27;document.getElementById(&quot;page&quot;).value)});&#x27;;
+&#x27;})})})});&#x27;;
 
 </code></pre></details><p class='note'>左のファイル一覧に「コード.gs」があれば成功です。</p></div></section>
 <section class='step'><div class='n'>03</div><div class='body'><h3>権限の指定を差し替える</h3><p>コードを貼っただけでは、AIを呼ぶ権限が付きません。設定ファイルに明示する必要があります。ここを飛ばすと必ず失敗します。</p><pre><code>1. 左メニューの ⚙プロジェクトの設定 を開く
