@@ -88,6 +88,34 @@ a{color:var(--accent)}
 .card .fix b{color:var(--ok)}
 .step .link{margin:0 0 10px}
 .step .link a{font-family:"IBM Plex Mono",monospace;font-size:12px;word-break:break-all}
+.lead2{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:16px 20px;box-shadow:var(--sh);margin-bottom:14px}
+.lead2 p{margin:0}
+.api{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.api-h{display:flex;align-items:center;gap:10px;padding:12px 18px;
+  border-bottom:1px solid var(--line);font-weight:700;font-size:14px}
+.api-n{font-size:11px;letter-spacing:.06em;background:var(--sunk);color:var(--ink2);
+  padding:3px 9px;border-radius:9px}
+.api-t{margin-left:auto;font-size:11px;font-weight:700;padding:3px 10px;
+  border-radius:9px;background:var(--ok);color:var(--card)}
+.api-t.code{background:var(--sunk);color:var(--ink2)}
+.api-b{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+.api-b.one{grid-template-columns:1fr}
+.api-c{background:var(--card);padding:14px 18px 16px}
+.api-l{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--ink3);
+  margin-bottom:8px}
+.api-c pre{margin:0;font-size:11.5px;line-height:1.65}
+.api-c .note{margin:10px 0 0;text-align:left}
+@media (max-width:760px){.api-b{grid-template-columns:1fr}}
+.tbl{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--sh);overflow-x:auto;margin-bottom:14px}
+.tbl table{border-collapse:collapse;width:100%;font-size:13px;min-width:560px}
+.tbl th,.tbl td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--line2)}
+.tbl th{font-size:11.5px;letter-spacing:.04em;color:var(--ink3);
+  border-bottom:1px solid var(--line)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td.ai{color:var(--ok);font-weight:700}
 .scr{margin:14px 0 0;background:var(--card);border:1px solid var(--line);
   border-radius:12px;box-shadow:var(--sh);padding:4px 20px 8px;max-width:520px}
 .scr-h{font-size:11.5px;font-weight:700;letter-spacing:.06em;color:var(--ink3);
@@ -246,6 +274,167 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:12.5px;color:
 </section>
 
 <section class="blk">
+  <div class="sh"><h2>前提知識 ― APIを呼ぶとは何をしているのか</h2>
+    <span class="hint">1図面あたり、AIを呼ぶのは2回だけです</span></div>
+
+  <div class="lead2">
+    <p>「AIに図面を読ませる」といっても、画面の向こうで起きているのは
+      <b>1往復のHTTP通信</b>です。こちらから文章とPDFを送り、向こうから文字が返ってくる。
+      それだけです。返ってきた文字をどう扱うかは、こちら側のコードが決めます。</p>
+  </div>
+
+  <div class="api">
+    <div class="api-h"><span class="api-n">工程1</span>図面を読み取る
+      <span class="api-t">AIを呼ぶ</span></div>
+    <div class="api-b">
+      <div class="api-c">
+        <div class="api-l">送るもの</div>
+        <pre><code>POST https://asia-northeast1-aiplatform.googleapis.com/v1
+     /projects/&lt;プロジェクトID&gt;/locations/asia-northeast1
+     /publishers/google/models/gemini-3.5-flash:generateContent
+Authorization: Bearer &lt;実行している人のトークン&gt;
+
+{
+  "contents": [{ "role": "user", "parts": [
+    { "inlineData": {
+        "mimeType": "application/pdf",
+        "data": "JVBERi0xLjQKJc..."      ← PDFをそのまま
+    }},
+    { "text": "この図面の1ページ目に書かれている内容を、
+               そのまま構造化して抜き出してください。
+               図面に書かれていないことを補わない。..." }
+  ]}],
+  "generationConfig": {
+    "temperature": 0.2,
+    "responseMimeType": "application/json"
+  }
+}</code></pre>
+      </div>
+      <div class="api-c">
+        <div class="api-l">返ってきたもの</div>
+        <pre><code>{
+  "drawing_title": "2階 平面詳細図",
+  "drawing_number": "5",
+  "scale": "S=1/50",
+  "texts": [
+    { "text": "2階柱・勾配天井梁",
+      "box_2d": [370, 62, 390, 149] },
+    { "text": "アクセント壁：
+RE55621",
+      "box_2d": [50, 50, 105, 210] },
+    ...  ← 全部で104件
+  ]
+}</code></pre>
+        <p class="note">PDFは画像に変換していません。そのまま送れます。
+          box_2d は図面上の位置です。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="api">
+    <div class="api-h"><span class="api-n">工程2</span>基準に当てはめる
+      <span class="api-t">AIを呼ぶ</span></div>
+    <div class="api-b">
+      <div class="api-c">
+        <div class="api-l">送るもの</div>
+        <pre><code>{
+  "contents": [{ "role": "user", "parts": [
+    { "text": "# 工程1の抽出結果
+               {"drawing_title":"2階 平面詳細図", ...}
+
+               # チェック項目
+               1. 縮尺が規定の値になっているか
+                   基準: 平面詳細図1/50、立面図1/100...
+               2. 図面番号が規定の記号になっているか
+                   基準: 平面詳細図A-05〜、電気図E-01〜
+
+               この抽出結果だけを根拠に判定してください。
+               引用できないときは根拠を空にする。" }
+  ]}]
+}</code></pre>
+        <p class="note">PDFは送りません。工程1の結果と項目表の文字だけです。
+          図面を見直させないため、あえて渡しません。</p>
+      </div>
+      <div class="api-c">
+        <div class="api-l">返ってきたもの</div>
+        <pre><code>{ "results": [
+  { "no": "1", "verdict": "適合",
+    "evidence": "S=1/50",
+    "reason": "縮尺が規定通りの
+               「S=1/50」と記載されているため。" },
+  { "no": "2", "verdict": "要確認",
+    "evidence": "5",
+    "reason": "図面番号が「5」となっており、
+               規定記号「A-05〜」でないため。" },
+  ...
+]}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="api">
+    <div class="api-h"><span class="api-n">工程3</span>根拠を照合する
+      <span class="api-t code">AIを呼ばない</span></div>
+    <div class="api-b one">
+      <div class="api-c">
+        <pre><code>// AIが挙げた evidence が、工程1の texts に実在するか
+hay.indexOf(norm_(rec.evidence)) &lt; 0
+  → 「根拠とされた記載が図面から読み取れていません」として棄却</code></pre>
+        <p class="note">ここをAIにやらせません。自分の出した根拠を自分で確かめさせても、
+          実在しない文言をそのまま通してしまいます。
+          文字列が一致するかどうかは、コードなら確実に判定できます。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>工程</th><th>送るもの</th><th>返るもの</th><th>担当</th>
+        <th>呼び出し</th></tr></thead>
+      <tbody>
+        <tr><td>1 読み取る</td><td>PDF ＋ 指示文</td><td>記載と位置</td>
+          <td class="ai">Gemini</td><td>1回</td></tr>
+        <tr><td>2 当てはめる</td><td>工程1の結果 ＋ 項目表</td><td>項目ごとの判定</td>
+          <td class="ai">Gemini</td><td>1回</td></tr>
+        <tr><td>3 照合する</td><td>―</td><td>確定 / 要確認 / 棄却</td>
+          <td>Apps Script</td><td>0回</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cards2">
+    <div class="card2">
+      <h4>順番を決めているのはコードです</h4>
+      <p>AIに「次に何をするか」を決めさせていません。決めさせると、
+        順番が変わったり工程を飛ばしたりして、
+        <b>同じ図面でも結果が変わります</b>。</p>
+      <p>コードが1→2→3の順に呼び、各工程の中身だけをAIに任せています。</p>
+    </div>
+    <div class="card2">
+      <h4>鍵の管理が要りません</h4>
+      <p>APIキーは使いません。<code>ScriptApp.getOAuthToken()</code> で、
+        <b>実行している人のGoogleアカウントの権限</b>で呼びます。</p>
+      <p>誰が使えるかはGCP側のIAMで決まります。
+        キーを配ったり、漏れを心配したりする必要がありません。</p>
+    </div>
+    <div class="card2">
+      <h4>1回あたりを短くする</h4>
+      <p>Apps Script の実行は<b>1回6分まで</b>です。
+        まとめて呼ぶと、項目が増えたときにここに当たります。</p>
+      <p>工程ごとに分けて呼べば、1回あたりが短くなり余裕が出ます。
+        画面にも進み具合が出せます。</p>
+    </div>
+    <div class="card2">
+      <h4>費用は呼んだ分だけ</h4>
+      <p>常時動くサーバーがないため、待機中の費用はかかりません。
+        図面を確認したときだけ、2回分の呼び出しが発生します。</p>
+      <p class="note">1図面あたりの実費はまだ実測していません。
+        運用の見込み枚数が決まった時点で測ります。</p>
+    </div>
+  </div>
+</section>
+
+<section class="blk">
   <div class="sh"><h2>画面はどう作るのか</h2>
     <span class="hint">Apps Script だけで完結します</span></div>
   <div class="cards2">
@@ -288,7 +477,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:12.5px;color:
 <section class='step'><div class='n'>02</div><div class='body'><h3>コードを貼り付ける</h3><p>Apps Script の新規プロジェクトを開き、お渡しするコードを貼り付けます。script.new を開くと空のプロジェクトが作られます。</p><pre><code>1. https://script.new を開く
 2. 既定の myFunction ごと消す
 3. 下の「コード.gs」をすべてコピーして貼り付ける
-4. 保存する（Ctrl + S）</code></pre><details class='embed'><summary>コード.gs を開く（775行）</summary><div class='embed-bar'><button class='copy' data-target='pre-code'>すべてコピー</button></div><pre id='pre-code' class='full'><code>/**
+4. 保存する（Ctrl + S）</code></pre><details class='embed'><summary>コード.gs を開く（809行）</summary><div class='embed-bar'><button class='copy' data-target='pre-code'>すべてコピー</button></div><pre id='pre-code' class='full'><code>/**
  * 図面チェック（作図基準）― 1ファイル版
  *
  * Apps Script のエディタに、この内容をまるごと貼り付けて使う。
@@ -821,17 +1010,44 @@ function doGet() {
     .addMetaTag(&#x27;viewport&#x27;, &#x27;width=device-width, initial-scale=1&#x27;);
 }
 
-/** フォルダにある図面PDFの一覧。画面の選択肢に使う。 */
+/**
+ * フォルダにある図面PDFの一覧。画面の選択肢に使う。
+ *
+ * 見つからないときに空で返さない。空の選択肢だけが出ても、
+ * 設定が抜けているのか、フォルダが空なのか、権限が無いのかが分からない。
+ * 理由を投げて、画面に出す。
+ */
 function listDrawings() {
   const cfg = getConfig();
-  if (!cfg.drawingFolderId) return [];
-  const it = DriveApp.getFolderById(cfg.drawingFolderId)
-    .getFilesByType(MimeType.PDF);
+  if (!cfg.drawingFolderId) {
+    throw new Error(
+      &#x27;DRAWING_FOLDER_ID が未設定です。setupProperties を実行してください。&#x27; +
+      &#x27;（コードを貼り直したあとは、もう一度実行が必要です）&#x27;);
+  }
+
+  let folder;
+  try {
+    folder = DriveApp.getFolderById(cfg.drawingFolderId);
+  } catch (e) {
+    throw new Error(&#x27;図面フォルダを開けませんでした（ID: &#x27; + cfg.drawingFolderId +
+                    &#x27;）。IDが正しいか、閲覧権限があるかをご確認ください。&#x27;);
+  }
+
+  // getFilesByType(PDF) だけに頼らない。
+  // 取り込み方によっては mimeType が application/pdf にならないことがあり、
+  // その場合に1件も出ずに理由も分からなくなる。拡張子でも拾う。
+  const it = folder.getFiles();
   const out = [];
   while (it.hasNext() &amp;&amp; out.length &lt; 100) {
     const f = it.next();
-    out.push({ id: f.getId(), name: f.getName(),
+    const name = f.getName();
+    if (f.getMimeType() !== MimeType.PDF &amp;&amp; !/\.pdf$/i.test(name)) continue;
+    out.push({ id: f.getId(), name: name,
                mb: Math.round(f.getSize() / 1048576 * 10) / 10 });
+  }
+  if (!out.length) {
+    throw new Error(&#x27;図面フォルダにPDFが見つかりませんでした。&#x27; +
+                    &#x27;フォルダに図面を置いてから、画面を再読み込みしてください。&#x27;);
   }
   out.sort(function (a, b) { return a.name.localeCompare(b.name, &#x27;ja&#x27;); });
   return out;
@@ -884,15 +1100,21 @@ function renderForm_() {
   let drawings = [];
   let targets = [];
   let itemCount = 0;
-  let error = &#x27;&#x27;;
+  const errors = [];
+  // 片方が失敗しても、もう片方は表示する。
+  // まとめて捕まえると、原因が1つしか見えない。
   try {
     drawings = listDrawings();
-    const all = loadItems(null);
-    itemCount = all.length;
+  } catch (e) {
+    errors.push(String(e.message || e));
+  }
+  try {
+    itemCount = loadItems(null).length;
     targets = listTargets();
   } catch (e) {
-    error = String(e.message || e);
+    errors.push(String(e.message || e));
   }
+  const error = errors.join(&#x27;\n&#x27;);
 
   const opts = drawings.map(function (d) {
     return &#x27;&lt;option value=&quot;&#x27; + d.id + &#x27;&quot;&gt;&#x27; + esc_(d.name) +
@@ -913,7 +1135,8 @@ function renderForm_() {
         &#x27;&lt;label&gt;図面&lt;select id=&quot;file&quot;&gt;&#x27; + opts + &#x27;&lt;/select&gt;&lt;/label&gt;&#x27; +
         &#x27;&lt;label&gt;図面の種類&lt;select id=&quot;target&quot;&gt;&#x27; + tOpts + &#x27;&lt;/select&gt;&lt;/label&gt;&#x27; +
         &#x27;&lt;label&gt;対象のページ&lt;input id=&quot;page&quot; type=&quot;number&quot; value=&quot;1&quot; min=&quot;1&quot; max=&quot;99&quot;&gt;&lt;/label&gt;&#x27; +
-        &#x27;&lt;button class=&quot;btn&quot; id=&quot;go&quot;&gt;確認する&lt;/button&gt;&#x27; +
+        &#x27;&lt;button class=&quot;btn&quot; id=&quot;go&quot;&#x27; + (drawings.length ? &#x27;&#x27; : &#x27; disabled&#x27;) +
+        &#x27;&gt;確認する&lt;/button&gt;&#x27; +
       &#x27;&lt;/div&gt;&#x27; +
       // 工程の一覧。押す前から見せておく。
       // 何をする道具なのかが、押さなくても分かるようにする。
