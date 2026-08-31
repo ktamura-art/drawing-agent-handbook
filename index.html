@@ -88,6 +88,33 @@ a{color:var(--accent)}
 .card .fix b{color:var(--ok)}
 .step .link{margin:0 0 10px}
 .step .link a{font-family:"IBM Plex Mono",monospace;font-size:12px;word-break:break-all}
+.fig{margin:0;padding:20px 18px 16px;background:var(--card);
+  border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh);overflow-x:auto}
+.fig svg{display:block;width:100%;min-width:760px;height:auto;color:var(--ink3)}
+.fig figcaption{margin-top:14px;font-size:12.5px;color:var(--ink2);line-height:1.7}
+.fig .bx{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+.fig .bx.store{fill:var(--sunk);stroke:var(--line)}
+.fig .bx.user{fill:var(--card);stroke:var(--line);stroke-dasharray:4 3}
+.fig .bx.code{fill:var(--card);stroke:var(--ink2)}
+.fig .bx.ai{fill:var(--ok-bg);stroke:var(--ok-line)}
+.fig text{font-family:inherit;fill:var(--ink)}
+.fig .bt{font-size:13.5px;font-weight:700}
+.fig .bd{font-size:11.5px;fill:var(--ink2)}
+.fig .num{font-size:13.5px;font-weight:700;fill:var(--ink3)}
+.fig .lbl{font-size:11px;fill:var(--ink3)}
+.fig .ar{stroke:currentColor;stroke-width:1.4;fill:none}
+.fig .chip{fill:var(--sunk);stroke:none}
+.fig .chip.ai{fill:var(--ok)}
+.fig .chip-t{font-size:11px;font-weight:700;fill:var(--ink2)}
+.fig .chip-t.ai{fill:#fff}
+.fig .chip-t.code{fill:var(--ink2)}
+.lgd{display:flex;flex-wrap:wrap;gap:18px;margin:0 0 12px;font-size:12.5px;
+  color:var(--ink2)}
+.lgd span{display:flex;align-items:center;gap:7px}
+.sw{width:13px;height:13px;border-radius:4px;display:inline-block;
+  border:1.5px solid var(--ink2);background:var(--card)}
+.sw.ai{background:var(--ok-bg);border-color:var(--ok-line)}
+.sw.store{background:var(--sunk);border-color:var(--line)}
 .embed{margin:12px 0 0;border:1px solid var(--line);border-radius:9px;
   background:var(--sunk);overflow:hidden}
 .embed summary{cursor:pointer;padding:10px 14px;font-size:13px;font-weight:600;
@@ -154,6 +181,17 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:12.5px;color:
 <tr><td class='mono'>OAS-726 / SP9742</td><td>天井</td><td>サンゲツ</td><td><span class='c un'>不明</span></td><td><span class='k un'>品番検索</span><div class='sub'><a href='https://www.sangetsu.co.jp/product/list/part/SP9742' target='_blank' rel='noopener'>https://www.sangetsu.co.jp/product/list/part/SP9742</a></div><div class='sub'>旧品番照会 <a href='https://sangetsu.my.salesforce-sites.com/sscp' target='_blank' rel='noopener'>新旧品番対照検索</a></div></td><td class='sub'>現行カタログに該当なし</td></tr>
     </tbody>
   </table></div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>何がどこを担当しているのか</h2>
+    <span class="hint">AIが担う工程と、コードが担う工程</span></div>
+  <div class="lgd">
+    <span><i class="sw ai"></i>AI（Gemini）が担当</span>
+    <span><i class="sw code"></i>コード（Apps Script）が担当</span>
+    <span><i class="sw store"></i>置き場所</span>
+  </div>
+<figure class='fig'><svg viewBox='0 0 960 396' role='img' aria-label='図面の取り出しと根拠の照合はApps Scriptのコードが担当し、図面の読み取りと基準への当てはめはVertex AIのGeminiが担当する'><defs><marker id='ah' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M0,1 L9,5 L0,9 z' fill='currentColor'/></marker></defs><rect x='160.5' y='36' width='214' height='56' rx='9' class='bx store'/><text x='267.5' y='60' text-anchor='middle' class='bt'>Google ドライブ</text><text x='267.5' y='78' text-anchor='middle' class='bd'>図面PDF を置く場所</text><rect x='554.5' y='36' width='214' height='56' rx='9' class='bx store'/><text x='661.5' y='60' text-anchor='middle' class='bt'>Google スプレッドシート</text><text x='661.5' y='78' text-anchor='middle' class='bd'>チェック項目 57件</text><rect x='16' y='150' width='132' height='118' rx='9' class='bx user'/><text x='82' y='184' text-anchor='middle' class='bt'>業務担当者</text><text x='82' y='208' text-anchor='middle' class='bd'>URLを開いて</text><text x='82' y='225' text-anchor='middle' class='bd'>図面を選ぶだけ</text><text x='82' y='250' text-anchor='middle' class='chip-t'>ブラウザ</text><rect x='182' y='150' width='171' height='118' rx='9' class='bx code'/><text x='197' y='177' text-anchor='start' class='num'>1</text><text x='215' y='177' text-anchor='start' class='bt'>図面を取り出す</text><text x='267.5' y='202' text-anchor='middle' class='bd'>ドライブから、選ばれた</text><text x='267.5' y='219' text-anchor='middle' class='bd'>PDFを1枚読み込む</text><rect x='208.3' y='234' width='118.4' height='22' rx='11' class='chip code'/><text x='267.5' y='249' text-anchor='middle' class='chip-t code'>Apps Script</text><rect x='379' y='150' width='171' height='118' rx='9' class='bx ai'/><text x='394' y='177' text-anchor='start' class='num'>2</text><text x='412' y='177' text-anchor='start' class='bt'>図面を読み取る</text><text x='464.5' y='202' text-anchor='middle' class='bd'>ページに書かれている文字と、</text><text x='464.5' y='219' text-anchor='middle' class='bd'>その位置を書き出す</text><rect x='426.3' y='234' width='76.4' height='22' rx='11' class='chip ai'/><text x='464.5' y='249' text-anchor='middle' class='chip-t ai'>Gemini</text><rect x='576' y='150' width='171' height='118' rx='9' class='bx ai'/><text x='591' y='177' text-anchor='start' class='num'>3</text><text x='609' y='177' text-anchor='start' class='bt'>基準に当てはめる</text><text x='661.5' y='202' text-anchor='middle' class='bd'>読み取った内容だけを見て、</text><text x='661.5' y='219' text-anchor='middle' class='bd'>項目ごとに判定する</text><rect x='623.3' y='234' width='76.4' height='22' rx='11' class='chip ai'/><text x='661.5' y='249' text-anchor='middle' class='chip-t ai'>Gemini</text><rect x='773' y='150' width='171' height='118' rx='9' class='bx code'/><text x='788' y='177' text-anchor='start' class='num'>4</text><text x='806' y='177' text-anchor='start' class='bt'>根拠を照合する</text><text x='858.5' y='202' text-anchor='middle' class='bd'>AIの根拠が2に実在するか</text><text x='858.5' y='219' text-anchor='middle' class='bd'>突き合わせ、無ければ棄却</text><rect x='799.3' y='234' width='118.4' height='22' rx='11' class='chip code'/><text x='858.5' y='249' text-anchor='middle' class='chip-t code'>Apps Script</text><line x1='150' y1='209' x2='178' y2='209' class='ar ' marker-end='url(#ah)'/><line x1='355' y1='209' x2='375' y2='209' class='ar ' marker-end='url(#ah)'/><line x1='552' y1='209' x2='572' y2='209' class='ar ' marker-end='url(#ah)'/><line x1='749' y1='209' x2='769' y2='209' class='ar ' marker-end='url(#ah)'/><line x1='267.5' y1='94' x2='267.5' y2='146' class='ar ' marker-end='url(#ah)'/><text x='267.5' y='118' text-anchor='middle' class='lbl'>図面PDF</text><line x1='661.5' y1='94' x2='661.5' y2='146' class='ar ' marker-end='url(#ah)'/><text x='661.5' y='118' text-anchor='middle' class='lbl'>チェック項目</text><polyline points='858.5,268 858.5,292 600,292' class='ar'/><line x1='600' y1='292' x2='600' y2='316' class='ar ' marker-end='url(#ah)'/><line x1='858.5' y1='292' x2='858.5' y2='316' class='ar ' marker-end='url(#ah)'/><rect x='505' y='320' width='190' height='56' rx='9' class='bx store'/><text x='600' y='344' text-anchor='middle' class='bt'>担当者の画面に表示</text><text x='600' y='362' text-anchor='middle' class='bd'>確認が必要なものだけ</text><rect x='763.5' y='320' width='190' height='56' rx='9' class='bx store'/><text x='858.5' y='344' text-anchor='middle' class='bt'>スプレッドシート</text><text x='858.5' y='362' text-anchor='middle' class='bd'>「チェック結果」に追記</text></svg><figcaption>読むのと当てはめるのはAI、確かめるのはコードが担当します。AIが根拠として挙げた文字列が2の読み取り結果に無ければ、その判定は採用しません。</figcaption></figure>
 </section>
 
 <section class="blk">
