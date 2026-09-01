@@ -74,6 +74,19 @@ td.sub{color:var(--ink2);font-size:13px}
 .card2 h4{margin:0 0 8px;font-size:14.5px}
 .card2 p{margin:0 0 10px;font-size:13.5px;color:var(--ink2);line-height:1.8}
 .card2 p:last-child{margin-bottom:0}
+.mk{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:12px}
+.mk-h{display:flex;align-items:center;gap:11px;padding:14px 20px;
+  border-bottom:1px solid var(--line);font-weight:700;font-size:15px}
+.mk-n{font-size:11.5px;background:var(--accent);color:var(--card);
+  width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none}
+.mk-b{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--ink2);
+  background:var(--sunk);padding:3px 11px;border-radius:9px;white-space:nowrap}
+.mk-b2{padding:16px 20px 18px}
+.mk-b2 p{margin:0 0 10px;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.mk-b2 .tools{color:var(--ink)}
+.il{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--ink3);
+  margin:14px 0 6px}
 .warnbox{background:var(--card);border:1px solid var(--line);
   border-left:3px solid var(--warn);border-radius:12px;padding:18px 22px;
   box-shadow:var(--sh)}
@@ -241,6 +254,70 @@ MCP サーバー              外部のMCPサーバーに接続</code></pre><p c
     <p>［コードを取得］でコードを持ち出せるので、
       <b>GUIで骨組みを作り、続きをコードで仕上げる</b>という進め方は可能です。</p>
   </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>では、Agent Studio で何が作れるのか</h2>
+    <span class="hint">4つのツールの範囲で、実務に効くもの</span></div>
+  <div class="lead2">
+    <p>図面チェックは組めませんが、<b>作れて役に立つものはあります</b>。
+      下の3つは、いずれも Agent Studio だけで完結します。
+      指示文はそのまま「指示」欄に貼れる形にしてあります。</p>
+  </div>
+<div class='mk'><div class='mk-h'><span class='mk-n'>1</span>メーカー品番の下調べ<span class='mk-b'>設定ゼロ・その場で作れます</span></div><div class='mk-b2'><p>既定でオンの Google 検索と URL コンテキストだけで動きます。データストアもMCPも要りません。当日その場で作って見せられます。</p><p class='tools'><b>使うツール</b>　Google 検索 ／ URL コンテキスト（どちらも既定でオン）</p><div class='il'>そのまま「指示」欄に貼れます</div><pre><code>あなたは住宅の内装クロスの品番を調べる担当です。
+
+品番を渡されたら、次の順で調べて答えてください。
+
+1. その品番のメーカーを特定する
+2. メーカー公式サイトの該当ページを探す
+3. そのページに書かれているリピート（タテ・ヨコ）を読む
+
+厳守事項:
+・答えは必ずメーカー公式サイトの記載に基づく。まとめサイトや販売店は根拠にしない
+・参照したページのURLを必ず示す
+・公式サイトで確認できないものは「確認できませんでした」と答える。推測で埋めない
+・ページに書かれている数値をそのまま引用する。自分で単位を換算しない
+・現行カタログに無い品番は、旧品番の可能性を伝え、
+  メーカーの新旧品番対照検索を案内する
+
+次の形式で答えてください。
+品番 ／ メーカー ／ リピート ／ 根拠にした記載 ／ 参照したURL</code></pre><p class='note'>精度は保証できません。人が最後にURLを開いて確かめる前提の「下調べ」として使ってください。</p></div></div>
+<div class='mk'><div class='mk-h'><span class='mk-n'>2</span>作図基準の質問応答<span class='mk-b'>マニュアルをデータストアに入れます</span></div><div class='mk-b2'><p>設計者が図面を描く前に「この場合どうするんだったか」を引ける相手になります。いまのチェックは描いた後。こちらは描く前に効きます。</p><p class='tools'><b>使うツール</b>　Agent Platform Search データストア（作図マニュアル6冊を投入）</p><div class='il'>そのまま「指示」欄に貼れます</div><pre><code>あなたは自社の作図基準について答える担当です。
+
+厳守事項:
+・回答は、接続された作図マニュアルの記載だけに基づく
+・該当箇所の章・節（例「6-1 基本事項(2)-2」）を必ず示す
+・マニュアルに書かれていないことは「マニュアルに記載がありません」と答える。
+  一般論で補わない
+・建売と注文で基準が違う場合は、両方を分けて示す
+・数値（縮尺・寸法・文字サイズなど）は、マニュアルの表記をそのまま引用する
+
+質問が曖昧なときは、どの図面種別か
+（平面詳細図・配置図・立面図・断面図・電気図・求積図・建具）を聞き返してください。</code></pre><p class='note'>出典の章・節を必ず出させるのが要点です。根拠が付かない回答は、確認のしようがありません。</p></div></div>
+<div class='mk'><div class='mk-h'><span class='mk-n'>3</span>チェック項目の起草支援<span class='mk-b'>同じデータストアを使い回せます</span></div><div class='mk-b2'><p>いちばん効きます。先方の狙いは57項目を300項目に増やすことで、その作業そのものを助けます。上の質問応答と同じデータストアで動きます。</p><p class='tools'><b>使うツール</b>　Agent Platform Search データストア（同上）</p><div class='il'>そのまま「指示」欄に貼れます</div><pre><code>あなたは作図基準から、図面チェック項目の草案を作る担当です。
+
+指定された章について、チェック項目の行を作ってください。
+各行は次の6つで構成します。
+
+  対象            全図面／平面詳細図／配置図／立面図／断面図／電気図／
+                  求積図／建具（外部）／建具（内部）のいずれか
+  チェック項目     「〜になっているか」の形で1文
+  判定の根拠となる基準  マニュアルの記載をそのまま引用
+  出典            章・節の番号
+  判定可否         自動／半自動／要検討
+  備考            補足があれば
+
+「判定可否」の決め方:
+  自動    図面に書かれた文字だけで判定できる
+  半自動  位置関係や図形を見る必要がある
+  要検討  フォントや線種など、文字として読み取れない
+
+厳守事項:
+・マニュアルに書かれていない項目を作らない
+・基準は要約せず、原文を引用する
+・1つの項目に2つのことを混ぜない。分ける
+
+出力は表形式にしてください。</code></pre><p class='note'>出てきた行をチェック項目表に貼れば、次の実行から判定に加わります。人が採否を決める前提の草案として使います。</p></div></div>
 </section>
 
 <section class="blk">
