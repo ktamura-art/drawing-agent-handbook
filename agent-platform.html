@@ -1,0 +1,299 @@
+<title>Agent Platform でエージェントを作る</title>
+<style>
+:root{
+  --bg:#F4F6F6; --card:#FFFFFF; --sunk:#EDF1F1;
+  --ink:#12191B; --ink2:#4E5C60; --ink3:#859398;
+  --line:#DCE3E3; --line2:#EBF0F0;
+  --accent:#0F5C55;
+  --ok:#1B6350; --warn:#8A4B06; --bad:#8E2F2E;
+  --sh:0 1px 2px rgba(18,25,27,.05),0 10px 28px -18px rgba(18,25,27,.35);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1112; --card:#141B1D; --sunk:#1A2325;
+    --ink:#EAF0F0; --ink2:#A9B7B9; --ink3:#7C8A8D;
+    --line:#243033; --line2:#1E2A2C;
+    --accent:#6FD8C6; --ok:#6FD8C6; --warn:#E6B26A; --bad:#E58C88;
+    --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1112; --card:#141B1D; --sunk:#1A2325;
+  --ink:#EAF0F0; --ink2:#A9B7B9; --ink3:#7C8A8D;
+  --line:#243033; --line2:#1E2A2C;
+  --accent:#6FD8C6; --ok:#6FD8C6; --warn:#E6B26A; --bad:#E58C88;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.85;
+  font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",Meiryo,system-ui,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:48px 22px 96px;display:flex;
+  flex-direction:column;gap:34px}
+h1{margin:.2rem 0 .4rem;font-size:30px;letter-spacing:-.01em;text-wrap:balance}
+.eyebrow{margin:0;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:700}
+.meta{margin:0;color:var(--ink2);font-size:13.5px}
+.blk{display:flex;flex-direction:column}
+.sh{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line);
+  padding-bottom:10px;margin-bottom:16px;flex-wrap:wrap}
+.sh h2{margin:0;font-size:18px}
+.sh .hint{margin-left:auto;font-size:12.5px;color:var(--ink3)}
+.lead2{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:18px 22px;box-shadow:var(--sh);margin-bottom:14px}
+.lead2 p{margin:0 0 10px}
+.lead2 p:last-child{margin-bottom:0}
+.step{display:flex;gap:18px;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:18px 22px;box-shadow:var(--sh);margin-bottom:12px}
+.step .n{font-size:12px;font-weight:700;color:var(--accent);
+  font-variant-numeric:tabular-nums;padding-top:4px;flex:none}
+.step .body{flex:1;min-width:0}
+.step h3{margin:0 0 6px;font-size:16px}
+.step p{margin:0 0 10px;font-size:14px;color:var(--ink2)}
+.step .link{font-size:12.5px;word-break:break-all}
+.step .note{margin:10px 0 0;font-size:12.5px;color:var(--ink3)}
+pre{margin:0;background:var(--sunk);border:1px solid var(--line2);border-radius:9px;
+  padding:13px 16px;overflow-x:auto;font-size:12.5px;line-height:1.75;
+  font-family:ui-monospace,Menlo,Consolas,monospace}
+code{font-family:ui-monospace,Menlo,Consolas,monospace}
+p code,li code,td code{background:var(--sunk);padding:1px 6px;border-radius:5px;
+  font-size:12.5px}
+.tbl{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--sh);overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:600px}
+th,td{text-align:left;padding:12px 18px;border-bottom:1px solid var(--line2);
+  vertical-align:top}
+th{font-size:11.5px;letter-spacing:.05em;color:var(--ink3);
+  border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+td.m{font-weight:700;font-size:16px;text-align:center;width:56px}
+td.m.no{color:var(--bad)} td.m.half{color:var(--warn)} td.m.yes{color:var(--ok)}
+td.sub{color:var(--ink2);font-size:13px}
+.cards2{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:12px}
+.card2{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:18px 22px;box-shadow:var(--sh)}
+.card2 h4{margin:0 0 8px;font-size:14.5px}
+.card2 p{margin:0 0 10px;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.card2 p:last-child{margin-bottom:0}
+.warnbox{background:var(--card);border:1px solid var(--line);
+  border-left:3px solid var(--warn);border-radius:12px;padding:18px 22px;
+  box-shadow:var(--sh)}
+.warnbox h4{margin:0 0 8px;font-size:14.5px}
+.warnbox p{margin:0 0 8px;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.warnbox p:last-child{margin-bottom:0}
+a{color:var(--accent)}
+.cite{display:inline-block;font-size:11.5px;color:var(--ink3);
+  border-bottom:1px dotted var(--line);text-decoration:none}
+.cite:hover{color:var(--accent)}
+footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;
+  color:var(--ink3)}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Gemini Enterprise Agent Platform</p>
+  <h1>GUIでエージェントを作る</h1>
+  <p class="meta">Google Cloud コンソールの Agent Studio を使い、コードを書かずに
+    エージェントを組み立ててデプロイするまでの手順です。
+    記載はすべて公式ドキュメントを開いて読んだ内容によります。各項に出典を付けています。</p>
+</header>
+
+<section class="blk">
+  <div class="sh"><h2>はじめに押さえること</h2></div>
+  <div class="cards2">
+    <div class="card2">
+      <h4>名前が変わりました</h4>
+      <p>「Vertex AI Agent Engine」という名称は<b>もう使われていません</b>。
+        現在は <b>Gemini Enterprise Agent Platform</b> の中の
+        <b>Agent Runtime</b> です。</p>
+      <p>APIのリソース名だけは <code>ReasoningEngine</code> のまま残っています。
+        下位互換のためと明記されています。<a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/build/runtime' target='_blank' rel='noopener'>エージェント ランタイム・2026-08-08</a></p>
+    </div>
+    <div class="card2">
+      <h4>東京で使えます</h4>
+      <p><b>asia-northeast1（東京）</b>は
+        <b>v1 が一般提供（GA）</b>としてサポートされています。</p>
+      <p>ランタイム・セッション・メモリバンク・Agent Gateway のいずれも対象です。
+        東京には「メモリバンク対象外」「Agent Gateway 対象外」の
+        注記が付いていません。<a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/agent-locations' target='_blank' rel='noopener'>Agent Platform のエージェントでサポートされているロケーション・2026-08-08</a></p>
+    </div>
+    <div class="card2">
+      <h4>作る画面はプレビュー扱いです</h4>
+      <p>Agent Runtime は東京でGAですが、<b>Agent Studio の設計機能は
+        プレビュー（pre-GA）</b>です。「現状のまま」提供され、
+        サポートが限られることがあると明記されています。<a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>Agent Studio でエージェントを設計する・2026-08-08</a></p>
+      <p>本番運用の判断材料として、ここは押さえておく必要があります。</p>
+    </div>
+    <div class="card2">
+      <h4>構成ファイルは us-west1 に保存されます</h4>
+      <p>デプロイ先は東京を選べますが、
+        <b>作成したエージェントの構成ファイルは us-west1 に保存されます</b>。</p>
+      <p>組織のポリシーでこのリージョンの使用が禁止されている場合、
+        <b>エージェントを作成できないことがあります</b>。<a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>Agent Studio でエージェントを設計する・2026-08-08</a></p>
+    </div>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>作り方は3つあります</h2>
+    <span class="hint">このページで扱うのは一番上のローコードです</span></div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>やり方</th><th>書くもの</th><th>向いている場面</th></tr></thead>
+      <tbody>
+        <tr><td><b>Agent Studio</b>（ローコード）</td><td>コードなし。画面で組む</td>
+          <td class="sub">迅速なプロトタイピング、業務中心のエージェント</td></tr>
+        <tr><td>Managed Agents API</td><td>REST。構成で組む</td>
+          <td class="sub">サンドボックス環境での自律エージェント</td></tr>
+        <tr><td>ADK</td><td>Python</td>
+          <td class="sub">複雑なマルチエージェント。ロジックを細かく制御する</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="meta" style="margin-top:10px"><a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agents' target='_blank' rel='noopener'>エージェントの概要・2026-08-12</a></p>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>GUIでの手順</h2>
+    <span class="hint">リンクはすべてクリックできます</span></div>
+<section class='step'><div class='n'>01</div><div class='body'><h3>権限を付ける</h3><p>Agent Studio を使う人に <b>Agent Platform ユーザー</b>（<code>roles/aiplatform.user</code>）を付けます。オーナー権限は要りません。</p><p class='link'><a href='https://console.cloud.google.com/iam-admin/iam' target='_blank' rel='noopener'>https://console.cloud.google.com/iam-admin/iam</a></p><pre><code>「アクセスを許可」→ アカウントを入力 → ロールに「Agent Platform ユーザー」→ 保存</code></pre><p class='note'>この1つだけで Agent Studio は使えます。 <a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>Agent Studio でエージェントを設計する・2026-08-08</a></p></div></section>
+<section class='step'><div class='n'>02</div><div class='body'><h3>エージェント一覧を開く</h3><p>Google Cloud コンソールの［エージェント］ページです。ここが入口になります。</p><p class='link'><a href='https://console.cloud.google.com/agent-platform/agents' target='_blank' rel='noopener'>https://console.cloud.google.com/agent-platform/agents</a></p><pre><code>上部のプロジェクト名が目的のものか、必ず確認する</code></pre><p class='note'>作成済みのエージェントが並びます。初回は空です。 <a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>Agent Studio でエージェントを設計する・2026-08-08</a></p></div></section>
+<section class='step'><div class='n'>03</div><div class='body'><h3>エージェントを作成する</h3><p>［エージェントを作成］を押すと、Agent Studio のキャンバスが開きます。ここが視覚的にワークフローを組む画面です。</p><p class='link'><a href='https://console.cloud.google.com/agent-platform/studio/agent-designer/' target='_blank' rel='noopener'>https://console.cloud.google.com/agent-platform/studio/agent-designer/</a></p><pre><code>［エージェントを作成］→ Agent Studio キャンバス
+
+タブは2つ:
+  フロー     … ワークフローと制御ロジックを組む
+  プレビュー … その場でチャットして試す</code></pre><p class='note'>エージェントをクリックすると［詳細］パネルが開きます。 <a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>Agent Studio でエージェントを設計する・2026-08-08</a></p></div></section>
+<section class='step'><div class='n'>04</div><div class='body'><h3>詳細パネルを埋める</h3><p>メインエージェントと、必要ならサブエージェントを構成します。サブエージェントは［サブエージェントを追加］（＋）で足せます。</p><pre><code>名前          エージェントを識別する名前
+説明          目的の概要
+カスタム指示  エージェントをガイドする指示文
+モデル        使うモデルを選ぶ
+ツール        ［ツールを追加］（＋）</code></pre><p class='note'>「カスタム指示」が、いまGASで固定している指示文にあたります。 <a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>Agent Studio でエージェントを設計する・2026-08-08</a></p></div></section>
+<section class='step'><div class='n'>05</div><div class='body'><h3>ツールを選ぶ</h3><p>選べるツールは<b>4種類だけ</b>です。ここが今回の分かれ目になります。</p><pre><code>Google 検索              既定でオン。ウェブ検索
+URL コンテキスト          既定でオン。プロンプト内のURLを分析
+Agent Platform Search    データストアに入れた情報を検索
+MCP サーバー              外部のMCPサーバーに接続</code></pre><p class='note'>MCPは「認証を必要としないサーバーのみ」対応です。社内システムに繋ぐ場合はここが制約になります。 <a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>Agent Studio でエージェントを設計する・2026-08-08</a></p></div></section>
+<section class='step'><div class='n'>06</div><div class='body'><h3>保存する</h3><p>保存していないエージェントにはIDが無く、プレビューもデプロイもできません。初回だけ手で保存すれば、以降は自動保存されます。</p><pre><code>［保存］→ エージェント名を入力 →［保存］</code></pre><p class='note'>初回保存後は、変更が自動で保存されます。 <a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>Agent Studio でエージェントを設計する・2026-08-08</a></p></div></section>
+<section class='step'><div class='n'>07</div><div class='body'><h3>プレビューで試す</h3><p>［プレビュー］タブで、実際にチャットして動きを確かめます。デプロイ前にここで詰められます。</p><pre><code>［プレビュー］タブ → チャットして確認
+
+［コードを取得］→ エージェントのコードを表示・コピー</code></pre><p class='note'>［コードを取得］でコードを持ち出せます。GUIで組んで、続きをコードで作る、という進め方ができます。 <a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>Agent Studio でエージェントを設計する・2026-08-08</a></p></div></section>
+<section class='step'><div class='n'>08</div><div class='body'><h3>デプロイする</h3><p>エージェント一覧から対象を選び、［デプロイ］を押します。デプロイのたびに新しいランタイム インスタンスが作られます。</p><p class='link'><a href='https://console.cloud.google.com/vertex-ai/agents/agent-engines' target='_blank' rel='noopener'>https://console.cloud.google.com/vertex-ai/agents/agent-engines</a></p><pre><code>［エージェント］一覧 → 対象をクリック →［デプロイ］
+  →［Agent Runtime インスタンスにデプロイ］
+  → リージョンを選ぶ（東京 asia-northeast1 が選べます）
+  →［デプロイ］</code></pre><p class='note'>完了まで最大5分かかります。成功すると［フロー］タブにメッセージが出ます。 <a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>Agent Studio でエージェントを設計する・2026-08-08</a></p></div></section>
+<section class='step'><div class='n'>09</div><div class='body'><h3>動いているか見る</h3><p>デプロイ済みのエージェントは Agent Platform ページに並びます。リージョンで絞り込めます。</p><p class='link'><a href='https://console.cloud.google.com/vertex-ai/agents/agent-engines' target='_blank' rel='noopener'>https://console.cloud.google.com/vertex-ai/agents/agent-engines</a></p><pre><code>［リージョン］で絞る → エージェント名をクリック
+  → ［指標］ページが開く
+  → ［プレイグラウンド］タブでテストクエリを入れる</code></pre><p class='note'>ここで返事が返れば、外部アプリからも呼べる状態です。 <a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>Agent Studio でエージェントを設計する・2026-08-08</a></p></div></section>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>選べるツールは4種類です</h2></div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>ツール</th><th>できること</th><th>備考</th></tr></thead>
+      <tbody>
+        <tr><td>Google 検索</td><td>ウェブ検索を実行する</td>
+          <td class="sub">既定でオン</td></tr>
+        <tr><td>URL コンテキスト</td>
+          <td>プロンプトに含まれるURLをモデルが分析する</td>
+          <td class="sub">既定でオン</td></tr>
+        <tr><td>Agent Platform Search<br>データストア</td>
+          <td>データストアに入れた情報にアクセスする</td>
+          <td class="sub">プロジェクト番号・ロケーション・データストアID・
+            コレクションIDの指定が要ります。サービスアカウントに
+            「Discovery Engine ユーザー」の付与も必要です</td></tr>
+        <tr><td>MCP サーバー</td><td>MCPサーバーに直接接続する</td>
+          <td class="sub"><b>認証を必要としないサーバーのみ</b>対応。
+            接続すると、そのサーバー内のすべてのツールが使えます</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="meta" style="margin-top:10px"><a class='cite' href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>Agent Studio でエージェントを設計する・2026-08-08</a></p>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>今回の図面チェックは、GUIだけでは組めません</h2></div>
+  <div class="lead2">
+    <p>ツールが上の4種類に限られるため、いまGASで動かしている処理は
+      <b>GUIの中に置き換えられません</b>。何ができて何ができないかを、
+      機能ごとに分けます。</p>
+  </div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>いまの機能</th><th>GUI</th><th>理由</th></tr></thead>
+      <tbody>
+<tr><td>図面PDFをドライブから取り出す</td><td class='m no'>×</td><td class='sub'>ツールに Drive を読む手段がありません。Agent Platform Search のデータストアに入れれば検索はできますが、PDFを1枚渡して位置つきで読ませる用途とは別です。</td></tr>
+<tr><td>図面を読み取って位置を返す</td><td class='m half'>△</td><td class='sub'>モデル自体はPDFを読めますが、Agent Studio の画面からファイルを渡す経路が用意されていません。</td></tr>
+<tr><td>チェック項目表（スプレッドシート）を読む</td><td class='m no'>×</td><td class='sub'>スプレッドシートを読むツールがありません。MCPサーバーを自前で立てれば繋げますが、「認証なしのサーバーのみ」という制約が付きます。</td></tr>
+<tr><td>メーカー公式ページを見に行く</td><td class='m half'>△</td><td class='sub'>URL コンテキストで読ませることは可能です。ただしリピートの値はページの静的HTMLがミリメートル表記のため、モデルに読ませると10倍になります。コードで取る必要があります。</td></tr>
+<tr><td>根拠が実在するか突き合わせる</td><td class='m no'>×</td><td class='sub'>文字列の照合はコードの仕事です。GUIには書く場所がありません。AIに自己検証させると、実在しない文言をそのまま通します。</td></tr>
+<tr><td>結果をスプレッドシートに書き出す</td><td class='m no'>×</td><td class='sub'>書き出すツールがありません。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warnbox" style="margin-top:14px">
+    <h4>それでも見せる価値はあります</h4>
+    <p>Agent Studio で作れるのは、<b>「作図基準について答える対話型エージェント」</b>
+      までです。作図マニュアルをデータストアに入れれば、
+      「電気図の縮尺は」と聞いて答えさせることはできます。</p>
+    <p>当日は<b>これを別物として</b>お見せするのが誠実です。
+      「図面チェックがGUIで作れる」と説明すると、その場で作れずに終わります。</p>
+    <p>［コードを取得］でコードを持ち出せるので、
+      <b>GUIで骨組みを作り、続きをコードで仕上げる</b>という進め方は可能です。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>費用</h2>
+    <span class="hint">アカウントあたり・月ごとの無料枠があります</span></div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>リソース</th><th>無料枠</th><th>超過後</th></tr></thead>
+      <tbody>
+        <tr><td>エージェント コンピューティング</td><td><b>0〜50時間</b></td>
+          <td>$0.085 / vCPU-h</td></tr>
+        <tr><td>エージェントのメモリ（RAM）</td><td><b>0〜100 GiB-h</b></td>
+          <td>$0.009 / GiB-h</td></tr>
+        <tr><td>エージェント ストレージ</td><td><b>0〜1 GiB-月</b></td>
+          <td>$0.000410959 / GiB-h</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cards2" style="margin-top:12px">
+    <div class="card2">
+      <h4>待機中は課金されません</h4>
+      <p>「ランタイムの場合、ターン間の次のプロンプトを待機するアイドル時間は
+        課金されません」と明記されています。<a class='cite' href='https://cloud.google.com/vertex-ai/pricing' target='_blank' rel='noopener'>Gemini Enterprise Agent Platform の料金</a></p>
+      <p>常時起動のサーバーを持つ構成とは、ここが決定的に違います。</p>
+    </div>
+    <div class="card2">
+      <h4>実測はしていません</h4>
+      <p>上の数字は料金ページの記載です。
+        <b>1回の実行で何 vCPU-h を使うかは、動かして測るまで分かりません。</b></p>
+      <p>使うと決まった時点で、実際に回して測ります。</p>
+    </div>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>読んだページ</h2></div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>ページ</th><th>最終更新</th><th>URL</th></tr></thead>
+      <tbody>
+<tr><td>Agent Platform のエージェントでサポートされているロケーション</td><td class='sub'>2026-08-08</td><td class='sub'><a href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/agent-locations' target='_blank' rel='noopener'>https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/agent-locations</a></td></tr>
+<tr><td>Agent Studio でエージェントを設計する</td><td class='sub'>2026-08-08</td><td class='sub'><a href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents' target='_blank' rel='noopener'>https://docs.cloud.google.com/gemini-enterprise-agent-platform/agent-studio/design-agents</a></td></tr>
+<tr><td>エージェントの概要</td><td class='sub'>2026-08-12</td><td class='sub'><a href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/agents' target='_blank' rel='noopener'>https://docs.cloud.google.com/gemini-enterprise-agent-platform/agents</a></td></tr>
+<tr><td>エージェント ランタイム</td><td class='sub'>2026-08-08</td><td class='sub'><a href='https://docs.cloud.google.com/gemini-enterprise-agent-platform/build/runtime' target='_blank' rel='noopener'>https://docs.cloud.google.com/gemini-enterprise-agent-platform/build/runtime</a></td></tr>
+<tr><td>Gemini Enterprise Agent Platform の料金</td><td class='sub'>―</td><td class='sub'><a href='https://cloud.google.com/vertex-ai/pricing' target='_blank' rel='noopener'>https://cloud.google.com/vertex-ai/pricing</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  株式会社デジライズ ／ 記載は上記ページを開いて読んだ内容によります。
+  実機での確認は行っていません。本ページに施主名・住所・図面は含みません。
+</footer>
+
+</div>
