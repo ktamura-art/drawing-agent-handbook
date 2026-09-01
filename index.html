@@ -357,9 +357,9 @@ Authorization: Bearer &lt;実行している人のトークン&gt;
 
                # チェック項目
                1. 縮尺が規定の値になっているか
-                   基準: 平面詳細図1/50、立面図1/100...
+                   基準: 図面種別ごとの規定値（項目表から読み込み）
                2. 図面番号が規定の記号になっているか
-                   基準: 平面詳細図A-05〜、電気図E-01〜
+                   基準: 図面種別ごとの規定記号（項目表から読み込み）
 
                この抽出結果だけを根拠に判定してください。
                引用できないときは根拠を空にする。" }
@@ -377,8 +377,8 @@ Authorization: Bearer &lt;実行している人のトークン&gt;
                「S=1/50」と記載されているため。" },
   { "no": "2", "verdict": "要確認",
     "evidence": "5",
-    "reason": "図面番号が「5」となっており、
-               規定記号「A-05〜」でないため。" },
+    "reason": "図面番号が規定の記号に
+               なっていないため。" },
   ...
 ]}</code></pre>
       </div>
@@ -609,7 +609,7 @@ hay.indexOf(norm_(rec.evidence)) &lt; 0
 <section class='step'><div class='n'>02</div><div class='body'><h3>コードを貼り付ける</h3><p>Apps Script の新規プロジェクトを開き、お渡しするコードを貼り付けます。script.new を開くと空のプロジェクトが作られます。</p><pre><code>1. https://script.new を開く
 2. 既定の myFunction ごと消す
 3. 下の「コード.gs」をすべてコピーして貼り付ける
-4. 保存する（Ctrl + S）</code></pre><details class='embed'><summary>コード.gs を開く（962行）</summary><div class='embed-bar'><button class='copy' data-target='pre-code'>すべてコピー</button></div><pre id='pre-code' class='full'><code>/**
+4. 保存する（Ctrl + S）</code></pre><details class='embed'><summary>コード.gs を開く（1217行）</summary><div class='embed-bar'><button class='copy' data-target='pre-code'>すべてコピー</button></div><pre id='pre-code' class='full'><code>/**
  * 図面チェック（作図基準）― 1ファイル版
  *
  * Apps Script のエディタに、この内容をまるごと貼り付けて使う。
@@ -1114,6 +1114,261 @@ function runCheck() {
   Logger.log(&#x27;確定 %s件 / 要確認 %s件 / 棄却 %s件&#x27;,
     b.確定.length, b.要確認.length, b.棄却.length);
   Logger.log(&#x27;結果シート: %s&#x27;, writeResult(result));
+}
+
+// ====================================================================
+// Repeat.gs
+// ====================================================================
+
+/**
+ * クロス品番のリピート属性を調べる。
+ *
+ * 8/20 の定例で挙がった要件をそのまま実装したもの。
+ *   「クロスが10個あったら、10個検索しに行かないといけない」
+ *   「型番しか載っていないので、どんな種類のクロスか分からない」
+ *   「そこからリピートが必要かどうかを判断する」
+ *   「人も後で確認できるようにURLを残しておく」
+ *
+ * 工程1 抽出   図面 → 品番の一覧（Gemini）
+ * 工程2 調査   品番1件ずつ、メーカー公式ページを取得（コード）
+ * 工程3 判定   ページの記載からリピートを読む（コード）
+ *
+ * URLをモデルに答えさせない。Python版の最初の実装ではモデルに
+ * URLも答えさせ、10件中6件が google.com/search のURLになった。
+ * 「人が後で確認できるようURLを残す」のが目的なのに、検索エンジンに
+ * 飛ばすだけでは確認にならない。
+ * URLは品番の形からコードが組み立て、実在するかはHTTPで確かめる。
+ *
+ * リピートの値もモデルに読ませない。ページの決まった場所にある値なので、
+ * 正規表現で取れば確実に取れる。読み違いが起きない。
+ *
+ * 1件ずつ画面から呼ぶ。10件をまとめて回すと6分の制限に当たる。
+ */
+
+const UA_ = &#x27;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)&#x27;;
+
+/**
+ * メーカーごとの規則。
+ * いずれも実際にアクセスして確かめたもの。
+ */
+const MAKERS_ = [
+  {
+    name: &#x27;サンゲツ&#x27;,
+    // RE=リザーブ, FE=ファイン, TH=Sリフォーム系, SP など
+    patterns: [/^(RE|FE|TH|SP|XB|EB|BB|WD)\d/, /^[A-Z]{2}\d{4,5}$/],
+    detail: &#x27;https://www.sangetsu.co.jp/product/detail/{code}/&#x27;,
+    search: &#x27;https://www.sangetsu.co.jp/product/list/part/{code}&#x27;,
+    legacy: &#x27;https://sangetsu.my.salesforce-sites.com/sscp&#x27;,
+    note: &#x27;商品ページは現行カタログのみ。旧品番は404になるため旧品番照会へ誘導する&#x27;
+  },
+  {
+    name: &#x27;リリカラ&#x27;,
+    patterns: [/^LL[-\s]?\d/, /^LW[-\s]?\d/, /^LV[-\s]?\d/],
+    detail: &#x27;&#x27;,
+    // サイト内検索。商品検索の search.php は空クエリでも500を返すため使わない。
+    search: &#x27;https://search-lilycolor.dga.jp/?kw={code}&amp;ie=u&#x27;,
+    legacy: &#x27;&#x27;,
+    note: &#x27;サイト内検索。リピートの値はこのページに載らないため、件数のみ確認できる&#x27;
+  }
+];
+
+/** 品番の形からメーカーを判定する。分からなければ null。 */
+function detectMaker_(code) {
+  const c = String(code || &#x27;&#x27;).trim().toUpperCase();
+  for (let i = 0; i &lt; MAKERS_.length; i++) {
+    const m = MAKERS_[i];
+    for (let j = 0; j &lt; m.patterns.length; j++) {
+      if (m.patterns[j].test(c)) return m;
+    }
+  }
+  return null;
+}
+
+/**
+ * URLを取得する。到達確認と本文取得を1回で済ませる。
+ * 担当者に渡す前に、そのURLが実際に開けるかを確かめる。
+ * メーカー側の不具合でページが落ちることがある。
+ */
+function fetch_(url) {
+  if (!url) return { status: 0, body: &#x27;&#x27; };
+  try {
+    const res = UrlFetchApp.fetch(url, {
+      headers: { &#x27;User-Agent&#x27;: UA_ },
+      muteHttpExceptions: true,
+      followRedirects: true,
+      validateHttpsCertificates: true
+    });
+    return { status: res.getResponseCode(), body: res.getContentText() };
+  } catch (e) {
+    return { status: 0, body: &#x27;&#x27; };
+  }
+}
+
+/**
+ * サンゲツの商品ページからリピートを読む。
+ *
+ * 静的HTMLの数値はミリメートル。表示上のcmはページ側のJSが変換している。
+ * そのまま「638cm」と読むと10倍になる。
+ * 規格が 920 × 50000（＝92cm × 50m の壁紙規格）と一致することから、
+ * mm であることを確認済み。RE55621/55664/55506/55622 の4件で、
+ * 別経路で得た値と一致することも確かめた。
+ */
+function readSangetsu_(html) {
+  const v = (html.match(/class=&quot;vp_repeat_vert&quot;&gt;([^&lt;]*)&lt;/) || [])[1];
+  const h = (html.match(/class=&quot;vp_repeat_hori&quot;&gt;([^&lt;]*)&lt;/) || [])[1];
+  if (v === undefined &amp;&amp; h === undefined) {
+    // ページの作りが変わった可能性がある。推測で埋めず、人に回す。
+    return { repeat: &#x27;不明&#x27;, evidence: &#x27;ページからリピート欄を読み取れませんでした&#x27; };
+  }
+  const cm = function (s) {
+    const n = parseFloat(s);
+    return isNaN(n) ? null : Math.round(n / 10 * 10) / 10;
+  };
+  const cv = cm(v), ch = cm(h);
+  if (cv === null &amp;&amp; ch === null) {
+    // 欄はあるが空。無地などリピートを持たない品番がこの形になる。
+    return { repeat: &#x27;リピートなし&#x27;, evidence: &#x27;リピート欄が空欄&#x27; };
+  }
+  return {
+    repeat: &#x27;リピートあり&#x27;,
+    evidence: &#x27;タテ&#x27; + (cv === null ? &#x27;―&#x27; : cv) + &#x27;cm ヨコ&#x27; +
+              (ch === null ? &#x27;―&#x27; : ch) + &#x27;cm&#x27;
+  };
+}
+
+/**
+ * リリカラの検索ページから該当件数を読む。
+ * このページにリピートの値は載らないため、リピートは「不明」のままにする。
+ * 分からないものを埋めない。
+ */
+function readLilycolor_(html) {
+  // 件数の前後にタグが挟まる。素のHTMLに正規表現をかけると当たらない。
+  // タグを落として本文にしてから拾う。
+  const text = String(html)
+    .replace(/&lt;script[\s\S]*?&lt;\/script&gt;|&lt;style[\s\S]*?&lt;\/style&gt;/g, &#x27; &#x27;)
+    .replace(/&lt;[^&gt;]+&gt;/g, &#x27; &#x27;)
+    .replace(/\s+/g, &#x27; &#x27;);
+  const m = text.match(/検索結果は\s*([\d,]+)\s*件/);
+  const n = m ? parseInt(m[1].replace(/,/g, &#x27;&#x27;), 10) : null;
+  if (n === null) {
+    return { repeat: &#x27;不明&#x27;, evidence: &#x27;検索結果の件数を読み取れませんでした&#x27; };
+  }
+  if (n === 0) {
+    return { repeat: &#x27;不明&#x27;, evidence: &#x27;現行カタログに該当なし&#x27; };
+  }
+  return { repeat: &#x27;不明&#x27;,
+           evidence: &#x27;検索結果 &#x27; + n + &#x27;件。リピートはページに未掲載のため要確認&#x27; };
+}
+
+/**
+ * 品番1件を調べる。画面から1件ずつ呼ぶ。
+ *
+ * 優先順位は 商品ページ &gt; 品番検索 &gt; 旧品番照会。
+ * 商品ページが200で返ればそれを採る。404なら現行カタログに無いということなので、
+ * 品番検索と旧品番照会に回す。
+ */
+function repeatOne(item) {
+  const code = String(item.code || &#x27;&#x27;).trim();
+  const out = {
+    code: code, alt: item.alt || &#x27;&#x27;, part: item.part || &#x27;&#x27;,
+    maker: &#x27;&#x27;, url: &#x27;&#x27;, urlKind: &#x27;なし&#x27;, legacyUrl: &#x27;&#x27;,
+    repeat: &#x27;不明&#x27;, evidence: &#x27;&#x27;
+  };
+
+  // 図面には「OAS-721（SP9734）」のように旧品番と現行品番が併記される。
+  // 旧品番の形はメーカー規則に当たらないため、併記された方でも判定する。
+  // これを入れないと、併記のある品番が丸ごと「判定できません」になる。
+  let lookup = code;
+  let maker = detectMaker_(code);
+  if (!maker &amp;&amp; out.alt) {
+    maker = detectMaker_(out.alt);
+    if (maker) lookup = String(out.alt).trim();
+  }
+  if (!maker) {
+    out.evidence = &#x27;品番の形からメーカーを判定できませんでした&#x27;;
+    return out;
+  }
+  out.maker = maker.name;
+  out.legacyUrl = maker.legacy;
+  out.lookup = lookup;
+
+  const enc = encodeURIComponent(lookup);
+  const detail = maker.detail ? maker.detail.replace(&#x27;{code}&#x27;, enc) : &#x27;&#x27;;
+  const search = maker.search ? maker.search.replace(&#x27;{code}&#x27;, enc) : &#x27;&#x27;;
+
+  if (detail) {
+    const r = fetch_(detail);
+    if (r.status === 200) {
+      out.url = detail;
+      out.urlKind = &#x27;商品ページ&#x27;;
+      const read = readSangetsu_(r.body);
+      out.repeat = read.repeat;
+      out.evidence = read.evidence;
+      return out;
+    }
+  }
+
+  if (search) {
+    const r = fetch_(search);
+    if (r.status &gt;= 200 &amp;&amp; r.status &lt; 400) {
+      out.url = search;
+      out.urlKind = &#x27;品番検索&#x27;;
+      const read = maker.name === &#x27;リリカラ&#x27;
+        ? readLilycolor_(r.body)
+        : { repeat: &#x27;不明&#x27;, evidence: &#x27;現行カタログに該当なし&#x27; };
+      out.repeat = read.repeat;
+      out.evidence = read.evidence;
+      return out;
+    }
+    out.evidence = &#x27;品番検索のページが応答しません（HTTP &#x27; + (r.status || &#x27;接続不可&#x27;) + &#x27;）&#x27;;
+  }
+  return out;
+}
+
+/** 図面から品番を抜き出す指示文。 */
+function codesPrompt_(pageNo) {
+  return &#x27;この図面の&#x27; + pageNo + &#x27;ページ目から、クロス（壁紙）の品番を&#x27; +
+    &#x27;すべて抜き出してください。\n\n&#x27; +
+    &#x27;厳守事項:\n&#x27; +
+    &#x27;・図面に書かれている品番だけを挙げる。存在しない品番を作らない。\n&#x27; +
+    &#x27;・「OAS-721（SP9734）」のように併記されている場合は、&#x27; +
+    &#x27;両方を code と alt に分ける。\n&#x27; +
+    &#x27;・どの部位に対する指定かを part に書く。読み取れなければ空にする。\n&#x27; +
+    &#x27;・各品番には図面上の位置を box_2d で付ける。\n&#x27; +
+    &#x27;  box_2d は [y0, x0, y1, x1] の順で、0〜1000 に正規化した値とする。\n\n&#x27; +
+    &#x27;次の JSON だけを出力してください。\n&#x27; +
+    &#x27;{&quot;codes&quot;:[{&quot;code&quot;:&quot;品番&quot;,&quot;alt&quot;:&quot;併記された別品番。無ければ空&quot;,&#x27; +
+    &#x27;&quot;part&quot;:&quot;部位&quot;,&quot;box_2d&quot;:[0,0,0,0]}]}&#x27;;
+}
+
+/**
+ * 工程1 図面から品番を抜き出す。
+ * ここだけAIを使う。工程2以降はコードで調べる。
+ */
+function extractCodes(fileId, pageNo) {
+  const cfg = getConfig();
+  const blob = DriveApp.getFileById(fileId).getBlob();
+  const res = askWithPdf(blob, codesPrompt_(pageNo || 1), cfg) || {};
+  const codes = (res.codes || []).filter(function (c) {
+    return c &amp;&amp; String(c.code || &#x27;&#x27;).trim();
+  });
+  Logger.log(&#x27;品番 %s件を抽出&#x27;, codes.length);
+  return { fileName: blob.getName(), pageNo: pageNo || 1, codes: codes };
+}
+
+/**
+ * 動作確認用。図面IDを書き換えて実行する。
+ * 画面からは1件ずつ呼ぶため、この関数は使わない。
+ */
+function runRepeat() {
+  const FILE_ID = &#x27;ここに図面PDFのファイルIDを入れる&#x27;;
+  const found = extractCodes(FILE_ID, 1);
+  Logger.log(&#x27;品番 %s件&#x27;, found.codes.length);
+  found.codes.forEach(function (c) {
+    const r = repeatOne(c);
+    Logger.log(&#x27;%s [%s] %s / %s / %s&#x27;,
+      r.code, r.maker, r.repeat, r.urlKind, r.evidence);
+  });
 }
 
 // ====================================================================
