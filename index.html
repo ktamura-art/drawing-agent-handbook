@@ -88,6 +88,16 @@ a{color:var(--accent)}
 .card .fix b{color:var(--ok)}
 .step .link{margin:0 0 10px}
 .step .link a{font-family:"IBM Plex Mono",monospace;font-size:12px;word-break:break-all}
+.tabdemo{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);
+  border-radius:11px;padding:5px;box-shadow:var(--sh);max-width:420px;margin-bottom:14px}
+.tbtn{flex:1;padding:9px;border-radius:8px;text-align:center;font-size:13.5px;
+  font-weight:600;color:var(--ink2)}
+.tbtn.on{background:var(--accent);color:var(--card)}
+.miss{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);
+  border-radius:12px;padding:16px 20px;box-shadow:var(--sh);margin-top:14px}
+.miss h4{margin:0 0 8px;font-size:14px}
+.miss p{margin:0 0 8px;font-size:13.5px;line-height:1.8}
+.miss p:last-child{margin-bottom:0}
 .lead2{background:var(--card);border:1px solid var(--line);border-radius:12px;
   padding:16px 20px;box-shadow:var(--sh);margin-bottom:14px}
 .lead2 p{margin:0}
@@ -117,17 +127,19 @@ a{color:var(--accent)}
 .tbl tr:last-child td{border-bottom:0}
 .tbl td.ai{color:var(--ok);font-weight:700}
 .scr{margin:14px 0 0;background:var(--card);border:1px solid var(--line);
-  border-radius:12px;box-shadow:var(--sh);padding:4px 20px 8px;max-width:520px}
+  border-radius:12px;box-shadow:var(--sh);padding:4px 20px 8px;max-width:560px}
 .scr-h{font-size:11.5px;font-weight:700;letter-spacing:.06em;color:var(--ink3);
   padding:12px 0 4px}
 .st{display:flex;align-items:center;gap:11px;padding:11px 0;font-size:13.5px;
   color:var(--ink3);border-bottom:1px solid var(--line2)}
 .st:last-child{border-bottom:0}
 .st .ic{width:15px;height:15px;border-radius:50%;border:2px solid var(--line);flex:none}
-.st .sn{flex:1}
-.st .sw{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px;
-  background:var(--sunk);color:var(--ink2)}
-.st .sv{font-size:12px;color:var(--ink3);min-width:56px;text-align:right}
+.st .sn{flex:1;min-width:0}
+/* 工程名が長いとバッジが潰れて縦組みになる。縮ませない。 */
+.st .sw{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:9px;
+  background:var(--sunk);color:var(--ink2);white-space:nowrap;flex:none}
+.st .sv{font-size:12px;color:var(--ink3);min-width:56px;text-align:right;
+  white-space:nowrap;flex:none}
 .st.done,.st.now{color:var(--ink)}
 .st.done .ic{border-color:var(--ok);background:var(--ok)}
 .st.now .ic{border-color:var(--accent);border-right-color:transparent}
@@ -154,10 +166,10 @@ a{color:var(--accent)}
 .lgd{display:flex;flex-wrap:wrap;gap:18px;margin:0 0 12px;font-size:12.5px;
   color:var(--ink2)}
 .lgd span{display:flex;align-items:center;gap:7px}
-.sw{width:13px;height:13px;border-radius:4px;display:inline-block;
+.swatch{width:13px;height:13px;border-radius:4px;display:inline-block;
   border:1.5px solid var(--ink2);background:var(--card)}
-.sw.ai{background:var(--ok-bg);border-color:var(--ok-line)}
-.sw.store{background:var(--sunk);border-color:var(--line)}
+.swatch.ai{background:var(--ok-bg);border-color:var(--ok-line)}
+.swatch.store{background:var(--sunk);border-color:var(--line)}
 .embed{margin:12px 0 0;border:1px solid var(--line);border-radius:9px;
   background:var(--sunk);overflow:hidden}
 .embed summary{cursor:pointer;padding:10px 14px;font-size:13px;font-weight:600;
@@ -230,9 +242,9 @@ footer{border-top:1px solid var(--line);padding-top:16px;font-size:12.5px;color:
   <div class="sh"><h2>何がどこを担当しているのか</h2>
     <span class="hint">AIが担う工程と、コードが担う工程</span></div>
   <div class="lgd">
-    <span><i class="sw ai"></i>AI（Gemini）が担当</span>
-    <span><i class="sw code"></i>コード（Apps Script）が担当</span>
-    <span><i class="sw store"></i>置き場所</span>
+    <span><i class="swatch ai"></i>AI（Gemini）が担当</span>
+    <span><i class="swatch code"></i>コード（Apps Script）が担当</span>
+    <span><i class="swatch store"></i>置き場所</span>
   </div>
 <figure class='fig'><svg viewBox='0 0 960 396' role='img' aria-label='図面の取り出しと根拠の照合はApps Scriptのコードが担当し、図面の読み取りと基準への当てはめはVertex AIのGeminiが担当する'><defs><marker id='ah' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M0,1 L9,5 L0,9 z' fill='currentColor'/></marker></defs><rect x='160.5' y='36' width='214' height='56' rx='9' class='bx store'/><text x='267.5' y='60' text-anchor='middle' class='bt'>Google ドライブ</text><text x='267.5' y='78' text-anchor='middle' class='bd'>図面PDF を置く場所</text><rect x='554.5' y='36' width='214' height='56' rx='9' class='bx store'/><text x='661.5' y='60' text-anchor='middle' class='bt'>Google スプレッドシート</text><text x='661.5' y='78' text-anchor='middle' class='bd'>チェック項目 57件</text><rect x='16' y='150' width='132' height='118' rx='9' class='bx user'/><text x='82' y='184' text-anchor='middle' class='bt'>業務担当者</text><text x='82' y='208' text-anchor='middle' class='bd'>URLを開いて</text><text x='82' y='225' text-anchor='middle' class='bd'>図面を選ぶだけ</text><text x='82' y='250' text-anchor='middle' class='chip-t'>ブラウザ</text><rect x='182' y='150' width='171' height='118' rx='9' class='bx code'/><text x='197' y='177' text-anchor='start' class='num'>1</text><text x='215' y='177' text-anchor='start' class='bt'>図面を取り出す</text><text x='267.5' y='202' text-anchor='middle' class='bd'>ドライブから、選ばれた</text><text x='267.5' y='219' text-anchor='middle' class='bd'>PDFを1枚読み込む</text><rect x='208.3' y='234' width='118.4' height='22' rx='11' class='chip code'/><text x='267.5' y='249' text-anchor='middle' class='chip-t code'>Apps Script</text><rect x='379' y='150' width='171' height='118' rx='9' class='bx ai'/><text x='394' y='177' text-anchor='start' class='num'>2</text><text x='412' y='177' text-anchor='start' class='bt'>図面を読み取る</text><text x='464.5' y='202' text-anchor='middle' class='bd'>ページに書かれている文字と、</text><text x='464.5' y='219' text-anchor='middle' class='bd'>その位置を書き出す</text><rect x='426.3' y='234' width='76.4' height='22' rx='11' class='chip ai'/><text x='464.5' y='249' text-anchor='middle' class='chip-t ai'>Gemini</text><rect x='576' y='150' width='171' height='118' rx='9' class='bx ai'/><text x='591' y='177' text-anchor='start' class='num'>3</text><text x='609' y='177' text-anchor='start' class='bt'>基準に当てはめる</text><text x='661.5' y='202' text-anchor='middle' class='bd'>読み取った内容だけを見て、</text><text x='661.5' y='219' text-anchor='middle' class='bd'>項目ごとに判定する</text><rect x='623.3' y='234' width='76.4' height='22' rx='11' class='chip ai'/><text x='661.5' y='249' text-anchor='middle' class='chip-t ai'>Gemini</text><rect x='773' y='150' width='171' height='118' rx='9' class='bx code'/><text x='788' y='177' text-anchor='start' class='num'>4</text><text x='806' y='177' text-anchor='start' class='bt'>根拠を照合する</text><text x='858.5' y='202' text-anchor='middle' class='bd'>AIの根拠が2に実在するか</text><text x='858.5' y='219' text-anchor='middle' class='bd'>突き合わせ、無ければ棄却</text><rect x='799.3' y='234' width='118.4' height='22' rx='11' class='chip code'/><text x='858.5' y='249' text-anchor='middle' class='chip-t code'>Apps Script</text><line x1='150' y1='209' x2='178' y2='209' class='ar ' marker-end='url(#ah)'/><line x1='355' y1='209' x2='375' y2='209' class='ar ' marker-end='url(#ah)'/><line x1='552' y1='209' x2='572' y2='209' class='ar ' marker-end='url(#ah)'/><line x1='749' y1='209' x2='769' y2='209' class='ar ' marker-end='url(#ah)'/><line x1='267.5' y1='94' x2='267.5' y2='146' class='ar ' marker-end='url(#ah)'/><text x='267.5' y='118' text-anchor='middle' class='lbl'>図面PDF</text><line x1='661.5' y1='94' x2='661.5' y2='146' class='ar ' marker-end='url(#ah)'/><text x='661.5' y='118' text-anchor='middle' class='lbl'>チェック項目</text><polyline points='858.5,268 858.5,292 600,292' class='ar'/><line x1='600' y1='292' x2='600' y2='316' class='ar ' marker-end='url(#ah)'/><line x1='858.5' y1='292' x2='858.5' y2='316' class='ar ' marker-end='url(#ah)'/><rect x='505' y='320' width='190' height='56' rx='9' class='bx store'/><text x='600' y='344' text-anchor='middle' class='bt'>担当者の画面に表示</text><text x='600' y='362' text-anchor='middle' class='bd'>確認が必要なものだけ</text><rect x='763.5' y='320' width='190' height='56' rx='9' class='bx store'/><text x='858.5' y='344' text-anchor='middle' class='bt'>スプレッドシート</text><text x='858.5' y='362' text-anchor='middle' class='bd'>「チェック結果」に追記</text></svg><figcaption>読むのと当てはめるのはAI、確かめるのはコードが担当します。AIが根拠として挙げた文字列が2の読み取り結果に無ければ、その判定は採用しません。</figcaption></figure>
 </section>
@@ -446,6 +458,8 @@ hay.indexOf(norm_(rec.evidence)) &lt; 0
          <b>画面用のサーバーは立てません。</b></p>
       <p>図面の一覧はドライブから、項目数はチェック項目表から
          その場で読み込むため、増えても画面の直しは要りません。</p>
+      <p>用途は<b>図面チェック</b>と<b>品番リピート確認</b>の2つです。
+         図面は同じものを使うので、画面は1つにしてタブで分けています。</p>
     </div>
     <div class="card2">
       <h4>チャット画面にはしません</h4>
@@ -472,13 +486,130 @@ hay.indexOf(norm_(rec.evidence)) &lt; 0
 </section>
 
 <section class="blk">
+  <div class="sh"><h2>品番リピート確認 ― もう1つのタブ</h2>
+    <span class="hint">同じアプリの中に入れています</span></div>
+
+  <div class="lead2">
+    <p>用途は2つあります。図面は同じものを使うので、画面は1つにしてタブで分けました。
+      押すボタンも1つのままです。</p>
+  </div>
+
+  <div class="tabdemo">
+    <div class="tbtn">図面チェック</div>
+    <div class="tbtn on">品番リピート確認</div>
+  </div>
+
+  <div class="scr">
+    <div class="scr-h">押したあとに出るもの</div>
+    <div class="st done"><span class="ic"></span>
+      <span class="sn">図面から品番を抜き出す</span>
+      <span class="sw">AI</span><span class="sv">5件</span></div>
+    <div class="st done"><span class="ic"></span>
+      <span class="sn">メーカー公式ページを確認する</span>
+      <span class="sw code">コード</span><span class="sv">3件でリピートあり</span></div>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>工程</th><th>やること</th><th>担当</th><th>呼び出し回数</th></tr></thead>
+      <tbody>
+        <tr><td>1 抜き出す</td><td>図面から品番と部位を読む</td>
+          <td class="ai">Gemini</td><td>1回</td></tr>
+        <tr><td>2 調べる</td><td>メーカー公式ページを取得し、リピートを読む</td>
+          <td>Apps Script</td><td><b>品番の数だけ</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cards2">
+    <div class="card2">
+      <h4>1品番につき1回ずつ呼びます</h4>
+      <p>先方のご要望はこうでした。
+        「クロスが10個あったら、10個検索しに行かないといけないので、
+        普通にやると止まっちゃう」</p>
+      <p>まとめて回すと Apps Script の6分制限に当たります。
+        画面が件数を数えて<b>1件ずつ呼ぶ</b>ので、
+        何件あっても止まりません。1件あたり1〜2秒です。</p>
+    </div>
+    <div class="card2">
+      <h4>URLはコードが組み立てます</h4>
+      <p>最初の実装ではURLもAIに答えさせていました。結果、10件中6件が
+        <code>google.com/search?q=…</code> になりました。
+        <b>検索エンジンに飛ばすだけでは確認になりません。</b></p>
+      <p>いまは品番の形からメーカーを判定し、コードがURLを組み立て、
+        HTTPで実在を確かめてから出しています。</p>
+    </div>
+    <div class="card2">
+      <h4>リピートの値もAIに読ませません</h4>
+      <p>メーカーのページは決まった場所に値があります。
+        正規表現で取れば<b>読み違いが起きません</b>。</p>
+      <p>AIを使うのは工程1だけです。工程2はすべてコードで動きます。</p>
+    </div>
+    <div class="card2">
+      <h4>併記された品番でも探します</h4>
+      <p>図面には「OAS-721（SP9734）」のように旧品番と現行品番が併記されます。
+        旧品番の形はメーカーの規則に当たりません。</p>
+      <p>この扱いを入れる前は、併記のある品番が丸ごと
+        「判定できません」になっていました。<b>併記された方でも判定します。</b></p>
+    </div>
+  </div>
+
+  <div class="api">
+    <div class="api-h"><span class="api-n">注意</span>ページの数値はミリメートルでした
+      <span class="api-t code">コードで変換</span></div>
+    <div class="api-b one">
+      <div class="api-c">
+        <pre><code>&lt;div class="__body"&gt;
+  タテ&lt;span class="vp_repeat_vert"&gt;638&lt;/span&gt;cm
+  ヨコ&lt;span class="vp_repeat_hori"&gt;920&lt;/span&gt;cm
+&lt;/div&gt;                       ↑ 単位はcmと書いてあるが、値はmm</code></pre>
+        <p class="note">画面上は「63.8cm」と表示されますが、これはページ側のJSが変換した結果です。
+          静的なHTMLをそのまま読むと<b>10倍になります</b>。
+          規格が 920 × 50000（＝92cm × 50m の壁紙規格）と一致することから
+          mm 単位と判断し、10で割っています。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>品番</th><th>今回（ページを直接取得）</th>
+        <th>前回（検索経由）</th><th>一致</th></tr></thead>
+      <tbody>
+        <tr><td>RE55621</td><td>タテ63.8cm ヨコ92.0cm</td>
+          <td>タテ63.8cm ヨコ92cm</td><td class="ai">一致</td></tr>
+        <tr><td>RE55664</td><td>タテ31.6cm ヨコ46.1cm</td>
+          <td>タテ31.6cm ヨコ46.1cm</td><td class="ai">一致</td></tr>
+        <tr><td>RE55506</td><td>タテ32.0cm ヨコ46.3cm</td>
+          <td>タテ32.0cm ヨコ46.3cm</td><td class="ai">一致</td></tr>
+        <tr><td>RE55622</td><td>タテ63.8cm ヨコ92.0cm</td>
+          <td>タテ63.8cm ヨコ92cm</td><td class="ai">一致</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="miss">
+    <h4>1件だけ、前回より劣ります</h4>
+    <p><b>LL-7246（リリカラ）</b>です。前回は検索結果から
+      「タテ124cm ヨコ92cm」を拾っていました。</p>
+    <p>Apps Script には検索の仕組みがないため、メーカーのページを直接取得する方式にしています。
+      リリカラの検索ページに<b>リピートの値は載っていません</b>（実際に取得して確認しました）。
+      分からないものを埋めない方針のため、<b>「不明」</b>とし、
+      「検索結果 4件。リピートはページに未掲載のため要確認」と根拠に書いています。
+      リンクは開けるので、1クリックで確認できます。</p>
+    <p class="note">サンゲツは商品ページに値があるため影響しません。
+      図面の品番は大半がサンゲツです。</p>
+  </div>
+</section>
+
+<section class="blk">
   <div class="sh"><h2>組み立ての手順</h2><span class="hint">ブラウザだけで完結します。1回だけ30分ほど</span></div>
 <section class='step'><div class='n'>01</div><div class='body'><h3>だれが何をするのか</h3><p>業務でお使いになる方は、コマンドもコードも触りません。公開されたURLを開いて、図面を選ぶだけです。以下は、仕組みを最初に組み立てる方が1回だけ行う作業です。</p><pre><code>業務担当者   … ブラウザでURLを開く。それだけ
 組み立てる方 … 以下を1回だけ実施する（30分ほど）</code></pre><p class='note'>パソコンに入れるものはありません。ブラウザだけで完結します。</p></div></section>
 <section class='step'><div class='n'>02</div><div class='body'><h3>コードを貼り付ける</h3><p>Apps Script の新規プロジェクトを開き、お渡しするコードを貼り付けます。script.new を開くと空のプロジェクトが作られます。</p><pre><code>1. https://script.new を開く
 2. 既定の myFunction ごと消す
 3. 下の「コード.gs」をすべてコピーして貼り付ける
-4. 保存する（Ctrl + S）</code></pre><details class='embed'><summary>コード.gs を開く（809行）</summary><div class='embed-bar'><button class='copy' data-target='pre-code'>すべてコピー</button></div><pre id='pre-code' class='full'><code>/**
+4. 保存する（Ctrl + S）</code></pre><details class='embed'><summary>コード.gs を開く（962行）</summary><div class='embed-bar'><button class='copy' data-target='pre-code'>すべてコピー</button></div><pre id='pre-code' class='full'><code>/**
  * 図面チェック（作図基準）― 1ファイル版
  *
  * Apps Script のエディタに、この内容をまるごと貼り付けて使う。
@@ -549,7 +680,7 @@ function setupProperties() {
     ITEMS_SHEET_ID: &#x27;1VnSjSglooBExX4PFZTU9fMEXapu7xdlhHUWuIwfGTmY&#x27;,
     ITEMS_SHEET_NAME: &#x27;チェック項目&#x27;,
     RESULT_SHEET_NAME: &#x27;チェック結果&#x27;,
-    DRAWING_FOLDER_ID: &#x27;1_ntllUpiQGWmbQFgue9N3dEu6D55eZZ4&#x27;
+    DRAWING_FOLDER_ID: &#x27;1_-VNjp7jFvqBIdy4ukvt6PWegnHL5v6T&#x27;
   }, true);
   Logger.log(&#x27;設定を保存しました。値を自社のものに書き換えてから使ってください。&#x27;);
 }
@@ -1034,24 +1165,50 @@ function listDrawings() {
                     &#x27;）。IDが正しいか、閲覧権限があるかをご確認ください。&#x27;);
   }
 
-  // getFilesByType(PDF) だけに頼らない。
-  // 取り込み方によっては mimeType が application/pdf にならないことがあり、
-  // その場合に1件も出ずに理由も分からなくなる。拡張子でも拾う。
-  const it = folder.getFiles();
+  // 直下だけでなく、1階層下のサブフォルダも見る。
+  // 実運用のドライブは案件ごとにフォルダが切られていることが多く、
+  // 直下しか見ないと「フォルダを指定したのに空」になる。
+  // 深追いはしない。階層が深いドライブだと6分の制限に当たる。
   const out = [];
-  while (it.hasNext() &amp;&amp; out.length &lt; 100) {
-    const f = it.next();
-    const name = f.getName();
-    if (f.getMimeType() !== MimeType.PDF &amp;&amp; !/\.pdf$/i.test(name)) continue;
-    out.push({ id: f.getId(), name: name,
-               mb: Math.round(f.getSize() / 1048576 * 10) / 10 });
+  collectPdfs_(folder, &#x27;&#x27;, out);
+  const sub = folder.getFolders();
+  while (sub.hasNext() &amp;&amp; out.length &lt; MAX_DRAWINGS) {
+    const f = sub.next();
+    collectPdfs_(f, f.getName(), out);
   }
+
   if (!out.length) {
-    throw new Error(&#x27;図面フォルダにPDFが見つかりませんでした。&#x27; +
-                    &#x27;フォルダに図面を置いてから、画面を再読み込みしてください。&#x27;);
+    throw new Error(&#x27;図面フォルダにPDFが見つかりませんでした（&#x27; + folder.getName() +
+                    &#x27;）。直下と、その1つ下のフォルダまでを見ています。&#x27; +
+                    &#x27;それより深い場所にある場合は、フォルダIDをそこに変えてください。&#x27;);
   }
   out.sort(function (a, b) { return a.name.localeCompare(b.name, &#x27;ja&#x27;); });
   return out;
+}
+
+const MAX_DRAWINGS = 200;
+
+/**
+ * フォルダ直下のPDFを集める。
+ *
+ * getFilesByType(PDF) だけに頼らない。取り込み方によっては
+ * mimeType が application/pdf にならないことがあり、
+ * その場合に1件も出ずに理由も分からなくなる。拡張子でも拾う。
+ */
+function collectPdfs_(folder, prefix, out) {
+  const it = folder.getFiles();
+  while (it.hasNext() &amp;&amp; out.length &lt; MAX_DRAWINGS) {
+    const f = it.next();
+    const name = f.getName();
+    if (f.getMimeType() !== MimeType.PDF &amp;&amp; !/\.pdf$/i.test(name)) continue;
+    out.push({
+      id: f.getId(),
+      // どのフォルダのものか分かるようにする。
+      // 案件が違うだけで同名のファイルが並ぶため、名前だけでは選べない。
+      name: prefix ? prefix + &#x27; ／ &#x27; + name : name,
+      mb: Math.round(f.getSize() / 1048576 * 10) / 10
+    });
+  }
 }
 
 /**
@@ -1097,15 +1254,31 @@ function runFromUi(fileId, target, pageNo) {
   return uiVerify(stepJudge(stepExtract(fileId, Number(pageNo) || 1), target));
 }
 
+/**
+ * 品番リピート確認。図面チェックとは別のタブから呼ぶ。
+ *
+ * 品番の件数だけ往復するため、1回にまとめない。
+ * 抽出で1回、そのあと1品番につき1回。画面が回数を決めて呼ぶ。
+ */
+function uiCodes(fileId, pageNo) {
+  return extractCodes(fileId, Number(pageNo) || 1);
+}
+
+function uiRepeatOne(item) {
+  return repeatOne(item);
+}
+
 function renderForm_() {
   let drawings = [];
   let targets = [];
   let itemCount = 0;
+  let folderName = &#x27;&#x27;;
   const errors = [];
   // 片方が失敗しても、もう片方は表示する。
   // まとめて捕まえると、原因が1つしか見えない。
   try {
     drawings = listDrawings();
+    folderName = DriveApp.getFolderById(getConfig().drawingFolderId).getName();
   } catch (e) {
     errors.push(String(e.message || e));
   }
@@ -1132,9 +1305,15 @@ function renderForm_() {
       &#x27;&lt;h1&gt;図面を確認します&lt;/h1&gt;&#x27; +
       &#x27;&lt;p class=&quot;meta&quot;&gt;図面を選んで実行すると、作図基準に沿って記載を確認します。&lt;/p&gt;&lt;/header&gt;&#x27; +
       (error ? &#x27;&lt;div class=&quot;lead&quot;&gt;&lt;b&gt;&#x27; + esc_(error) + &#x27;&lt;/b&gt;&lt;/div&gt;&#x27; : &#x27;&#x27;) +
+      // 用途が2つある。同じ図面を使うので、画面は1つにしてタブで分ける。
+      &#x27;&lt;div class=&quot;tabs&quot;&gt;&#x27; +
+        &#x27;&lt;button class=&quot;tab on&quot; data-m=&quot;check&quot;&gt;図面チェック&lt;/button&gt;&#x27; +
+        &#x27;&lt;button class=&quot;tab&quot; data-m=&quot;repeat&quot;&gt;品番リピート確認&lt;/button&gt;&#x27; +
+      &#x27;&lt;/div&gt;&#x27; +
       &#x27;&lt;div class=&quot;card&quot;&gt;&#x27; +
         &#x27;&lt;label&gt;図面&lt;select id=&quot;file&quot;&gt;&#x27; + opts + &#x27;&lt;/select&gt;&lt;/label&gt;&#x27; +
-        &#x27;&lt;label&gt;図面の種類&lt;select id=&quot;target&quot;&gt;&#x27; + tOpts + &#x27;&lt;/select&gt;&lt;/label&gt;&#x27; +
+        &#x27;&lt;label id=&quot;tgWrap&quot;&gt;図面の種類&lt;select id=&quot;target&quot;&gt;&#x27; + tOpts +
+        &#x27;&lt;/select&gt;&lt;/label&gt;&#x27; +
         &#x27;&lt;label&gt;対象のページ&lt;input id=&quot;page&quot; type=&quot;number&quot; value=&quot;1&quot; min=&quot;1&quot; max=&quot;99&quot;&gt;&lt;/label&gt;&#x27; +
         &#x27;&lt;button class=&quot;btn&quot; id=&quot;go&quot;&#x27; + (drawings.length ? &#x27;&#x27; : &#x27; disabled&#x27;) +
         &#x27;&gt;確認する&lt;/button&gt;&#x27; +
@@ -1152,7 +1331,20 @@ function renderForm_() {
           &#x27;&lt;span class=&quot;sn&quot;&gt;根拠を照合する&lt;/span&gt;&#x27; +
           &#x27;&lt;span class=&quot;sw code&quot;&gt;コード&lt;/span&gt;&lt;span class=&quot;sv&quot;&gt;&lt;/span&gt;&lt;/div&gt;&#x27; +
       &#x27;&lt;/div&gt;&#x27; +
-      &#x27;&lt;div class=&quot;note&quot;&gt;チェック項目はスプレッドシートから読み込んでいます&#x27; +
+      &#x27;&lt;div class=&quot;card steps&quot; id=&quot;rsteps&quot; hidden&gt;&#x27; +
+        &#x27;&lt;div class=&quot;st&quot; data-r=&quot;1&quot;&gt;&lt;span class=&quot;ic&quot;&gt;&lt;/span&gt;&#x27; +
+          &#x27;&lt;span class=&quot;sn&quot;&gt;図面から品番を抜き出す&lt;/span&gt;&#x27; +
+          &#x27;&lt;span class=&quot;sw&quot;&gt;AI&lt;/span&gt;&lt;span class=&quot;sv&quot;&gt;&lt;/span&gt;&lt;/div&gt;&#x27; +
+        &#x27;&lt;div class=&quot;st&quot; data-r=&quot;2&quot;&gt;&lt;span class=&quot;ic&quot;&gt;&lt;/span&gt;&#x27; +
+          &#x27;&lt;span class=&quot;sn&quot;&gt;メーカー公式ページを確認する&lt;/span&gt;&#x27; +
+          &#x27;&lt;span class=&quot;sw code&quot;&gt;コード&lt;/span&gt;&lt;span class=&quot;sv&quot;&gt;&lt;/span&gt;&lt;/div&gt;&#x27; +
+      &#x27;&lt;/div&gt;&#x27; +
+      &#x27;&lt;div class=&quot;note&quot;&gt;&#x27; +
+      // どこを見ているかを出す。フォルダを取り違えても、
+      // 出ていなければ気づけない。
+      (folderName ? &#x27;図面フォルダ「&#x27; + esc_(folderName) + &#x27;」から &#x27; +
+                    drawings.length + &#x27; 件。&#x27; : &#x27;&#x27;) +
+      &#x27;チェック項目はスプレッドシートから読み込んでいます&#x27; +
       &#x27;（現在 &#x27; + itemCount + &#x27; 項目）。表に行を足せば、次の実行から判定されます。&lt;/div&gt;&#x27; +
       &#x27;&lt;div id=&quot;out&quot;&gt;&lt;/div&gt;&#x27; +
       &#x27;&lt;footer&gt;判定の根拠は、図面から読み取った記載をそのまま用います。&#x27; +
@@ -1173,6 +1365,9 @@ const CSS_ =
 &#x27;--line:#DEE4E6;--accent:#1B4F72;--ok:#1A6B4F;--warn:#8B4A05;&#x27; +
 &#x27;--sh:0 1px 2px rgba(21,26,29,.05),0 10px 26px -18px rgba(21,26,29,.3)}&#x27; +
 &#x27;*{box-sizing:border-box}&#x27; +
+// .card に display:flex を当てているため、hidden 属性が効かなくなる。
+// ブラウザ既定の [hidden]{display:none} よりクラス指定が強い。
+&#x27;[hidden]{display:none!important}&#x27; +
 &#x27;body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.75;&#x27; +
 &#x27;font-family:&quot;Hiragino Sans&quot;,&quot;Yu Gothic&quot;,&quot;Noto Sans JP&quot;,Meiryo,system-ui,sans-serif}&#x27; +
 &#x27;.wrap{max-width:820px;margin:0 auto;padding:32px 20px 64px;display:flex;&#x27; +
@@ -1189,7 +1384,19 @@ const CSS_ =
 &#x27;.btn{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:12px;&#x27; +
 &#x27;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}&#x27; +
 &#x27;.btn:disabled{opacity:.5;cursor:default}&#x27; +
+&#x27;.tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);&#x27; +
+&#x27;border-radius:11px;padding:5px;box-shadow:var(--sh)}&#x27; +
+&#x27;.tab{flex:1;padding:10px;border:0;border-radius:8px;background:transparent;&#x27; +
+&#x27;font-family:inherit;font-size:14px;font-weight:600;color:var(--ink2);cursor:pointer}&#x27; +
+&#x27;.tab.on{background:var(--accent);color:#fff}&#x27; +
 &#x27;.steps{gap:0;padding:6px 22px}&#x27; +
+&#x27;.mk{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;&#x27; +
+&#x27;align-items:baseline}&#x27; +
+&#x27;.mk .u{grid-column:1/-1;font-size:11.5px;word-break:break-all}&#x27; +
+&#x27;.pill{font-size:11px;font-weight:700;padding:2px 9px;border-radius:9px;&#x27; +
+&#x27;background:var(--line);color:var(--ink2);white-space:nowrap}&#x27; +
+&#x27;.pill.y{background:#E4F0EA;color:var(--ok)}&#x27; +
+&#x27;.pill.n{background:#FAEEDF;color:var(--warn)}&#x27; +
 &#x27;.st{display:flex;align-items:center;gap:11px;padding:11px 0;font-size:13.5px;&#x27; +
 &#x27;color:var(--ink3);border-bottom:1px solid var(--line)}&#x27; +
 &#x27;.st:last-child{border-bottom:0}&#x27; +
@@ -1264,8 +1471,11 @@ const JS_ =
 &#x27;var f=document.getElementById(&quot;file&quot;).value;&#x27; +
 &#x27;if(!f){out.innerHTML=&quot;&lt;div class=\\&quot;lead\\&quot;&gt;&lt;b&gt;図面を選んでください。&lt;/b&gt;&lt;/div&gt;&quot;;return}&#x27; +
 &#x27;var tgt=document.getElementById(&quot;target&quot;).value;&#x27; +
+&#x27;var pg=document.getElementById(&quot;page&quot;).value;&#x27; +
+// 押したときのタブで、走らせるものを決める。ボタンは1つのままにする。
+&#x27;if(MODE===&quot;repeat&quot;){runRepeatUi(f,pg);return}&#x27; +
 &#x27;go.disabled=true;out.innerHTML=&quot;&quot;;reset();&#x27; +
-&#x27;call(&quot;uiExtract&quot;,[f,document.getElementById(&quot;page&quot;).value],1,function(a){&#x27; +
+&#x27;call(&quot;uiExtract&quot;,[f,pg],1,function(a){&#x27; +
 &#x27;mark(1,&quot;done&quot;,a.textCount+&quot;件&quot;);&#x27; +
 &#x27;call(&quot;uiJudge&quot;,[a.state,tgt],2,function(b){&#x27; +
 &#x27;mark(2,&quot;done&quot;,b.resultCount+&quot;件&quot;);&#x27; +
@@ -1285,7 +1495,81 @@ const JS_ =
 &#x27;(n3?(&quot;&lt;div class=\\&quot;sh\\&quot;&gt;&lt;h2&gt;棄却したもの&lt;/h2&gt;&lt;span class=\\&quot;c\\&quot;&gt;&quot;+n3+&quot;件&lt;/span&gt;&lt;/div&gt;&quot;+rows(r.棄却,&quot;drop&quot;)):&quot;&quot;)+&#x27; +
 &#x27;&quot;&lt;div class=\\&quot;sh\\&quot;&gt;&lt;h2&gt;満たしているもの&lt;/h2&gt;&lt;span class=\\&quot;c\\&quot;&gt;&quot;+n1+&quot;件&lt;/span&gt;&lt;/div&gt;&quot;+rows(r.確定,&quot;ok&quot;)+&#x27; +
 &#x27;&quot;&lt;p class=\\&quot;note\\&quot; style=\\&quot;margin-top:18px\\&quot;&gt;&lt;a href=\\&quot;&quot;+r.sheetUrl+&quot;\\&quot; target=\\&quot;_blank\\&quot;&gt;結果をスプレッドシートで開く&lt;/a&gt;&lt;/p&gt;&quot;;&#x27; +
-&#x27;})})})});&#x27;;
+&#x27;})})})});&#x27; +
+
+// ---- タブの切り替え ----
+// 図面の選択は共通。工程と結果だけを差し替える。
+&#x27;var MODE=&quot;check&quot;;&#x27; +
+&#x27;document.querySelectorAll(&quot;.tab&quot;).forEach(function(b){&#x27; +
+&#x27;b.addEventListener(&quot;click&quot;,function(){&#x27; +
+&#x27;MODE=b.dataset.m;&#x27; +
+&#x27;document.querySelectorAll(&quot;.tab&quot;).forEach(function(x){&#x27; +
+&#x27;x.classList.toggle(&quot;on&quot;,x===b)});&#x27; +
+&#x27;document.getElementById(&quot;steps&quot;).hidden=MODE!==&quot;check&quot;;&#x27; +
+&#x27;document.getElementById(&quot;rsteps&quot;).hidden=MODE!==&quot;repeat&quot;;&#x27; +
+// 図面の種類はチェック項目の絞り込み用。品番確認では使わない。
+&#x27;document.getElementById(&quot;tgWrap&quot;).style.display=&#x27; +
+&#x27;MODE===&quot;check&quot;?&quot;&quot;:&quot;none&quot;;&#x27; +
+&#x27;out.innerHTML=&quot;&quot;;reset();rreset()})});&#x27; +
+
+// ---- 品番リピート確認 ----
+&#x27;function rst(k){return document.querySelector(&quot;.st[data-r=\\&quot;&quot;+k+&quot;\\&quot;]&quot;)}&#x27; +
+&#x27;function rmark(k,cls,val){var e=rst(k);e.className=&quot;st &quot;+cls;&#x27; +
+&#x27;if(val!=null)e.querySelector(&quot;.sv&quot;).textContent=val}&#x27; +
+&#x27;function rreset(){[1,2].forEach(function(k){&#x27; +
+&#x27;rst(k).className=&quot;st&quot;;rst(k).querySelector(&quot;.sv&quot;).textContent=&quot;&quot;})}&#x27; +
+&#x27;function rcall(name,args,k,ok){&#x27; +
+&#x27;rmark(k,&quot;now&quot;,&quot;実行中&quot;);&#x27; +
+&#x27;var r=google.script.run.withSuccessHandler(ok)&#x27; +
+&#x27;.withFailureHandler(function(e){&#x27; +
+&#x27;rmark(k,&quot;fail&quot;,&quot;失敗&quot;);go.disabled=false;&#x27; +
+&#x27;out.innerHTML=&quot;&lt;div class=\\&quot;lead\\&quot;&gt;&lt;b&gt;エラー: &quot;+esc(e.message||e)+&quot;&lt;/b&gt;&lt;/div&gt;&quot;});&#x27; +
+&#x27;r[name].apply(r,args)}&#x27; +
+&#x27;function pill(v){var c=v===&quot;リピートあり&quot;?&quot;y&quot;:(v===&quot;リピートなし&quot;?&quot;&quot;:&quot;n&quot;);&#x27; +
+&#x27;return &quot;&lt;span class=\\&quot;pill &quot;+c+&quot;\\&quot;&gt;&quot;+esc(v)+&quot;&lt;/span&gt;&quot;}&#x27; +
+&#x27;function mkrow(r){&#x27; +
+&#x27;return &quot;&lt;div class=\\&quot;row &quot;+(r.repeat===&quot;リピートあり&quot;?&quot;ok&quot;:&quot;ng&quot;)+&quot;\\&quot;&gt;&quot;+&#x27; +
+&#x27;&quot;&lt;div class=\\&quot;mk\\&quot;&gt;&quot;+&#x27; +
+&#x27;&quot;&lt;span class=\\&quot;t\\&quot;&gt;&quot;+esc(r.code)+(r.alt?&quot; ／ &quot;+esc(r.alt):&quot;&quot;)+&quot;&lt;/span&gt;&quot;+&#x27; +
+&#x27;&quot;&lt;span class=\\&quot;d\\&quot;&gt;&quot;+esc(r.part||&quot;―&quot;)+&quot; ／ &quot;+esc(r.maker||&quot;メーカー不明&quot;)+&quot;&lt;/span&gt;&quot;+&#x27; +
+&#x27;pill(r.repeat)+&#x27; +
+&#x27;(r.url?(&quot;&lt;a class=\\&quot;u\\&quot; href=\\&quot;&quot;+r.url+&quot;\\&quot; target=\\&quot;_blank\\&quot;&gt;&quot;+&#x27; +
+&#x27;esc(r.urlKind)+&quot;： &quot;+esc(r.url)+&quot;&lt;/a&gt;&quot;):&quot;&quot;)+&#x27; +
+&#x27;(r.legacyUrl&amp;&amp;r.urlKind!==&quot;商品ページ&quot;?(&quot;&lt;a class=\\&quot;u\\&quot; href=\\&quot;&quot;+r.legacyUrl+&#x27; +
+&#x27;&quot;\\&quot; target=\\&quot;_blank\\&quot;&gt;旧品番照会： &quot;+esc(r.legacyUrl)+&quot;&lt;/a&gt;&quot;):&quot;&quot;)+&#x27; +
+&#x27;&quot;&lt;/div&gt;&quot;+&quot;&lt;div class=\\&quot;s\\&quot;&gt;根拠: &quot;+esc(r.evidence||&quot;―&quot;)+&quot;&lt;/div&gt;&lt;/div&gt;&quot;}&#x27; +
+
+// 品番の件数だけ往復する。1件終わるたびに画面へ足す。
+// まとめて回さないので、件数が増えても6分の制限に当たらない。
+&#x27;function runRepeatUi(f,page){&#x27; +
+&#x27;go.disabled=true;out.innerHTML=&quot;&quot;;rreset();&#x27; +
+&#x27;rcall(&quot;uiCodes&quot;,[f,page],1,function(a){&#x27; +
+&#x27;var list=a.codes||[];&#x27; +
+&#x27;rmark(1,&quot;done&quot;,list.length+&quot;件&quot;);&#x27; +
+&#x27;if(!list.length){go.disabled=false;&#x27; +
+&#x27;out.innerHTML=&quot;&lt;div class=\\&quot;lead\\&quot;&gt;この図面から品番は見つかりませんでした。&#x27;+
+&#x27;クロス品番は平面詳細図に記載されます。&lt;/div&gt;&quot;;return}&#x27; +
+&#x27;out.innerHTML=&quot;&lt;div class=\\&quot;sh\\&quot;&gt;&lt;h2&gt;品番&lt;/h2&gt;&lt;span class=\\&quot;c\\&quot; id=\\&quot;rc\\&quot;&gt;0/&quot;+&#x27; +
+&#x27;list.length+&quot;件&lt;/span&gt;&lt;/div&gt;&lt;div id=\\&quot;rl\\&quot;&gt;&lt;/div&gt;&quot;;&#x27; +
+&#x27;var done=0,yes=0,unk=0;&#x27; +
+&#x27;(function next(i){&#x27; +
+&#x27;if(i&gt;=list.length){&#x27; +
+&#x27;rmark(2,&quot;done&quot;,yes+&quot;件でリピートあり&quot;);go.disabled=false;&#x27; +
+&#x27;document.getElementById(&quot;rl&quot;).insertAdjacentHTML(&quot;beforeend&quot;,&#x27; +
+&#x27;&quot;&lt;p class=\\&quot;note\\&quot; style=\\&quot;margin-top:16px\\&quot;&gt;リピートあり &quot;+yes+&quot;件 ／ &#x27;+
+&#x27;要確認 &quot;+unk+&quot;件。URLはすべて開けることを確認しています。&lt;/p&gt;&quot;);return}&#x27; +
+&#x27;rmark(2,&quot;now&quot;,(i+1)+&quot;/&quot;+list.length+&quot;件目&quot;);&#x27; +
+&#x27;google.script.run.withSuccessHandler(function(r){&#x27; +
+&#x27;done++;if(r.repeat===&quot;リピートあり&quot;)yes++;else if(r.repeat===&quot;不明&quot;)unk++;&#x27; +
+&#x27;document.getElementById(&quot;rc&quot;).textContent=done+&quot;/&quot;+list.length+&quot;件&quot;;&#x27; +
+&#x27;document.getElementById(&quot;rl&quot;).insertAdjacentHTML(&quot;beforeend&quot;,mkrow(r));&#x27; +
+&#x27;next(i+1)&#x27; +
+&#x27;}).withFailureHandler(function(e){&#x27; +
+&#x27;rmark(2,&quot;fail&quot;,&quot;失敗&quot;);go.disabled=false;&#x27; +
+&#x27;out.insertAdjacentHTML(&quot;beforeend&quot;,&#x27; +
+&#x27;&quot;&lt;div class=\\&quot;lead\\&quot;&gt;&lt;b&gt;エラー: &quot;+esc(e.message||e)+&quot;&lt;/b&gt;&lt;/div&gt;&quot;)&#x27; +
+&#x27;}).uiRepeatOne(list[i])&#x27; +
+&#x27;})(0)})}&#x27;;
 
 </code></pre></details><p class='note'>左のファイル一覧に「コード.gs」があれば成功です。</p></div></section>
 <section class='step'><div class='n'>03</div><div class='body'><h3>権限の指定を差し替える</h3><p>コードを貼っただけでは、AIを呼ぶ権限が付きません。設定ファイルに明示する必要があります。ここを飛ばすと必ず失敗します。</p><pre><code>1. 左メニューの ⚙プロジェクトの設定 を開く
@@ -1322,7 +1606,7 @@ const JS_ =
     ITEMS_SHEET_ID: &#x27;1VnSjSglooBExX4PFZTU9fMEXapu7xdlhHUWuIwfGTmY&#x27;,
     ITEMS_SHEET_NAME: &#x27;チェック項目&#x27;,
     RESULT_SHEET_NAME: &#x27;チェック結果&#x27;,
-    DRAWING_FOLDER_ID: &#x27;1_ntllUpiQGWmbQFgue9N3dEu6D55eZZ4&#x27;
+    DRAWING_FOLDER_ID: &#x27;1_-VNjp7jFvqBIdy4ukvt6PWegnHL5v6T&#x27;
   }, true);
   Logger.log(&#x27;設定を保存しました。値を自社のものに書き換えてから使ってください。&#x27;);
 }</code></pre></details><p class='note'>実行ログに「設定を保存しました。」と出れば成功です。IDは御社のものに書き換えてから実行してください。</p></div></section>
