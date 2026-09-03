@@ -1,0 +1,412 @@
+<title>ハンズオンの進め方</title>
+<style>
+:root{
+  --bg:#F5F6F7; --card:#FFFFFF; --sunk:#ECEEF0;
+  --ink:#141719; --ink2:#525A60; --ink3:#858D93;
+  --line:#DCE0E3; --line2:#E8EBED;
+  --accent:#1F5F7A; --warn:#8B4A05;
+  --sh:0 1px 2px rgba(20,23,25,.05),0 10px 28px -18px rgba(20,23,25,.35);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1112; --card:#181B1D; --sunk:#1E2224;
+    --ink:#EBEEF0; --ink2:#A6AEB4; --ink3:#7A8288;
+    --line:#282D30; --line2:#212527;
+    --accent:#6FB6D4; --warn:#E0A96A;
+    --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1112; --card:#181B1D; --sunk:#1E2224;
+  --ink:#EBEEF0; --ink2:#A6AEB4; --ink3:#7A8288;
+  --line:#282D30; --line2:#212527;
+  --accent:#6FB6D4; --warn:#E0A96A;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.85;
+  font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",Meiryo,system-ui,sans-serif}
+.wrap{max-width:940px;margin:0 auto;padding:48px 22px 96px;display:flex;
+  flex-direction:column;gap:40px}
+h1{margin:.2rem 0 .4rem;font-size:31px;letter-spacing:-.01em;text-wrap:balance}
+.eyebrow{margin:0;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:700}
+.meta{margin:0;color:var(--ink2);font-size:13.5px;max-width:62ch}
+.blk{display:flex;flex-direction:column}
+.sh{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line);
+  padding-bottom:10px;margin-bottom:16px;flex-wrap:wrap}
+.sh h2{margin:0;font-size:18.5px}
+.sh .hint{margin-left:auto;font-size:12.5px;color:var(--ink3)}
+.lead{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:18px 22px;box-shadow:var(--sh);margin-bottom:14px}
+.lead p{margin:0 0 10px;font-size:14px;color:var(--ink2);line-height:1.85}
+.lead p:last-child{margin-bottom:0}
+.lead b{color:var(--ink)}
+
+/* 回ごとの目次 */
+.sessions{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
+.se{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:18px 22px;box-shadow:var(--sh)}
+.se-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.se-h b{font-size:16px}
+.se-w{font-size:12.5px;color:var(--ink3);width:100%;order:3}
+.se-s{font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;
+  background:var(--sunk);color:var(--ink3)}
+.se ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.se li{display:flex;align-items:baseline;gap:10px;font-size:13.5px}
+.se li .n{flex:none;width:20px;height:20px;border-radius:50%;background:var(--sunk);
+  color:var(--ink);font-size:11px;font-weight:700;display:grid;place-items:center;
+  align-self:center}
+.se li b{flex:1;font-weight:400;color:var(--ink2);min-width:0}
+.se li .t{flex:none;font-size:12px;color:var(--ink3);
+  font-variant-numeric:tabular-nums}
+.se-f{margin-top:12px;padding-top:10px;border-top:1px solid var(--line2);
+  font-size:12.5px;color:var(--ink3);text-align:right}
+
+/* 工程 */
+.st{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px;scroll-margin-top:20px}
+.st-h{display:flex;align-items:center;gap:11px;padding:15px 22px;
+  border-bottom:1px solid var(--line);flex-wrap:wrap}
+.st-h b{font-size:15.5px;flex:1;min-width:0}
+.st-n{font-size:11.5px;background:var(--accent);color:var(--card);
+  width:23px;height:23px;border-radius:50%;display:grid;place-items:center;flex:none}
+.st-m{font-size:11.5px;color:var(--ink3);flex:none;
+  font-variant-numeric:tabular-nums}
+.st-b{padding:16px 22px 20px}
+.st-b p{margin:0 0 8px;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.st-b .note{color:var(--warn);font-weight:700}
+.il{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--ink3);
+  margin:16px 0 6px}
+pre{margin:0;background:var(--sunk);border:1px solid var(--line2);border-radius:9px;
+  padding:15px 17px;overflow-x:auto;font-size:12.5px;line-height:1.8;
+  font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;
+  word-break:break-word;color:var(--ink)}
+.ok{margin:14px 0 0;padding:12px 16px;background:var(--sunk);border-radius:9px;
+  font-size:13px;color:var(--ink);line-height:1.8}
+.ok .k{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;
+  color:var(--ink3);margin-bottom:2px}
+
+/* カード */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:11px}
+.c{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:17px 21px;box-shadow:var(--sh)}
+.c h4{margin:0 0 7px;font-size:14px}
+.c p{margin:0;font-size:13px;color:var(--ink2);line-height:1.8}
+.c.rule{border-left:3px solid var(--accent)}
+
+.pf{background:var(--card);border:1px solid var(--line);border-radius:11px;
+  padding:14px 20px;box-shadow:var(--sh);margin-bottom:9px}
+.pf-q{font-weight:700;font-size:13.8px;margin-bottom:6px}
+.pf-m{background:var(--sunk);border-radius:7px;padding:7px 12px;margin-bottom:8px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
+  color:var(--ink);overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+.pf p{margin:0;font-size:13px;color:var(--ink2);line-height:1.8}
+
+.warn{background:var(--card);border:1px solid var(--line);
+  border-left:3px solid var(--warn);border-radius:11px;padding:16px 21px;
+  box-shadow:var(--sh);margin-bottom:12px}
+.warn p{margin:0 0 8px;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.warn p:last-child{margin-bottom:0}
+.warn b{color:var(--ink)}
+a{color:var(--accent)}
+footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;
+  color:var(--ink3);line-height:1.8}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">図面チェックの仕組みを、その場で組み立てる</p>
+  <h1>ハンズオンの進め方</h1>
+  <p class="meta">コードは書きません。決まった文章を Gemini に投げて出させ、
+    決まった場所に貼ります。工程ごとに動かして、
+    表示を確かめてから次に進みます。</p>
+</header>
+
+<section class="blk">
+  <div class="sh"><h2>2回に分けます</h2>
+    <span class="hint">1回では終わりません</span></div>
+  <div class="sessions">
+<div class='se'><div class='se-h'><b>第1回</b><span class='se-w'>図面を読んで、基準に照らして、画面に出すまで</span><span class='se-s'>実施済み（9/1）</span></div><ul><li><span class='n'>1</span><b>① 全体の設計を決めさせる</b><span class='t'>40分</span></li><li><span class='n'>2</span><b>② Vertex AI を呼ぶ部分</b><span class='t'>40分</span></li><li><span class='n'>3</span><b>③ チェック項目をスプレッドシートから読む</b><span class='t'>20分</span></li><li><span class='n'>4</span><b>④ 判定と、根拠の照合</b><span class='t'>45分</span></li><li><span class='n'>5</span><b>⑤ 結果の書き出し</b><span class='t'>20分</span></li><li><span class='n'>6</span><b>⑥ 担当者が使う画面</b><span class='t'>35分</span></li></ul><div class='se-f'>合計 約200分</div></div>
+<div class='se'><div class='se-h'><b>第2回</b><span class='se-w'>品番の照会・指示文の外出し・管理画面</span><span class='se-s'>これから</span></div><ul><li><span class='n'>7</span><b>⑦ 品番のリピート確認（追加機能）</b><span class='t'>30分</span></li><li><span class='n'>8</span><b>⑧ 指示文をスプレッドシートに出す</b><span class='t'>20分</span></li><li><span class='n'>9</span><b>⑨ 画面アプリ（AppSheet）から使えるようにする</b><span class='t'>45分</span></li></ul><div class='se-f'>合計 約95分</div></div>
+  </div>
+  <div class="warn" style="margin-top:12px">
+    <p><b>時間は目安です。</b>実際には②で権限の設定に、④で判定の確認に
+      時間を取られます。ここが押したら、⑦以降は次回に回してください。
+      <b>途中で終わっても、そこまでは動く状態で残ります。</b></p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>当日までに用意するもの</h2></div>
+  <div class="cards">
+<div class='c'><h4>Google Cloud のプロジェクト</h4><p>Vertex AI API を有効にしておきます。当日その場でも有効化できますが、反映に数分かかることがあります。前日までに済ませてください。</p></div>
+<div class='c'><h4>図面PDFを置くフォルダ</h4><p>ドライブに1つ作り、図面を数枚入れておきます。ページ数の少ないものを1枚は入れてください。最初の確認に使います。</p></div>
+<div class='c'><h4>チェック項目表</h4><p>スプレッドシートに、No・対象・チェック項目・判定の根拠となる基準・出典 の列で並べておきます。当日は数行あれば足ります。</p></div>
+<div class='c'><h4>Gemini が使える環境</h4><p>コードを書かせる相手です。ブラウザで開いておいてください。</p></div>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>進め方の約束</h2>
+    <span class="hint">これを外すと当日が長くなります</span></div>
+  <div class="cards">
+<div class='c rule'><h4>出てきたコードを読まない</h4><p>非エンジニアが読んで検証するのは無理です。「確かめ方」に書いてある表示が出るかどうかだけで判断します。</p></div>
+<div class='c rule'><h4>直すときは、全体を出し直させる</h4><p>部分的に手を入れると、どこを変えたか分からなくなります。「修正したコードの全体を出してください」と付けるのが要点です。</p></div>
+<div class='c rule'><h4>1工程ずつ動かしてから次へ進む</h4><p>まとめて貼ってから動かすと、どこで壊れたか分かりません。工程ごとに実行し、表示を確かめてから次に進みます。</p></div>
+<div class='c rule'><h4>うまくいかないときは、起きたことをそのまま伝える</h4><p>エラー文をそのまま貼るのがいちばん早いです。要約して伝えると、別の原因を疑われて遠回りになります。</p></div>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>工程</h2>
+    <span class="hint">枠の中をそのままコピーして使います</span></div>
+  <div class="lead">
+    <p>1工程が「投げる文章」「出てきたものの確かめ方」の2つで構成されています。
+      <b>コードの中身を読む必要はありません。</b>
+      確かめ方に書いてある表示が出るかどうかだけ見てください。</p>
+    <p>出てこなかった場合は、起きたことをそのまま伝えて、
+      <b>修正したコードの全体を出し直してもらいます。</b>
+      部分的に直すと、どこを変えたか分からなくなります。</p>
+  </div>
+<div class='st' id='p1'><div class='st-h'><span class='st-n'>1</span><b>① 全体の設計を決めさせる</b><span class='st-m'>第1回・40分</span></div><div class='st-b'><p class='why'>最初に設計だけを出させます。いきなりコードを書かせると、あとから直しにくい形で出てきます。</p><p class='note'>出てきたコードを読まないこと。動いたかの表示だけ見ます</p><div class='il'>この文章をそのまま Gemini に投げます</div><pre><code>Google Apps Script で、建築図面のチェックを行う仕組みを作ります。
+まずコードは書かず、設計だけを提案してください。
+
+やりたいこと:
+・Google ドライブに置いた図面PDFを、Vertex AI（Gemini）に読ませる
+・スプレッドシートに並べたチェック項目に照らして、1項目ずつ判定する
+・判定の根拠を必ず出力させ、その根拠が図面から読み取れたものか検証する
+・結果をスプレッドシートに書き出す
+
+制約:
+・Apps Script の実行時間は1回6分まで。この中に収める
+・チェック項目は将来300件まで増える。項目を増やすたびに
+  コードを修正する形にはしない
+・利用者は非エンジニア。コマンドは打たせない
+
+次を提案してください。
+1. 処理を工程に分ける案（各工程で何をするか、AIを使うか使わないか）
+2. ファイル構成（.gs をどう分けるか）
+3. 設定値の持ち方
+4. 6分の制限にどう対処するか</code></pre><div class='ok'><span class='k'>出てきたものの確かめ方</span>設計だけが返り、コードが1行も出てこないこと。工程が分かれていて、どこでAIを使い、どこで使わないかが書かれていること</div></div></div>
+<div class='st' id='p2'><div class='st-h'><span class='st-n'>2</span><b>② Vertex AI を呼ぶ部分</b><span class='st-m'>第1回・40分</span></div><div class='st-b'><p class='why'>APIキーを使わせないことが要点です。指定しないと、キーを埋め込む書き方で出てきます。</p><p class='note'>ここで権限の壁に当たります。当日いちばん詰まるところです</p><div class='il'>この文章をそのまま Gemini に投げます</div><pre><code>Apps Script から Vertex AI（Gemini）を呼ぶ関数を書いてください。
+
+要件:
+・APIキーは使わない。ScriptApp.getOAuthToken() で
+  実行者のGoogleアカウントの権限で呼ぶ
+・PDFは画像に変換せず、inlineData でそのまま送る
+・モデルとリージョンはスクリプトプロパティから読む
+・レスポンスは JSON で受け取る（responseMimeType を指定）
+・HTTPステータスが200以外のときは、本文の先頭500文字を添えて
+  エラーを投げる。握りつぶさない
+
+次の2つを作ってください。
+・askWithPdf(pdfBlob, prompt, cfg)  PDFと指示文を渡す
+・askText(prompt, cfg)              文字だけ渡す
+
+あわせて、必要な OAuth スコープを appsscript.json の形で示してください。</code></pre><div class='ok'><span class='k'>出てきたものの確かめ方</span>runCheck を実行して HTTP 403 が出ないこと。あわせて appsscript.json の中身が示されていること</div></div></div>
+<div class='st' id='p3'><div class='st-h'><span class='st-n'>3</span><b>③ チェック項目をスプレッドシートから読む</b><span class='st-m'>第1回・20分</span></div><div class='st-b'><p class='why'>ここが要点です。項目をコードに書かせない指示を明示しないと、配列でハードコードしたものが出てきます。</p><p class='note'>項目をコードに書かせないための指示です</p><div class='il'>この文章をそのまま Gemini に投げます</div><pre><code>チェック項目をスプレッドシートから読み込む関数を書いてください。
+
+重要な前提:
+・項目をコードに書かない。毎回スプレッドシートから読む。
+  担当者が行を足すだけで、次の実行から判定に加わるようにする
+
+シートの列:
+  No / 対象 / チェック項目 / 判定の根拠となる基準 / 出典 / 判定可否 / 採用 / 備考
+
+要件:
+・「採用」列が ×、x、対象外、なし のいずれかの行は使わない。空欄は採用とみなす
+・「対象」で絞り込める。指定された図面種別と「全図面」の行を返す
+・列名は表記ゆれを吸収する（「基準」でも「判定の根拠となる基準」でも読める）
+・指定した名前のシートが無ければ、先頭のシートを使う。そこで止めない
+・「判定可否」が 自動 → 半自動 → 要検討 の順に並べ替える</code></pre><div class='ok'><span class='k'>出てきたものの確かめ方</span>項目表に行を1つ足して再実行し、判定の件数が1つ増えること</div></div></div>
+<div class='st' id='p4'><div class='st-h'><span class='st-n'>4</span><b>④ 判定と、根拠の照合</b><span class='st-m'>第1回・45分</span></div><div class='st-b'><p class='why'>この資料でいちばん重要な指示です。ここを書かないと、AIが自分の出力を自分で検証する形になり、誤りが素通りします。</p><p class='note'>この工程がいちばん重要です。時間を多めに取ってください</p><div class='il'>この文章をそのまま Gemini に投げます</div><pre><code>図面のチェック処理を、次の3工程に分けて書いてください。
+
+工程1 読み取る（Geminiを使う）
+  図面PDFを渡し、書かれている内容を構造化して抜き出す。
+  ・図面に書かれていないことを補わせない
+  ・各記載に図面上の位置（box_2d）を付けさせる
+  ・図面名・図面番号・縮尺も取る
+
+工程2 判定する（Geminiを使う）
+  工程1の抽出結果とチェック項目を渡し、1項目ずつ判定させる。
+  ・図面そのものは渡さない。工程1の結果だけを根拠にさせる
+  ・判定は「適合／要確認／対象外」の3つから選ばせる
+  ・根拠には、抽出結果に含まれる文字列をそのまま引用させる
+  ・引用できないときは根拠を空にさせる。引用文を作らせない
+
+工程3 照合する（Geminiを使わない。JavaScript で書く）
+  工程2が「適合」とした項目について、挙げられた根拠が
+  工程1の抽出結果に実在するか、文字列として突き合わせる。
+  ・実在しなければ「棄却」とする
+  ・根拠が空のものも「棄却」とする
+  ・照合前に NFKC 正規化し、空白を除き、小文字に揃える
+    （全角の ＝ ＋ が残ると別物になるため）
+  ・照合先には texts だけでなく、図面名・図面番号・縮尺も含める
+
+工程3をAIに任せてはいけません。自分の出した根拠を自分で検証させると、
+実在しない文言をそのまま通します。</code></pre><div class='ok'><span class='k'>出てきたものの確かめ方</span>実行ログに「確定◯ / 要確認◯ / 棄却◯」と出ること。棄却が0件でも、区分そのものが存在すること</div></div></div>
+<div class='st' id='p5'><div class='st-h'><span class='st-n'>5</span><b>⑤ 結果の書き出し</b><span class='st-m'>第1回・20分</span></div><div class='st-b'><p class='why'>棄却したものを消さないことと、列数を揃えることを指示します。後者は実際にエラーになった箇所です。</p><p class='note'>空行1つで書き込みが丸ごと落ちます</p><div class='il'>この文章をそのまま Gemini に投げます</div><pre><code>判定結果をスプレッドシートに書き出す関数を書いてください。
+
+要件:
+・「チェック結果」タブが無ければ作る
+・見出し行: 区分 / No / チェック項目 / 根拠・理由 / 基準 / 出典
+・要確認 → 棄却 → 確定 の順に並べる
+・棄却したものも必ず残す。消すと「問題なし」に見えてしまう
+・棄却の行には、棄却の理由とAIが挙げた根拠の両方を書く
+
+注意:
+setValues() は全行が同じ列数であることを要求します。
+空行や短い行が1つでもあるとそこで落ちます。
+書き込む直前に、すべての行を6列に揃えてください。
+原因の行だけ直すのではなく、必ず揃える処理を通す形にしてください。</code></pre><div class='ok'><span class='k'>出てきたものの確かめ方</span>結果シートに、要確認・棄却・確定のすべてが並ぶこと。棄却が消えていないこと</div></div></div>
+<div class='st' id='p6'><div class='st-h'><span class='st-n'>6</span><b>⑥ 担当者が使う画面</b><span class='st-m'>第1回・35分</span></div><div class='st-b'><p class='why'>チャットにしないことと、工程ごとに呼ぶことを指示します。</p><p class='note'>チャット画面にさせないための指示です</p><div class='il'>この文章をそのまま Gemini に投げます</div><pre><code>業務担当者が使う画面を、ウェブアプリとして作ってください。
+
+画面の要件:
+・操作は「図面を選ぶ」「ボタンを押す」の2つだけ
+・指示文を入力させない。書き方で結果が変わり、担当者ごとに
+  判定がばらつくため、指示文はコード側で固定する
+・図面の一覧はドライブのフォルダから読む。直下と、
+  その1つ下のサブフォルダまで見る
+・チェック項目数を画面に表示する
+
+処理の呼び方:
+・工程1・2・3を、画面から順番に別々に呼ぶ。1回で最後まで実行しない
+・工程が終わるたびに画面に反映し、進み具合が見えるようにする
+・各工程に「AIが担当」「コードが担当」を表示する
+・失敗した工程はそこで止め、どこで落ちたか分かるようにする
+
+1回で最後まで実行すると画面が固まって見え、担当者が止まったと
+判断して再読み込みします。また6分の制限にも近づきます。
+
+公開設定:
+・executeAs は USER_DEPLOYING（公開した人の権限で動かす）
+・access は DOMAIN（自社ドメインのみ）</code></pre><div class='ok'><span class='k'>出てきたものの確かめ方</span>ボタンを押すと工程ごとに表示が進むこと。「工程1が終わりました」のように、いま何をしているかが分かること</div></div></div>
+<div class='st' id='p7'><div class='st-h'><span class='st-n'>7</span><b>⑦ 品番のリピート確認（追加機能）</b><span class='st-m'>第2回・30分</span></div><div class='st-b'><p class='why'>URLと数値をAIに答えさせない指示が要点です。</p><p class='note'>AIに答えさせない部分を、はっきり分けます</p><div class='il'>この文章をそのまま Gemini に投げます</div><pre><code>クロス品番のリピート属性を調べる機能を追加してください。
+
+工程1 図面から品番を抜き出す（Geminiを使う）
+  ・図面に書かれている品番だけを挙げさせる
+  ・「OAS-721（SP9734）」のように併記がある場合は、両方を分けて取る
+  ・どの部位への指定かも取る
+
+工程2 メーカーを調べる（Geminiを使わない）
+  ・品番の形からメーカーを判定し、URLはコードで組み立てる
+  ・URLをAIに答えさせない。検索エンジンのURLを返してくることがあり、
+    「人が後で確認する」目的を満たさない
+  ・商品ページ → 品番検索 → 旧品番照会 の順に試す
+  ・実際にHTTPで取得し、開けることを確かめてから採用する
+  ・旧品番の形が規則に当たらない場合は、併記された現行品番で判定する
+
+工程3 リピートを読む（Geminiを使わない）
+  ・ページの決まった場所にある値なので、正規表現で取る
+  ・読み取れなかった場合は「不明」とする。推測で埋めない
+
+呼び方:
+品番1件につき1回、画面から呼んでください。
+10件をまとめて処理すると6分の制限に当たります。</code></pre><div class='ok'><span class='k'>出てきたものの確かめ方</span>出てきたURLが検索エンジンのものになっていないこと。実際に押して、メーカーの商品ページが開くこと</div></div></div>
+<div class='st' id='p8'><div class='st-h'><span class='st-n'>8</span><b>⑧ 指示文をスプレッドシートに出す</b><span class='st-m'>第2回・20分</span></div><div class='st-b'><p class='why'>AIへの指示文をコードから追い出します。「設定が無くても動く」を書かないと、設定シートが必須の作りになります。</p><p class='note'>運用に入ってから効いてくる工程です</p><div class='il'>この文章をそのまま Gemini に投げます</div><pre><code>AIへの指示文（プロンプト）を、コードからスプレッドシートに出してください。
+
+ねらい:
+読み方を変えたい、判定を厳しくしたい——運用しながら何度も出てくる要望です。
+そのたびに開発を挟まずに済むようにします。
+
+要件:
+・チェック項目表と同じスプレッドシートの「設定」シートを読む
+・A列を設定項目名、B列を値とする
+・読み取りの指示／判定の指示／品番の指示／モデル名 を持たせる
+・{ページ} と書かれていたら、対象のページ番号に置き換える
+
+いちばん重要な要件:
+・シートが無い、行が無い、値が空——どの場合もコード側の既定値に戻す。
+  設定の不備で処理を止めない
+・既定値はコードに持つ。設定シートを消しても動く状態を保つ
+・設定が読めなかった理由は、実行ログに残す。握りつぶさない
+
+・1回の実行で何度も呼ぶため、読んだ内容は持ち回して使う
+
+あわせて、設定シートの雛形を作る関数も書いてください。
+・1回だけ実行する想定
+・すでにシートがある場合、書かれている文言は上書きしない。
+  空欄の行だけ既定値で埋める</code></pre><div class='ok'><span class='k'>出てきたものの確かめ方</span>設定シートのB列を書き換えて再実行し、読み方が変わること。そのあとB列を空にして、元の動きに戻ること</div></div></div>
+<div class='st' id='p9'><div class='st-h'><span class='st-n'>9</span><b>⑨ 画面アプリ（AppSheet）から使えるようにする</b><span class='st-m'>第2回・45分</span></div><div class='st-b'><p class='why'>ここは要件が多いぶん、指示を落とすと静かに壊れます。特に「担当者が書いた内容を消さない」と「時間の上限」の2つは必ず書いてください。</p><p class='note'>要件が多いので、出てきたものを必ず2回実行して確かめます</p><div class='il'>この文章をそのまま Gemini に投げます</div><pre><code>担当者が使う画面を AppSheet で作れるように、データの受け皿を用意してください。
+
+前提として知っておいてほしいこと:
+・いまの結果シートは、実行のたびに全部消して書き直す帳票の形です。
+  この形は AppSheet では扱えません。行を一意に指すキーが無く、
+  毎回消えるので担当者が付けた印も消え、見出しが1行目に来ないためです。
+・帳票はそのまま残してください。用途が違います。
+
+作るシート（1行1レコード・キー列つき・追記型）:
+  図面   図面フォルダにあるPDFの一覧。画面の選択肢に使う
+  依頼   AppSheet が1行足す。こちらが状態を書き戻す
+  判定   1行＝1チェック項目
+  品番   1行＝1品番
+
+いちばん重要な要件:
+・判定と品番には「確認済み」「担当コメント」の列を置き、そこは空のままにする。
+  担当者が書いた内容を、次の実行で消さないこと
+・書き込み先は列名で探すこと。列番号で決め打ちしない。
+  AppSheet 側で列を足したり並べ替えたりされても壊れないようにする
+・書き込む前に、全部の行を同じ列数に揃える。
+  1行でも列数が違うと、書き込みが丸ごと失敗する
+
+処理の起こし方:
+・AppSheet から直接この処理を呼ばない。
+  AppSheet の実行時間は、アプリの操作をきっかけにした場合で2分が上限。
+  読み取りから判定までの実測は1分10秒で、ページ数が増えれば超える
+・かわりに「依頼」シートを1分ごとに見に行き、状態が「受付」の行を処理する
+・onEdit トリガーは使わない。AppSheet からの同期では発火しない
+
+処理中の扱い:
+・同じ依頼を二度処理しないこと。状態で管理する
+・失敗しても必ず状態を書き戻す。「処理中」のまま残さない。
+  残ると、動いているのか壊れているのか担当者に分からない
+・6分の制限の手前で自分から止め、そこまでを書き残す。
+  途中で打ち切られると状態が「処理中」で残り、次の起動が二重に動く
+
+図面一覧の更新:
+・フォルダから消えた図面は、行を消さずに「有効」の印だけ外す。
+  行を消すと、その図面を指している過去の依頼が参照先を失う
+
+トリガーを付ける関数も書いてください。
+・同名のトリガーを先に消してから作る。実行のたびに増えないようにする</code></pre><div class='ok'><span class='k'>出てきたものの確かめ方</span>依頼を1行足して1分待ち、状態が 受付→処理中→完了 と変わること。もう一度実行しても、同じ依頼が二重に処理されないこと</div></div></div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>先に知っておく落とし穴</h2>
+    <span class="hint">いずれも実際に踏んだものです</span></div>
+  <div class="lead">
+    <p>生成されたコードに、<b>ほぼ必ず含まれる誤り</b>です。
+      知らないまま進めると、同じ場所で止まります。</p>
+  </div>
+<div class='pf'><div class='pf-q'>appsscript.json の権限が足りない</div><div class='pf-m'>HTTP 403 ACCESS_TOKEN_SCOPE_INSUFFICIENT</div><p>コードから権限は推測されません。マニフェストに cloud-platform を明示しないと、Vertex AI の呼び出しが必ず失敗します。生成されたコードには含まれないことが多いため、必ず確認してください。</p></div>
+<div class='pf'><div class='pf-q'>スプレッドシートへの書き込みで落ちる</div><div class='pf-m'>The number of columns in the data does not match</div><p>行ごとに列数が違うと setValues() が落ちます。空行を1行入れただけで発生します。書く直前にすべての行を同じ列数に揃える処理を入れてください。</p></div>
+<div class='pf'><div class='pf-q'>JSONが配列で返ってくることがある</div><div class='pf-m'>後続の処理が落ちる</div><p>JSONで返すよう指示しても、配列で包んで返してくることがあります。配列だった場合は中のオブジェクトを取り出す処理を入れてください。</p></div>
+<div class='pf'><div class='pf-q'>全角記号が残って照合が外れる</div><div class='pf-m'>正しい根拠まで棄却される</div><p>全角の英数字だけを変換していると ＝ や ＋ が残り、「設計GL＝ＢＭ＋１５０」と「設計GL=BM+150」が別物になります。NFKC 正規化を使えば記号も含めて揃います。</p></div>
+<div class='pf'><div class='pf-q'>照合先が狭くて、正しい判定まで棄却される</div><div class='pf-m'>縮尺や図面番号を根拠にした判定が通らない</div><p>図面名・図面番号・縮尺は、読み取り結果の中で本文とは別の項目に入ります。本文だけを照合先にすると、これらを根拠にした判定が棄却されます。照合先にこれらも含めてください。</p></div>
+<div class='pf'><div class='pf-q'>外部サイトの数値をそのまま読むと桁が違う</div><div class='pf-m'>表示は63.8cm、HTMLの中身は638</div><p>画面上の数値がページ側のJavaScriptで変換されている場合があります。静的なHTMLをそのまま読むと10倍になります。取得した値が妥当か、別の項目と突き合わせて確かめてください。</p></div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>この進め方の限界</h2></div>
+  <div class="warn">
+    <p><b>生成されたコードの中身は、誰も検証していません。</b>
+      確かめているのは、期待した表示が出るかどうかだけです。
+      間違った処理をしていても、表示が出れば気づけません。</p>
+    <p>そのため、<b>判定そのものや、判定の根拠を扱う部分</b>は、
+      内容を確認したコードで動かすべきです。
+      大きく作り変えたくなったときも、生成に頼らず一度ご相談ください。</p>
+    <p>あわせて、<b>読み取り結果には施主名や担当者名が入ります。</b>
+      図面枠にそれらが書かれているためです。
+      結果シートをそのまま社外に出さないようにしてください。</p>
+  </div>
+</section>
+
+<footer>
+  株式会社デジライズ ／
+  本ページに施主名・住所・図面名・作図基準の具体的な数値は含みません。<br>
+  プロンプトは、お渡ししている Word 版の資料と同じものです。
+</footer>
+
+</div>
