@@ -1,0 +1,373 @@
+<title>AppSheet で画面を作る</title>
+<style>
+:root{
+  --bg:#F5F6F4; --card:#FFFFFF; --sunk:#EDF0EC;
+  --ink:#161A17; --ink2:#535B54; --ink3:#868E87;
+  --line:#DDE3DC; --line2:#E9EDE8;
+  --accent:#2C6E5B; --warn:#8B4A05;
+  --sh:0 1px 2px rgba(22,26,23,.05),0 10px 28px -18px rgba(22,26,23,.35);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#101210; --card:#191C19; --sunk:#1F231F;
+    --ink:#ECF0EB; --ink2:#A9B2A8; --ink3:#7C857B;
+    --line:#2A2F29; --line2:#232722;
+    --accent:#6FBFA3; --warn:#E0A96A;
+    --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101210; --card:#191C19; --sunk:#1F231F;
+  --ink:#ECF0EB; --ink2:#A9B2A8; --ink3:#7C857B;
+  --line:#2A2F29; --line2:#232722;
+  --accent:#6FBFA3; --warn:#E0A96A;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.85;
+  font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",Meiryo,system-ui,sans-serif}
+.wrap{max-width:940px;margin:0 auto;padding:48px 22px 96px;display:flex;
+  flex-direction:column;gap:38px}
+h1{margin:.2rem 0 .4rem;font-size:30px;letter-spacing:-.01em;text-wrap:balance}
+.eyebrow{margin:0;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:700}
+.meta{margin:0;color:var(--ink2);font-size:13.5px}
+.blk{display:flex;flex-direction:column}
+.sh{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line);
+  padding-bottom:10px;margin-bottom:16px;flex-wrap:wrap}
+.sh h2{margin:0;font-size:18px}
+.sh .hint{margin-left:auto;font-size:12.5px;color:var(--ink3)}
+.lead{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:18px 22px;box-shadow:var(--sh);margin-bottom:14px}
+.lead p{margin:0 0 10px;font-size:14px;color:var(--ink2);line-height:1.85}
+.lead p:last-child{margin-bottom:0}
+.lead b{color:var(--ink)}
+
+/* 段階 */
+.st{display:flex;align-items:center;gap:16px;background:var(--card);
+  border:1px solid var(--line);border-radius:11px;padding:14px 20px;
+  box-shadow:var(--sh);margin-bottom:8px}
+.st-n{font-size:12px;font-weight:700;color:var(--ink3);width:66px;flex:none}
+.st-b{flex:1;min-width:0}
+.st-b b{display:block;font-size:14.5px}
+.st-b span{font-size:12.5px;color:var(--ink3)}
+.st-f{font-size:11.5px;font-weight:700;padding:3px 11px;border-radius:20px;flex:none}
+.st.done{opacity:.62}
+.st.done .st-f{background:var(--sunk);color:var(--ink3)}
+.st.now{border-left:3px solid var(--accent)}
+.st.now .st-f{background:var(--accent);color:var(--card)}
+
+/* 図 */
+.fig{margin:0 0 14px;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:20px 22px 14px;box-shadow:var(--sh);
+  overflow-x:auto;color:var(--ink2)}
+.fig svg{max-width:100%;height:auto;display:block;margin:0 auto}
+.fig .lbl text{font-size:12.5px;fill:var(--ink);
+  font-family:"Hiragino Sans","Yu Gothic",Meiryo,system-ui,sans-serif}
+.fig .lbl .sub{font-size:11px;fill:var(--ink3)}
+.fig .cap text,.fig text.cap{font-size:11px;fill:var(--ink3);
+  font-family:"Hiragino Sans","Yu Gothic",Meiryo,system-ui,sans-serif}
+.fig .hot{stroke:var(--accent);stroke-width:1.8}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--ink3);line-height:1.75;
+  text-align:center}
+
+/* 表 */
+.tw{overflow-x:auto;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;box-shadow:var(--sh);margin-bottom:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{text-align:left;padding:11px 16px;border-bottom:1px solid var(--line);
+  font-size:11.5px;letter-spacing:.04em;color:var(--accent);white-space:nowrap}
+td{padding:10px 16px;border-bottom:1px solid var(--line2);color:var(--ink2);
+  vertical-align:top;line-height:1.7}
+tr:last-child td{border-bottom:none}
+td:first-child{color:var(--ink);white-space:nowrap}
+table.mono1 td:first-child{font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:12.5px}
+
+/* 手順 */
+.steps{margin:0 0 12px;padding:0 0 0 4px;list-style:none;counter-reset:s;
+  display:flex;flex-direction:column;gap:9px}
+.steps li{counter-increment:s;position:relative;padding-left:34px;font-size:14px;
+  color:var(--ink2);line-height:1.8}
+.steps li::before{content:counter(s);position:absolute;left:0;top:2px;
+  width:22px;height:22px;border-radius:50%;background:var(--sunk);
+  color:var(--ink);font-size:11.5px;font-weight:700;display:grid;
+  place-items:center}
+.steps li b{color:var(--ink)}
+.steps code{background:var(--sunk);padding:1px 6px;border-radius:5px;
+  font-size:12.5px;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--ink)}
+
+.sub-h{margin:18px 0 8px;font-size:14px;font-weight:700}
+.sub-h:first-child{margin-top:0}
+
+.warn{background:var(--card);border:1px solid var(--line);
+  border-left:3px solid var(--warn);border-radius:11px;padding:15px 20px;
+  box-shadow:var(--sh);margin-bottom:12px}
+.warn p{margin:0;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.warn b{color:var(--warn)}
+
+.tr{background:var(--card);border:1px solid var(--line);border-radius:11px;
+  padding:14px 20px;box-shadow:var(--sh);margin-bottom:9px}
+.tr-q{font-weight:700;font-size:13.8px;margin-bottom:4px}
+.tr p{margin:0;font-size:13px;color:var(--ink2);line-height:1.8}
+
+.box{background:var(--card);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:12px;padding:18px 22px;
+  box-shadow:var(--sh)}
+.box h4{margin:0 0 8px;font-size:14.5px}
+.box p{margin:0 0 8px;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.box p:last-child{margin-bottom:0}
+.box b{color:var(--ink)}
+pre{margin:0 0 12px;background:var(--sunk);border:1px solid var(--line2);
+  border-radius:9px;padding:14px 17px;overflow-x:auto;font-size:12.5px;
+  line-height:1.8;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--ink)}
+.src{font-size:12px;color:var(--ink3);margin:-4px 0 14px}
+a{color:var(--accent)}
+footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;
+  color:var(--ink3)}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">第3段階・第4段階</p>
+  <h1>AppSheet で画面を作る</h1>
+  <p class="meta">担当者が使う画面を、コードを書かずに作ります。
+    Apps Script 側は完成しているので、ここで足すのは画面と、
+    依頼を拾うトリガーの2つだけです。</p>
+</header>
+
+<section class="blk">
+  <div class="sh"><h2>いまどこにいるか</h2></div>
+<div class='st done'><div class='st-n'>第1段階</div><div class='st-b'><b>Apps Script</b><span>図面を読む／基準に照らす／品番を調べる</span></div><div class='st-f'>完成</div></div>
+<div class='st done'><div class='st-n'>第2段階</div><div class='st-b'><b>設定シート</b><span>AIへの指示文を表に出す。担当者が書き換えられる</span></div><div class='st-f'>完成</div></div>
+<div class='st now'><div class='st-n'>第3段階</div><div class='st-b'><b>AppSheet</b><span>担当者が使う画面。依頼を出す／結果を見る</span></div><div class='st-f'>ここから</div></div>
+<div class='st now'><div class='st-n'>第4段階</div><div class='st-b'><b>トリガー</b><span>依頼を拾って動かす／終わったら知らせる</span></div><div class='st-f'>ここから</div></div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>どう動くか</h2></div>
+
+<figure class="fig">
+<svg viewBox="0 0 860 300" role="img" width="860"
+     aria-label="担当者がAppSheetで依頼を1行追加し、Apps Scriptのトリガーが1分ごとにそれを拾って工程1から3を実行し、判定シートに1項目1行で書き出すまでの流れ">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.2">
+    <rect x="16"  y="112" width="150" height="62" rx="9"/>
+    <rect x="248" y="112" width="150" height="62" rx="9"/>
+    <rect x="480" y="72"  width="170" height="142" rx="9" class="hot"/>
+    <rect x="732" y="112" width="112" height="62" rx="9"/>
+  </g>
+  <g class="lbl">
+    <text x="91"  y="136" text-anchor="middle">担当者</text>
+    <text x="91"  y="156" text-anchor="middle" class="sub">AppSheet</text>
+    <text x="323" y="136" text-anchor="middle">依頼シート</text>
+    <text x="323" y="156" text-anchor="middle" class="sub">状態＝受付</text>
+    <text x="565" y="98"  text-anchor="middle">Apps Script</text>
+    <text x="565" y="124" text-anchor="middle" class="sub">工程1　図面を読む</text>
+    <text x="565" y="144" text-anchor="middle" class="sub">工程2　項目ごとに判定</text>
+    <text x="565" y="164" text-anchor="middle" class="sub">工程3　根拠を照合</text>
+    <text x="565" y="196" text-anchor="middle" class="sub">Vertex AI ／ コード</text>
+    <text x="788" y="136" text-anchor="middle">判定シート</text>
+    <text x="788" y="156" text-anchor="middle" class="sub">1項目1行</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#ah)">
+    <line x1="166" y1="143" x2="240" y2="143"/>
+    <line x1="398" y1="143" x2="472" y2="143"/>
+    <line x1="650" y1="143" x2="724" y2="143"/>
+  </g>
+  <g class="cap">
+    <text x="203" y="132" text-anchor="middle">1行足す</text>
+    <text x="435" y="132" text-anchor="middle">1分ごとに</text>
+    <text x="435" y="150" text-anchor="middle">拾う</text>
+    <text x="687" y="132" text-anchor="middle">追記する</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1.2"
+     stroke-dasharray="4 4" marker-end="url(#ah)">
+    <path d="M788,174 L788,246 L91,246 L91,180"/>
+  </g>
+  <text x="440" y="264" text-anchor="middle" class="cap">
+    AppSheet が同期して画面に出る　→　確認済みにチェック／コメントを書く</text>
+</svg>
+<figcaption>AppSheet は依頼を1行足すだけ。重い処理はトリガーが拾う。
+  この形なら AppSheet の2分制限を踏まない。</figcaption>
+</figure>
+
+  <div class="lead">
+    <p>担当者がやることは<b>「依頼を1行足す」だけ</b>です。
+      図面と対象を選んで保存すると、1分以内に処理が始まります。</p>
+    <p>終わると状態が「完了」に変わり、判定シートに結果が1項目1行で並びます。
+      画面では、確認済みのチェックとコメントだけを書き込みます。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>AppSheet から直接 Apps Script を呼ばない理由</h2>
+    <span class="hint">ここが設計の分かれ目です</span></div>
+  <div class="lead">
+    <p>AppSheet には実行時間の上限があります。</p>
+  </div>
+<div class='tw'><table class=''><thead><tr><th>区分</th><th>AppSheet 上の呼び名</th><th>上限</th></tr></thead><tbody><tr><td>アプリの操作をきっかけにした実行</td><td>app event</td><td>2 分</td></tr><tr><td>時刻をきっかけにした実行</td><td>schedule event</td><td>5 分</td></tr></tbody></table></div>
+  <p class="src">出典: AppSheet ヘルプ「Automation limits」</p>
+  <div class="warn">
+    <p>こちらで測った実測は、<b>5ページの図面で工程1〜3が1分10秒</b>でした。
+      2分に対して余裕がありません。ページ数の多い図面では確実に超えます。<br>
+      そのため AppSheet には「依頼を1行足す」ことだけをさせ、
+      重い処理は Apps Script 側のトリガーに任せます。</p>
+  </div>
+  <div class="lead">
+    <p><b>onEdit トリガーも使いません。</b>
+      「依頼が追加されたら動く」を onEdit で作りたくなりますが、動きません。
+      AppSheet からの同期では onEdit は発火しないためです。
+      Google 自身が、時間指定のトリガーを使うよう案内しています。</p>
+  </div>
+  <p class="src">出典: AppSheet ヘルプ「Google スプレッドシートのデータを使用する」―
+    「onEdit トリガーは、データが編集され、AppSheet を介してスプレッドシートに
+    同期されている場合には、実行されません」</p>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>手順1　シートを作る</h2>
+    <span class="hint">Apps Script でボタンを押すだけ</span></div>
+  <div class="lead">
+    <p>コードを最新版に貼り替えてから、<code>setupAppSheetSheets</code> を実行します。
+      チェック項目表と同じスプレッドシートに、4つのシートができます。</p>
+  </div>
+<div class='tw'><table class=''><thead><tr><th>シート</th><th>誰が書くか</th><th>内容</th></tr></thead><tbody><tr><td>図面</td><td>Apps Script</td><td>図面フォルダにあるPDFの一覧。選択肢に使う</td></tr><tr><td>依頼</td><td>AppSheet が追加 → Apps Script が状態を書き戻す</td><td>1行＝1回の依頼</td></tr><tr><td>判定</td><td>Apps Script</td><td>1行＝1チェック項目。確認済みとコメントだけ担当者が書く</td></tr><tr><td>品番</td><td>Apps Script</td><td>1行＝1品番。同上</td></tr></tbody></table></div>
+  <div class="warn">
+    <p>従来の「チェック結果」シートはそのまま残ります。<b>用途が違います。</b>
+      あちらは帳票（毎回上書き）、こちらは台帳（追記）です。
+      AppSheet が読むのは新しい4シートのほうです。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>手順2　アプリを作る</h2></div>
+<ol class='steps'><li>appsheet.com にアクセスし、Workspace のアカウントでログインする</li><li>My Apps ページで <b>＋ Create</b> → 自分のデータから始める を選ぶ</li><li>チェック項目表のスプレッドシートを選ぶ</li><li>アプリエディタが開く。最初のシートがテーブルとして取り込まれる</li><li>左メニューの <b>Data</b> → <b>＋ Add new table</b> で 「図面」「依頼」「判定」「品番」の4つを足す</li></ol>
+  <div class="warn">
+    <p>取り込む順番は <b>図面 → 依頼 → 判定 → 品番</b> にしてください。
+      依頼は図面を参照し、判定と品番は依頼を参照します。
+      参照される側が先に無いと、参照の設定ができません。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>手順3　列を設定する</h2>
+    <span class="hint">いちばん手が要ります</span></div>
+
+  <div class="sub-h">依頼テーブル</div>
+<div class='tw'><table class=''><thead><tr><th>列</th><th>型</th><th>キー</th><th>初期値</th><th>担当者が編集</th></tr></thead><tbody><tr><td>依頼ID</td><td>Text</td><td>✓</td><td>UNIQUEID()</td><td>しない</td></tr><tr><td>受付日時</td><td>DateTime</td><td></td><td>NOW()</td><td>しない</td></tr><tr><td>種別</td><td>Enum</td><td></td><td>図面チェック</td><td>する</td></tr><tr><td>図面ID</td><td>Ref（参照先＝図面）</td><td></td><td></td><td>する</td></tr><tr><td>ファイル名</td><td>Text</td><td></td><td></td><td>しない</td></tr><tr><td>対象</td><td>Text</td><td></td><td></td><td>する</td></tr><tr><td>ページ</td><td>Number</td><td></td><td>1</td><td>する</td></tr><tr><td>状態</td><td>Enum</td><td></td><td>受付</td><td>しない</td></tr><tr><td>件数</td><td>Number</td><td></td><td></td><td>しない</td></tr><tr><td>メッセージ</td><td>LongText</td><td></td><td></td><td>しない</td></tr><tr><td>完了日時</td><td>DateTime</td><td></td><td></td><td>しない</td></tr></tbody></table></div>
+  <div class="warn">
+    <p><b>「状態」の初期値に「受付」を入れてください。</b>
+      ここが空だと、トリガーが依頼を見つけられず、いつまでも動きません。
+      つまずくとしたら、まずここです。</p>
+  </div>
+  <div class="lead">
+    <p>Enum に入れる値です。<b>1字でも違うと動きません。</b></p>
+  </div>
+  <pre>種別　　図面チェック / 品番リピート
+状態　　受付 / 処理中 / 完了 / エラー</pre>
+
+  <div class="sub-h">判定テーブル</div>
+<div class='tw'><table class=''><thead><tr><th>列</th><th>型</th><th>キー</th><th>担当者が編集</th></tr></thead><tbody><tr><td>判定ID</td><td>Text</td><td>✓</td><td>しない</td></tr><tr><td>依頼ID</td><td>Ref（参照先＝依頼）</td><td></td><td>しない</td></tr><tr><td>区分</td><td>Enum（確定 / 要確認 / 棄却）</td><td></td><td>しない</td></tr><tr><td>No ・ チェック項目 ・ 判定 ・ 根拠 ・ 理由 ・ 基準 ・ 出典</td><td>Text / LongText</td><td></td><td>しない</td></tr><tr><td>確認済み</td><td>Yes/No</td><td></td><td>する</td></tr><tr><td>担当コメント</td><td>LongText</td><td></td><td>する</td></tr></tbody></table></div>
+  <div class="warn">
+    <p>確認済みと担当コメント以外は、<b>Editable? を off</b> にしてください。
+      Apps Script が書く列を担当者が上書きすると、
+      次の実行結果と食い違って原因が追えなくなります。</p>
+  </div>
+
+  <div class="sub-h">品番テーブル</div>
+  <div class="lead">
+    <p>判定テーブルと同じ考え方です。1点だけ違います。<br>
+      <b>URL 列と旧品番照会列は、型を Url にしてください。</b>
+      押すとメーカーのページが開きます。Text のままだと文字列として出るだけです。</p>
+  </div>
+
+  <div class="sub-h">図面テーブル</div>
+  <div class="lead">
+    <p>図面IDをキーにし、<b>ファイル名に LABEL を付けてください。</b>
+      これが無いと、依頼フォームの選択肢にIDの文字列が並びます。</p>
+    <p>フォルダから消えた図面は、行を残したまま「有効」欄が空になります。
+      選択肢に出したくない場合は、依頼テーブルの図面ID列の Valid If に
+      次を入れてください。</p>
+  </div>
+  <pre>SELECT(図面[図面ID], [有効] = "○")</pre>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>手順4　画面を作る</h2></div>
+  <div class="lead">
+    <p>左メニューの Views で作ります。最低限これだけあれば回ります。</p>
+  </div>
+<div class='tw'><table class=''><thead><tr><th>画面</th><th>種類</th><th>役割</th></tr></thead><tbody><tr><td>依頼</td><td>Deck</td><td>依頼の一覧。状態が色で分かる</td></tr><tr><td>新規依頼</td><td>Form</td><td>図面と対象を選んで依頼を出す</td></tr><tr><td>判定</td><td>Table</td><td>結果の一覧。確認済みを付ける</td></tr><tr><td>品番</td><td>Table</td><td>品番とリピートの一覧</td></tr></tbody></table></div>
+  <div class="lead">
+    <p>依頼の Deck ビューで、状態によって色を変えると分かりやすくなります。
+      Format Rules で「状態＝エラー」のとき赤、「状態＝完了」のとき緑、
+      といった設定ができます。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>手順5　トリガーを付けて、通知する</h2>
+    <span class="hint">第4段階</span></div>
+<ol class='steps'><li>Apps Script で <code>installPendingTrigger</code> を実行する</li><li>1分ごとに <code>runPending</code> が動くようになる</li><li>先ほど出した依頼の状態が、受付 → 処理中 → 完了 と変わることを確認する</li><li>図面フォルダにPDFを足したときは <code>refreshDrawings</code>。毎朝そろえるなら <code>installDrawingsTrigger</code></li></ol>
+  <div class="lead">
+    <p>通知は AppSheet 側で作るのが簡単です。コードは要りません。
+      Automation で Bot を作り、
+      きっかけを「依頼テーブルの行が更新されたとき」、
+      条件を「状態が 完了 または エラー に変わったとき」にして、
+      メールか Google Chat を送ります。</p>
+    <p>Workspace Studio で作ることもできますが、この用途では
+      AppSheet の Bot のほうが素直です。
+      <b>依頼を出した本人が誰かを、AppSheet 側は知っている</b>ためです。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>実行する関数のまとめ</h2></div>
+<div class='tw'><table class='mono1'><thead><tr><th>関数</th><th>いつ実行するか</th><th>何が起きるか</th></tr></thead><tbody><tr><td>setupProperties</td><td>コードを貼り直したとき（毎回）</td><td>設定値をスクリプトプロパティに入れます</td></tr><tr><td>setupSettingsSheet</td><td>最初に1回</td><td>「設定」シートを作り、指示文の既定値を入れます</td></tr><tr><td>setupAppSheetSheets</td><td>最初に1回</td><td>図面・依頼・判定・品番の4シートを作ります</td></tr><tr><td>installPendingTrigger</td><td>最初に1回</td><td>1分ごとに依頼を拾うトリガーを付けます</td></tr><tr><td>installDrawingsTrigger</td><td>最初に1回（任意）</td><td>毎朝、図面の一覧をそろえます</td></tr><tr><td>refreshDrawings</td><td>図面を足してすぐ反映したいとき</td><td>図面フォルダの中身をシートに反映します</td></tr><tr><td>listTriggers</td><td>確認したいとき</td><td>付いているトリガーを表示します</td></tr></tbody></table></div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>つまずきやすい点</h2>
+    <span class="hint">こちらで実際に当たったものだけ</span></div>
+<div class='tr'><div class='tr-q'>依頼を出しても、いつまでも状態が変わらない</div><p>「状態」列の初期値が「受付」になっていません。AppSheet の Data → Columns → 状態 → Initial value を確認してください。つまずくとしたら、まずここです。</p></div>
+<div class='tr'><div class='tr-q'>トリガーを作るところで権限エラーになる</div><p>appsscript.json に script.scriptapp が入っていません。今回から増えた権限です。前回のままだと必ず出ます。</p></div>
+<div class='tr'><div class='tr-q'>Vertex AI の呼び出しが HTTP 403 になる</div><p>appsscript.json を差し替えていません。cloud-platform の権限はコードから推測されないため、明示が要ります。</p></div>
+<div class='tr'><div class='tr-q'>図面の選択肢が空になる</div><p>図面フォルダのIDが未設定です。setupProperties を実行してください。コードを貼り直したあとは、もう一度実行が要ります。</p></div>
+<div class='tr'><div class='tr-q'>図面の選択肢にIDが並ぶ</div><p>図面テーブルの「ファイル名」に LABEL が付いていません。</p></div>
+<div class='tr'><div class='tr-q'>品番のURLが押せない</div><p>URL 列の型が Text のままです。Url に変えてください。</p></div>
+<div class='tr'><div class='tr-q'>状態が「処理中」のまま止まる</div><p>Apps Script の6分制限に当たった可能性があります。ページ数の多い図面は、ページを指定して1ページずつ依頼してください。</p></div>
+<div class='tr'><div class='tr-q'>品番の一部が「未確認」になる</div><p>時間切れです。もう一度同じ依頼を出すと、その分を調べ直します。</p></div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>この作りの限界</h2></div>
+  <div class="box">
+    <h4>先に申し上げておきます</h4>
+    <p><b>依頼から結果が出るまでに、最大1分の待ちが入ります。</b>
+      押した瞬間に結果が出る作りではありません。
+      これは AppSheet の実行時間の上限を踏まないための設計です。</p>
+    <p><b>図面上の位置は出しません。</b>
+      品番の検出そのものは実測で11番号中10箇所・誤検出0でしたが、
+      位置の特定は3×3分割で75%にとどまっています。
+      4件に1件外れる案内は、無いほうがましだと判断しました。
+      位置を取る処理自体は動いているので、精度が上がれば足せます。</p>
+    <p><b>AppSheet は、開発とテストは無料です。</b>
+      担当者に配って使わせる段階で有料プランが要ります。
+      Workspace のエディションによっては AppSheet Core が含まれています。
+      契約に含まれているかは管理コンソールでご確認ください。</p>
+  </div>
+</section>
+
+<footer>
+  株式会社デジライズ ／
+  本ページに施主名・住所・図面名・作図基準の具体的な数値は含みません。
+</footer>
+
+</div>
