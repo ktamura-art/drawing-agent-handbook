@@ -1,0 +1,257 @@
+<title>Workspace Studio 検証結果</title>
+<style>
+:root{
+  --bg:#F5F6F4; --card:#FFFFFF; --sunk:#EEF1EC;
+  --ink:#141A16; --ink2:#4F5A52; --ink3:#87918B;
+  --line:#DDE3DD; --line2:#EBEFEA;
+  --accent:#2F5D3A; --ok:#2F5D3A; --warn:#8A5410; --bad:#8C332C;
+  --okbg:#E9F1EA; --badbg:#F8EDEC;
+  --sh:0 1px 2px rgba(20,26,22,.05),0 10px 28px -18px rgba(20,26,22,.35);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D110E; --card:#161B17; --sunk:#1C231E;
+    --ink:#EAF0EB; --ink2:#A8B4AB; --ink3:#7B857E;
+    --line:#27302A; --line2:#1F2721;
+    --accent:#7FCE92; --ok:#7FCE92; --warn:#E3B36C; --bad:#E28C85;
+    --okbg:#16241A; --badbg:#241716;
+    --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D110E; --card:#161B17; --sunk:#1C231E;
+  --ink:#EAF0EB; --ink2:#A8B4AB; --ink3:#7B857E;
+  --line:#27302A; --line2:#1F2721;
+  --accent:#7FCE92; --ok:#7FCE92; --warn:#E3B36C; --bad:#E28C85;
+  --okbg:#16241A; --badbg:#241716;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.85;
+  font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",Meiryo,system-ui,sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:48px 22px 96px;display:flex;
+  flex-direction:column;gap:34px}
+h1{margin:.2rem 0 .4rem;font-size:30px;letter-spacing:-.01em;text-wrap:balance}
+.eyebrow{margin:0;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:700}
+.meta{margin:0;color:var(--ink2);font-size:13.5px}
+.blk{display:flex;flex-direction:column}
+.sh{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line);
+  padding-bottom:10px;margin-bottom:16px;flex-wrap:wrap}
+.sh h2{margin:0;font-size:18px}
+.sh .hint{margin-left:auto;font-size:12.5px;color:var(--ink3)}
+.lead{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:18px 22px;box-shadow:var(--sh)}
+.lead p{margin:0 0 10px}
+.lead p:last-child{margin-bottom:0}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
+.fact{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:16px 20px;box-shadow:var(--sh)}
+.fact.ok{border-left:3px solid var(--ok)}
+.fact.ng{border-left:3px solid var(--bad)}
+.fh{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;
+  margin-bottom:8px;line-height:1.5}
+.fm{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:9px;
+  white-space:nowrap;flex:none}
+.fact.ok .fm{background:var(--okbg);color:var(--ok)}
+.fact.ng .fm{background:var(--badbg);color:var(--bad)}
+.fact p{margin:0 0 8px;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.fact .note{margin:0;font-size:12.5px;color:var(--ink3)}
+.tbl{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--sh);overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:640px}
+th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line2);
+  vertical-align:top}
+th{font-size:11.5px;letter-spacing:.05em;color:var(--ink3);
+  border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+td.n{color:var(--ink3);width:34px;font-variant-numeric:tabular-nums}
+td.m{font-weight:700;font-size:15px;text-align:center;width:64px}
+td.m.yes{color:var(--ok)} td.m.no{color:var(--bad)} td.m.half{color:var(--warn)}
+td.sub,.sub{color:var(--ink3);font-size:12.5px}
+td div.sub{margin-top:4px}
+.cards2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
+.card2{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:18px 22px;box-shadow:var(--sh)}
+.card2 h4{margin:0 0 8px;font-size:14.5px}
+.card2 p{margin:0 0 10px;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.card2 p:last-child{margin-bottom:0}
+pre{margin:0;background:var(--sunk);border:1px solid var(--line2);border-radius:9px;
+  padding:14px 16px;overflow-x:auto;font-size:12.5px;line-height:1.75;
+  font-family:ui-monospace,Menlo,Consolas,monospace}
+p code,li code,td code{background:var(--sunk);padding:1px 6px;border-radius:5px;
+  font-size:12.5px}
+.box{background:var(--card);border:1px solid var(--line);
+  border-left:3px solid var(--warn);border-radius:12px;padding:18px 22px;
+  box-shadow:var(--sh)}
+.box h4{margin:0 0 8px;font-size:14.5px}
+.box p{margin:0 0 8px;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.box p:last-child{margin-bottom:0}
+a{color:var(--accent)}
+footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;
+  color:var(--ink3)}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Google Workspace Studio</p>
+  <h1>ノーコードで、どこまで届いたか</h1>
+  <p class="meta">図面チェックを Google Workspace Studio で組み、実際に動かした結果です。
+    2026年9月3日 実施。記載はすべて画面で確認した事実で、推測は含みません。
+    できなかったことも、できたことと同じように載せています。</p>
+</header>
+
+<section class="blk">
+  <div class="sh"><h2>結論</h2></div>
+  <div class="lead">
+    <p><b>判定までは届きます。指定と整形は届きません。</b></p>
+    <p>図面を読み、チェック項目表と突き合わせ、項目ごとに判定するところまでは、
+      コードを書かずに実現できました。読み取りの精度も、
+      プロンプトの書き方次第で実用的な水準に達します。</p>
+    <p>一方で、<b>どの図面を対象にするかを指定できません</b>。また
+      <b>判定結果を1項目1行に分けられません</b>。
+      いずれもツール側の作りによるもので、設定では解決できませんでした。</p>
+    <p>Google Workspace Studio は Business / Enterprise プランに含まれており、
+      <b>追加の契約なしで使えます</b>。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>できたこと・できなかったこと</h2>
+    <span class="hint">すべて実機で確認</span></div>
+  <div class="facts">
+<div class='fact ok'><div class='fh'><span class='fm'>できた</span>図面を読み取れる</div><p>図面枠の10項目（事務所名称・登録番号・設計者名・検図者名・工事名・図面名称・図面番号・縮尺・作成者・日付）をすべて取得できた。図面本体の記載も数百件を取得。クロス品番も拾えた。</p><p class='note'>ただし、そのままでは読めない。「図面枠が下端にあり、そこに何が並んでいるか」をプロンプトで教えて初めて読めるようになった。</p></div>
+<div class='fact ok'><div class='fh'><span class='fm'>できた</span>チェック項目表を読み込める</div><p>「シートのコンテンツを取得」ステップで、スプレッドシートの項目表をそのまま読み込める。</p><p class='note'>項目を増やすときは表に行を足すだけ。フローは触らない。</p></div>
+<div class='fact ok'><div class='fh'><span class='fm'>できた</span>項目ごとに判定できる</div><p>読み取り結果と項目表を突き合わせ、適合／要確認／対象外の判定と、その理由を出力できた。</p><p class='note'>根拠の引用も指示どおり行う。</p></div>
+<div class='fact ok'><div class='fh'><span class='fm'>できた</span>結果をスプレッドシートに書ける</div><p>「行を追加」ステップで書き込める。</p><p class='note'>ただし1図面1行になる。1項目1行にはならない（下記）。</p></div>
+<div class='fact ng'><div class='fh'><span class='fm'>できなかった</span>トリガーで受け取ったファイルを、後続ステップに渡せない</div><p>「フォルダにアイテムが追加されたとき」で起動しても、そのファイルを「Gemini に相談」の対象として指定する方法が無い。</p><p class='note'>「特定のソース」には変数を挿す欄が無く、手で選んだファイルに固定される。「すべてのソース」＋プロンプトにリンク変数を挿しても「指定されたファイルが提供されておらず」と返る。</p></div>
+<div class='fact ng'><div class='fh'><span class='fm'>できなかった</span>繰り返しが、各回にアイテムを渡さない</div><p>「リストの各アイテムを繰り返す」は回数どおり繰り返すが、サブステップには毎回リスト全体が渡る。</p><p class='note'>14項目のリストで14回繰り返した結果、まったく同じ行が14行書き込まれた。各セルには14項目ぶんが連結されて入っていた。</p></div>
+<div class='fact ng'><div class='fh'><span class='fm'>できなかった</span>根拠が実在するかを機械的に照合できない</div><p>AIが挙げた根拠が、読み取り結果に本当に含まれるかを文字列として突き合わせる手段が無い。</p><p class='note'>「決定」ステップはAIによる判断のため、自分の出力を自分で検証する形になる。</p></div>
+<div class='fact ng'><div class='fh'><span class='fm'>できなかった</span>担当者に配る画面を作れない</div><p>Studio のフローに、業務担当者向けの操作画面は無い。</p><p class='note'>図面をフォルダに置く運用になる。</p></div>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>「繰り返しが使えない」をどう確かめたか</h2>
+    <span class="hint">結論だけでなく、確かめ方も残します</span></div>
+  <div class="lead" style="margin-bottom:14px">
+    <p>リストを1件ずつ処理する「リストの各アイテムを繰り返す」というステップがあります。
+      これが使えれば、判定結果を1項目1行で書き出せます。
+      使えるかどうかを5通りの方法で確かめました。</p>
+  </div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th></th><th>試したこと</th><th>結果</th><th>分かったこと</th></tr></thead>
+      <tbody>
+<tr><td class='n'>1</td><td>判定結果をリストで出力させた<div class='sub'>ステップ3の［回答の形式］を「リスト」にした</div></td><td class='sub'>実行履歴に「• list_item:」が14件並んだ。繰り返しも「リスト内の 14 個のアイテムを繰り返す」と表示された。</td><td><b>リストとしては正しく分解されている</b></td></tr>
+<tr><td class='n'>2</td><td>繰り返しの中で「抽出」にリストを渡した<div class='sub'>分析するコンテンツ＝ステップ3の詳細リスト</div></td><td class='sub'>14回とも、リスト全体（14項目ぶん）を抽出した。スプレッドシートには同じ行が14行入った。</td><td><b>サブステップはリスト全体を見ている</b></td></tr>
+<tr><td class='n'>3</td><td>繰り返しの中で「行を追加」にリストを渡した<div class='sub'>列＝ステップ3の詳細リスト</div></td><td class='sub'>「利用できないステップからの参照情報です」というエラーが出た。</td><td><b>ループ内から元のリストは参照できない</b></td></tr>
+<tr><td class='n'>4</td><td>繰り返しの中で、変数を一切入れずに聞いた<div class='sub'>「渡されたテキストの先頭の数字を1つ答えて。何も渡されていなければ『なし』と答えて」とだけ書いた</div></td><td class='sub'>回答は「なし」だった。</td><td><b>暗黙にもアイテムは渡っていない</b></td></tr>
+<tr><td class='n'>5</td><td>変数の一覧を確認した<div class='sub'>サブステップの［＋変数］を開いた。検索欄に「繰り返」「アイテム」と入力した</div></td><td class='sub'>ステップ1・2・3しか表示されない。繰り返しステップの設定を完了させても現れない。</td><td><b>選べる変数として存在しない</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="meta" style="margin-top:10px">
+    とくに4番目が決め手です。変数を一切入れずに聞いたので、
+    「暗黙に渡っているかどうか」だけを切り分けられます。</p>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>読み取りは、指示の書き方で変わります</h2></div>
+  <div class="cards2">
+    <div class="card2">
+      <h4>そのままでは読めませんでした</h4>
+      <p>「この図面を読み取ってください」とだけ指示した場合、
+        <b>「図面枠の内容や図面本体のテキストデータが含まれていないため、
+        読み取ることができません」</b>と返ってきました。</p>
+      <p>A3の図面を1枚まるごと渡しているため、
+        どこを見ればよいのか分からない状態だったと考えられます。</p>
+    </div>
+    <div class="card2">
+      <h4>場所を教えると読めました</h4>
+      <p>「図面枠は下端にあり、そこに事務所名称・登録番号・設計者名…が
+        並んでいる」と<b>位置と項目名を先に伝える</b>指示に変えたところ、
+        10項目すべてを取得できました。</p>
+      <p>図面本体の記載も数百件を取得し、クロス品番も拾えました。
+        <b>同じ図面、同じツールで、指示文だけの違いです。</b></p>
+    </div>
+  </div>
+  <div class="box" style="margin-top:14px">
+    <h4>読み取れたことを、どう確かめたか</h4>
+    <p>出力に含まれる文字列が、<b>チェック項目表にも含まれていないか</b>を確認しました。
+      項目表の文言をなぞっているだけでは「読めた」とは言えないためです。</p>
+    <p>設計者名・登録番号・作成者名・日付など、<b>項目表のどこにも存在しない情報</b>が
+      出力されていたため、図面そのものを読んでいると判断できます。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>Apps Script で組んだものとの違い</h2></div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>できること</th><th>Studio</th><th>Apps Script</th><th></th></tr></thead>
+      <tbody>
+<tr><td>図面を読み取る</td><td class='m yes'>○</td><td class='m yes'>○</td><td class='sub'></td></tr>
+<tr><td>チェック項目表を読む</td><td class='m yes'>○</td><td class='m yes'>○</td><td class='sub'></td></tr>
+<tr><td>項目ごとに判定する</td><td class='m yes'>○</td><td class='m yes'>○</td><td class='sub'></td></tr>
+<tr><td>対象の図面を指定する</td><td class='m no'>×</td><td class='m yes'>○</td><td class='sub'>Studio はトリガーのファイルを渡せない。フォルダに1枚だけ置く運用になる</td></tr>
+<tr><td>1項目1行で書き出す</td><td class='m no'>×</td><td class='m yes'>○</td><td class='sub'>Studio は繰り返しにアイテムを渡せない</td></tr>
+<tr><td>根拠が実在するか照合する</td><td class='m no'>×</td><td class='m yes'>○</td><td class='sub'>文字列の突き合わせを書く場所が無い</td></tr>
+<tr><td>担当者に配る画面</td><td class='m no'>×</td><td class='m yes'>○</td><td class='sub'>Studio に画面の概念が無い</td></tr>
+<tr><td>非エンジニアが直せる範囲</td><td class='m yes'>○</td><td class='m half'>△</td><td class='sub'>Studio はプロンプトも流れも画面で直せる</td></tr>
+<tr><td>追加の契約・環境</td><td class='m half'>不要</td><td class='m half'>不要</td><td class='sub'>Studio は Business / Enterprise に含まれる</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>組み合わせるなら</h2></div>
+  <div class="lead" style="margin-bottom:14px">
+    <p>Studio が苦手なのは<b>整形と照合</b>で、いずれも短いコードで片付きます。
+      判定までを Studio に任せ、結果を1項目1行に展開する部分だけを
+      スクリプトにする構成が現実的です。</p>
+  </div>
+  <pre><code>Studio     図面を読む → 項目表と突き合わせ → 判定 → シートに1行
+   ↓
+スクリプト  その1行を、1項目1行に展開する（150行程度）</code></pre>
+  <div class="cards2" style="margin-top:14px">
+    <div class="card2">
+      <h4>スプレッドシートに付けるだけです</h4>
+      <p>拡張機能 → Apps Script に貼り付けて実行します。
+        Google Cloud の設定も、追加の権限も要りません。</p>
+      <p>一度置いたら触りません。日々の調整は Studio 側で行えます。</p>
+    </div>
+    <div class="card2">
+      <h4>カスタムステップにはしません</h4>
+      <p>Studio には「カスタム ステップ」という拡張の仕組みがありますが、
+        <b>Google Workspace アドオンとして開発する</b>必要があります。</p>
+      <p>マニフェストの定義、デプロイ、配布の手続きが伴います。
+        同じことをするなら、スプレッドシート側に置くほうが軽く済みます。</p>
+    </div>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>確かめていないこと</h2></div>
+  <div class="box">
+    <h4>正直に申し上げておきます</h4>
+    <p><b>読み取り精度は測っていません。</b>
+      「読める／読めない」は確認しましたが、
+      何件中何件を正しく読めるかという数字は出していません。
+      判定の正誤についても同様です。</p>
+    <p><b>文字が埋め込まれていない図面での確認が不十分です。</b>
+      図面によっては、PDFに文字情報がまったく含まれていないものがあります。
+      そうした図面での読み取りは、別途確認が必要です。</p>
+    <p><b>ここに書いたのは、ある1日の、ある構成での結果です。</b>
+      ツールは更新されます。仕様が変われば結論も変わります。</p>
+  </div>
+</section>
+
+<footer>
+  株式会社デジライズ ／ 2026年9月3日 実施。
+  本ページに施主名・住所・図面・作図基準の具体的な数値は含みません。
+</footer>
+
+</div>
