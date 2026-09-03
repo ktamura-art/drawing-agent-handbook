@@ -1,0 +1,365 @@
+<title>図面を読む経路</title>
+<style>
+:root{
+  --bg:#F7F6F3; --card:#FFFFFF; --sunk:#EFEDE7;
+  --ink:#17150F; --ink2:#57534A; --ink3:#8B857A;
+  --line:#E1DDD3; --line2:#EBE8E1;
+  --accent:#8A5A1C; --cold:#5B6570; --warm:#8A5A1C;
+  --sh:0 1px 2px rgba(23,21,15,.05),0 10px 28px -18px rgba(23,21,15,.35);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#111110; --card:#1A1917; --sunk:#211F1C;
+    --ink:#F1EEE8; --ink2:#B0A99E; --ink3:#827B71;
+    --line:#2D2A25; --line2:#25221E;
+    --accent:#E2AC6C; --cold:#93A0AC; --warm:#E2AC6C;
+    --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111110; --card:#1A1917; --sunk:#211F1C;
+  --ink:#F1EEE8; --ink2:#B0A99E; --ink3:#827B71;
+  --line:#2D2A25; --line2:#25221E;
+  --accent:#E2AC6C; --cold:#93A0AC; --warm:#E2AC6C;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.85;
+  font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",Meiryo,system-ui,sans-serif}
+.wrap{max-width:940px;margin:0 auto;padding:48px 22px 96px;display:flex;
+  flex-direction:column;gap:40px}
+h1{margin:.2rem 0 .4rem;font-size:31px;letter-spacing:-.01em;text-wrap:balance}
+.eyebrow{margin:0;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:700}
+.meta{margin:0;color:var(--ink2);font-size:13.5px;max-width:62ch}
+.blk{display:flex;flex-direction:column}
+.sh{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line);
+  padding-bottom:10px;margin-bottom:16px;flex-wrap:wrap}
+.sh h2{margin:0;font-size:18.5px}
+.sh .hint{margin-left:auto;font-size:12.5px;color:var(--ink3)}
+.lead{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:18px 22px;box-shadow:var(--sh);margin-bottom:14px}
+.lead p{margin:0 0 10px;font-size:14px;color:var(--ink2);line-height:1.85}
+.lead p:last-child{margin-bottom:0}
+.lead b{color:var(--ink)}
+
+/* 実測カード */
+.m{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:17px 21px;box-shadow:var(--sh);margin-bottom:10px}
+.m.gas{border-left:3px solid var(--warm)}
+.m.studio{border-left:3px solid var(--cold)}
+.m.regex{border-left:3px solid var(--line)}
+.m-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.m-h b{font-size:15px}
+.m-h .m-s{display:none}
+.m-n{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:8px 18px;margin-bottom:9px;font-size:14px;
+  font-variant-numeric:tabular-nums}
+.m-n .k{display:block;font-size:10.5px;letter-spacing:.06em;color:var(--ink3)}
+.m.gas .m-n{color:var(--warm);font-weight:700}
+.m p{margin:0;font-size:13px;color:var(--ink2);line-height:1.8}
+
+/* 図 */
+.fig{margin:0 0 14px;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:22px 22px 14px;box-shadow:var(--sh);
+  overflow-x:auto;color:var(--ink2)}
+.fig svg{max-width:100%;height:auto;display:block;margin:0 auto}
+.fig .lbl text{font-size:12.5px;fill:var(--ink);
+  font-family:"Hiragino Sans","Yu Gothic",Meiryo,system-ui,sans-serif}
+.fig .lbl .sub{font-size:10.5px;fill:var(--ink3)}
+.fig text.rowlbl{font-size:11px;fill:var(--ink3);letter-spacing:.08em;
+  font-family:"Hiragino Sans","Yu Gothic",Meiryo,system-ui,sans-serif}
+.fig text.cap{font-size:10.5px;fill:var(--ink3);
+  font-family:"Hiragino Sans","Yu Gothic",Meiryo,system-ui,sans-serif}
+.fig .lbl .cold{fill:var(--cold);font-weight:700}
+.fig .lbl .warm{fill:var(--warm);font-weight:700}
+.fig .hot{stroke:var(--warm);stroke-width:1.8}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--ink3);line-height:1.75;
+  text-align:center}
+
+/* 表 */
+.tw{overflow-x:auto;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;box-shadow:var(--sh);margin-bottom:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{text-align:left;padding:11px 16px;border-bottom:1px solid var(--line);
+  font-size:11.5px;letter-spacing:.04em;color:var(--accent);white-space:nowrap}
+td{padding:10px 16px;border-bottom:1px solid var(--line2);color:var(--ink2);
+  vertical-align:top;line-height:1.7}
+tr:last-child td{border-bottom:none}
+td:first-child{color:var(--ink);white-space:nowrap;
+  font-variant-numeric:tabular-nums}
+
+/* カード */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:11px}
+.c{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:17px 21px;box-shadow:var(--sh)}
+.c h4{margin:0 0 7px;font-size:14px}
+.c p{margin:0;font-size:13px;color:var(--ink2);line-height:1.8}
+.c.can{border-top:3px solid var(--warm)}
+.c.cannot{border-top:3px solid var(--cold)}
+
+/* 手順 */
+.steps{margin:0 0 12px;padding:0;list-style:none;counter-reset:s;
+  display:flex;flex-direction:column;gap:9px}
+.steps li{counter-increment:s;position:relative;padding-left:34px;font-size:14px;
+  color:var(--ink2);line-height:1.8}
+.steps li::before{content:counter(s);position:absolute;left:0;top:2px;
+  width:22px;height:22px;border-radius:50%;background:var(--sunk);
+  color:var(--ink);font-size:11.5px;font-weight:700;display:grid;place-items:center}
+.steps li b{color:var(--ink)}
+.steps code,p code,td code{background:var(--sunk);padding:1px 6px;border-radius:5px;
+  font-size:12.5px;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--ink)}
+
+.warn{background:var(--card);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:11px;padding:16px 21px;
+  box-shadow:var(--sh);margin-bottom:12px}
+.warn p{margin:0 0 8px;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.warn p:last-child{margin-bottom:0}
+.warn b{color:var(--ink)}
+.quote{background:var(--sunk);border-radius:9px;padding:13px 17px;margin:0 0 12px;
+  font-size:13px;line-height:1.8;color:var(--ink)}
+.quote .src{display:block;margin-top:6px;font-size:11.5px;color:var(--ink3)}
+.sub-h{margin:20px 0 8px;font-size:14.5px;font-weight:700}
+a{color:var(--accent)}
+footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;
+  color:var(--ink3);line-height:1.8}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">実測にもとづく構成の記録</p>
+  <h1>図面を読む経路</h1>
+  <p class="meta">「ノーコードで作れないか」に、試した結果で答えます。
+    同じ図面を3つの経路で読ませ、何がどこまで出たかを数えました。
+    そのうえで、どこをコードにし、どこを画面にするかを決めています。</p>
+</header>
+
+<section class="blk">
+  <div class="sh"><h2>同じ図面を3つの経路で読ませた</h2>
+    <span class="hint">数字はすべて実行して得たもの</span></div>
+  <div class="lead">
+    <p>対象は電気図1枚。<b>「本体の件数」は、図面枠の外に書かれている文字</b>
+      ――室名・寸法・高さ指示・建具記号・品番――が何件取れたかです。
+      チェック項目57件のうち51件が、ここを見ます。</p>
+  </div>
+<div class='m studio'><div class='m-h'><b>Workspace の Gemini（ノーコード）</b></div><div class='m-n'><div><span class='k'>読めた範囲</span>図面枠のみ</div><div><span class='k'>本体の件数</span>0 件</div><div><span class='k'>所要</span>―</div></div><p>事務所名・登録番号・設計者名・縮尺・図面番号は取れた。室名・寸法・品番は1件も出なかった</p></div>
+<div class='m gas'><div class='m-h'><b>Vertex AI に PDF を直接渡す（コード）</b></div><div class='m-n'><div><span class='k'>読めた範囲</span>図面枠 ＋ 図面本体</div><div><span class='k'>本体の件数</span>104 件</div><div><span class='k'>所要</span>1分10秒</div></div><p>同じ図面から、室名・寸法・高さ指示・建具記号・品番まで拾えた</p></div>
+<div class='m regex'><div class='m-h'><b>テキスト層を正規表現で拾う（コード）</b></div><div class='m-n'><div><span class='k'>読めた範囲</span>テキスト層があるページのみ</div><div><span class='k'>本体の件数</span>11番号中 4 件</div><div><span class='k'>所要</span>―</div></div><p>誤検出6件。7件はテキスト層に存在しない。位置の特定は0/10</p></div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>違いは、PDFをどこで解釈させるか</h2></div>
+
+<figure class="fig">
+<svg viewBox="0 0 880 360" role="img" width="880"
+     aria-label="ノーコード経路ではPDFがWorkspace側の解釈を経てGeminiに渡り図面枠だけが読めるのに対し、コード経路ではPDFのバイト列がそのままVertex AIに渡り図面枠と図面本体の両方が読める、という違いを示した図">
+  <defs>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <text x="16" y="30" class="rowlbl">ノーコード経路</text>
+  <g fill="none" stroke="currentColor" stroke-width="1.2">
+    <rect x="16"  y="48" width="126" height="56" rx="9"/>
+    <rect x="212" y="48" width="164" height="56" rx="9"/>
+    <rect x="446" y="48" width="140" height="56" rx="9"/>
+    <rect x="656" y="40" width="208" height="72" rx="9"/>
+  </g>
+  <g class="lbl">
+    <text x="79"  y="72" text-anchor="middle">図面PDF</text>
+    <text x="79"  y="90" text-anchor="middle" class="sub">ドライブ</text>
+    <text x="294" y="72" text-anchor="middle">Workspace が解釈</text>
+    <text x="294" y="90" text-anchor="middle" class="sub">ファイルの扱いは非公開</text>
+    <text x="516" y="72" text-anchor="middle">Gemini</text>
+    <text x="516" y="90" text-anchor="middle" class="sub">Workspace 内</text>
+    <text x="760" y="66" text-anchor="middle" class="cold">図面枠だけ</text>
+    <text x="760" y="88" text-anchor="middle" class="sub">本体の文字 0 件</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#a2)">
+    <line x1="142" y1="76" x2="204" y2="76"/>
+    <line x1="376" y1="76" x2="438" y2="76"/>
+    <line x1="586" y1="76" x2="648" y2="76"/>
+  </g>
+
+  <line x1="16" y1="152" x2="864" y2="152" stroke="currentColor"
+        stroke-width="1" stroke-dasharray="3 5" opacity=".35"/>
+
+  <text x="16" y="192" class="rowlbl">コード経路</text>
+  <g fill="none" stroke="currentColor" stroke-width="1.2">
+    <rect x="16"  y="210" width="126" height="56" rx="9"/>
+    <rect x="212" y="210" width="164" height="56" rx="9"/>
+    <rect x="446" y="210" width="140" height="56" rx="9" class="hot"/>
+    <rect x="656" y="202" width="208" height="72" rx="9" class="hot"/>
+  </g>
+  <g class="lbl">
+    <text x="79"  y="234" text-anchor="middle">図面PDF</text>
+    <text x="79"  y="252" text-anchor="middle" class="sub">ドライブ</text>
+    <text x="294" y="234" text-anchor="middle">Apps Script</text>
+    <text x="294" y="252" text-anchor="middle" class="sub">バイト列のまま載せる</text>
+    <text x="516" y="234" text-anchor="middle">Vertex AI</text>
+    <text x="516" y="252" text-anchor="middle" class="sub">Gemini・東京</text>
+    <text x="760" y="228" text-anchor="middle" class="warm">図面枠 ＋ 図面本体</text>
+    <text x="760" y="250" text-anchor="middle" class="sub">104 件／1分10秒</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#a2)">
+    <line x1="142" y1="238" x2="204" y2="238"/>
+    <line x1="376" y1="238" x2="438" y2="238"/>
+    <line x1="586" y1="238" x2="648" y2="238"/>
+  </g>
+  <text x="294" y="300" text-anchor="middle" class="cap">
+    PDFを画像に変換せず、そのまま渡す</text>
+  <text x="516" y="300" text-anchor="middle" class="cap">
+    APIキーを使わず、実行者の権限で呼ぶ</text>
+  <text x="760" y="300" text-anchor="middle" class="cap">
+    根拠が読み取り結果に実在するか照合する</text>
+</svg>
+<figcaption>同じ図面・同じ日に測った結果。違いは、PDFをどこで解釈させるか。</figcaption>
+</figure>
+
+  <div class="lead">
+    <p><b>ここからは推測です。</b>
+      ノーコード経路では、ファイルをどう扱ってモデルに渡しているかが公開されていません。
+      観測できたのは「図面枠は出るが、本体は出ない」という結果だけです。</p>
+    <p>一方コード経路では、<b>PDFのバイト列をそのまま載せて Vertex AI に送っています。</b>
+      画像への変換もテキスト抽出も挟みません。前処理が無いぶん、
+      図面のどこに何が書かれているかがモデルに届いている、と考えています。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>いちばん危なかったこと</h2>
+    <span class="hint">これが決め手になりました</span></div>
+  <div class="lead">
+    <p>ノーコード経路は、図面本体を1文字も読んでいないのに、
+      こう返してきました。</p>
+  </div>
+  <div class="quote">読み取れなかった箇所: <b>なし</b></div>
+  <div class="warn">
+    <p><b>読み落としを、モデル自身が認識していません。</b>
+      同じ流れで判定まで進めると、本体を見ていないのに
+      「基準を満たしている」という結論が出ます。</p>
+    <p>コード経路には、<b>AIが挙げた根拠が読み取り結果に実在するかを
+      突き合わせる工程</b>を入れてあります。ここだけはAIを使いません。
+      実運用の1回目で、実在しない根拠を挙げた判定が1件棄却されました。
+      仕組みは働いています。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>ノーコードで届く範囲</h2></div>
+  <div class="lead">
+    <p>公平に言えば、<b>図面枠は読めています。</b>
+      事務所名・登録番号・設計者名・作成者・日付・縮尺・図面番号が取れました。
+      チェック項目のうち、図面枠だけで判定できるものは6件あります。</p>
+  </div>
+<div class='tw'><table><thead><tr><th>No</th><th>チェック項目</th><th>どこを見るか</th></tr></thead><tbody><tr><td>1</td><td>縮尺が規定の値になっているか</td><td>図面枠</td></tr><tr><td>2</td><td>図面番号が規定の記号になっているか</td><td>図面枠</td></tr><tr><td>3</td><td>図面枠に必要事項が記入されているか</td><td>図面枠</td></tr><tr><td>4</td><td>図面番号が2ケタ表示になっているか</td><td>図面枠</td></tr><tr><td>5</td><td>縮尺の記入があるか</td><td>図面枠</td></tr><tr><td>6</td><td>設計担当者名がフルネームで記載されているか</td><td>図面枠</td></tr><tr><td>7〜57</td><td>通り芯・寸法線・建具記号・品番・レベル・法的事項 ほか</td><td>図面本体</td></tr></tbody></table></div>
+  <div class="warn">
+    <p><b>それでも、この6件のためだけにノーコードを併用しません。</b>
+      同じ6件はコード側でもすでに判定できており、機能が増えません。
+      同じ図面を2つの仕組みが読むと、結果が食い違ったときに
+      どちらが正しいか決められなくなります。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>決めた構成</h2></div>
+  <div class="lead">
+    <p><b>読む処理はコードに寄せ、担当者が触る場所は画面と表にします。</b>
+      「コードを書きたくない」の目的は、書かないことではなく
+      保守できることだと考えています。</p>
+  </div>
+<div class='tw'><table><thead><tr>
+<th>担当</th><th>やること</th><th>誰が触るか</th></tr></thead><tbody>
+<tr><td>Apps Script</td><td>図面をVertex AIに渡して読む／項目に照らして判定する／
+根拠を照合する／品番を調べる</td><td>触らない</td></tr>
+<tr><td>チェック項目表</td><td>判定の元になる表。行を足せば次の実行から効く</td>
+<td><b>担当者</b></td></tr>
+<tr><td>設定シート</td><td>AIへの指示文。文章を書き換えると次の実行から反映される</td>
+<td><b>担当者</b></td></tr>
+<tr><td>AppSheet</td><td>依頼を出す／結果を見る／確認済みを付ける／コメントを書く</td>
+<td><b>担当者</b></td></tr>
+</tbody></table></div>
+  <div class="lead">
+    <p>担当者がコードを開く場面はありません。触るのは
+      <b>チェック項目表・設定シート・AppSheet の画面</b>の3つだけです。
+      判定を厳しくしたい、読み方を変えたいといった要望は、
+      設定シートの文章を書き換えれば次の実行から反映されます。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>管理画面を AppSheet で作る</h2>
+    <span class="hint">コードは書きません</span></div>
+  <div class="lead">
+    <p>画面と処理は、<b>同じスプレッドシートを見ることで繋がります。</b>
+      APIも認証も要りません。画面は「依頼」を1行足すだけ、
+      処理はそれを拾って結果を書き戻すだけです。</p>
+  </div>
+<div class='tw'><table><thead><tr><th>シート</th><th>誰が書くか</th><th>内容</th></tr></thead><tbody><tr><td>図面</td><td>コード</td><td>図面フォルダにあるPDFの一覧。画面の選択肢に使う</td></tr><tr><td>依頼</td><td>AppSheet → コードが状態を書き戻す</td><td>1行＝1回の依頼</td></tr><tr><td>判定</td><td>コード</td><td>1行＝1チェック項目。確認済みとコメントだけ担当者が書く</td></tr><tr><td>品番</td><td>コード</td><td>1行＝1品番。同上</td></tr></tbody></table></div>
+  <div class="warn">
+    <p><b>画面から処理を直接呼びません。</b>
+      AppSheet の実行時間は、アプリの操作をきっかけにした場合で2分、
+      時刻をきっかけにした場合で5分が上限です。
+      読み取りから判定までの実測は1分10秒で、ページ数が増えれば超えます。
+      依頼を置くだけにして、処理は1分ごとの巡回に任せます。</p>
+  </div>
+
+  <div class="sub-h">依頼テーブルの列</div>
+<div class='tw'><table><thead><tr><th>列</th><th>型</th><th>キー</th><th>初期値</th><th>担当者が編集</th></tr></thead><tbody><tr><td>依頼ID</td><td>Text</td><td>✓</td><td>UNIQUEID()</td><td>しない</td></tr><tr><td>受付日時</td><td>DateTime</td><td></td><td>NOW()</td><td>しない</td></tr><tr><td>種別</td><td>Enum</td><td></td><td>図面チェック</td><td>する</td></tr><tr><td>図面ID</td><td>Ref（参照先＝図面）</td><td></td><td></td><td>する</td></tr><tr><td>対象</td><td>Text</td><td></td><td></td><td>する</td></tr><tr><td>ページ</td><td>Number</td><td></td><td>1</td><td>する</td></tr><tr><td>状態</td><td>Enum</td><td></td><td>受付</td><td>しない</td></tr><tr><td>件数 ・ メッセージ ・ 完了日時</td><td>―</td><td></td><td></td><td>しない</td></tr></tbody></table></div>
+  <div class="warn">
+    <p><b>「状態」の初期値に「受付」を入れてください。</b>
+      ここが空だと、巡回が依頼を見つけられず、いつまでも動きません。
+      つまずくとしたら、まずここです。</p>
+  </div>
+
+  <div class="sub-h">画面</div>
+<div class='tw'><table><thead><tr><th>画面</th><th>種類</th><th>役割</th></tr></thead><tbody><tr><td>依頼</td><td>Deck</td><td>依頼の一覧。状態で色が変わる</td></tr><tr><td>新規依頼</td><td>Form</td><td>図面と対象を選んで依頼を出す</td></tr><tr><td>判定</td><td>Table</td><td>結果の一覧。確認済みを付ける</td></tr><tr><td>品番</td><td>Table</td><td>品番とリピートの一覧</td></tr></tbody></table></div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>図面に印を付ける</h2>
+    <span class="hint">できることと、できないこと</span></div>
+  <div class="lead">
+    <p>「解析した図面を表示して、注釈や四角や矢印を書き込みたい」
+      ――ここは<b>できる部分とできない部分がはっきり分かれます。</b></p>
+  </div>
+
+  <div class="sub-h">できます</div>
+  <div class="cards">
+<div class='c can'><h4>担当者が図面に印を付ける</h4><p>Drawing 型の列を置くと、画像の上に手で描けます。背景には Image 型の列の値を初期値として指定します。</p></div>
+<div class='c can'><h4>印を付けた図面を残す</h4><p>描いた結果は画像として保存され、行に紐づきます。誰がいつ付けたかも一緒に残ります。</p></div>
+<div class='c can'><h4>判定の行から図面へ飛ぶ</h4><p>判定テーブルから依頼テーブルを参照しているので、指摘の行から元の図面へ1タップで行けます。</p></div>
+  </div>
+
+  <div class="sub-h">できません</div>
+  <div class="cards">
+<div class='c cannot'><h4>PDFのページを画像にする</h4><p>Apps Script に画像を切り出す手段がありません。図面がPDFのままだと、Drawing の背景に敷けません。図面を画像で書き出せるなら不要ですが、そうでなければ画像処理だけを別に置くことになります。</p></div>
+<div class='c cannot'><h4>AIが自動で四角を描く</h4><p>Drawing 型は人が描くための機能です。AIが出した座標で線を引くには、画像に描き込む処理が別に要ります。</p></div>
+<div class='c cannot'><h4>位置の精度</h4><p>座標そのものは取れていますが、全面渡しで41%、3×3に分割して75%です。4件に1件外れる案内は、無いほうがましだと判断しました。</p></div>
+  </div>
+
+  <div class="warn">
+    <p><b>先に踏む穴が1つあります。</b>Drawing の背景に、Google ドライブのエクスポートリンク形式の画像URLは使えません。CORS の制限に当たります。Image 列でアプリから画像をアップロードし、シートに書かれた値を Drawing 列の初期値にするのが回避策です。</p>
+  </div>
+
+  <div class="lead">
+    <p>整理すると、<b>人が印を付けるのは画面だけで完結します。</b>
+      詰まるのは、図面をPDFのまま扱っている点です。
+      図面を画像で書き出せる運用にできるなら、追加の仕組みは要りません。</p>
+    <p><b>AIが自動で四角を描く</b>のは、そのさらに先です。座標は取れていますが、
+      精度が実用の線に届いていません。ここは精度が上がってから足します。
+      データは取り続けているので、あとから足せる形にしてあります。</p>
+  </div>
+</section>
+
+<footer>
+  株式会社デジライズ ／
+  本ページに施主名・住所・事務所名・担当者名・図面ファイル名・
+  作図基準の具体的な数値は含みません。<br>
+  数値はいずれも実行して得たものです。推測にはその旨を明記しています。
+</footer>
+
+</div>
