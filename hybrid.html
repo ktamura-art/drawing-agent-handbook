@@ -1,0 +1,261 @@
+<title>ノーコードとコードの組み合わせ方</title>
+<style>
+:root{
+  --bg:#F6F5F2; --card:#FFFFFF; --sunk:#F0EEE8;
+  --ink:#1A1815; --ink2:#5A554D; --ink3:#8E887E;
+  --line:#E2DED5; --line2:#EDEAE3;
+  --accent:#7A4B1E; --studio:#2F5D8A; --gas:#7A4B1E;
+  --sh:0 1px 2px rgba(26,24,21,.05),0 10px 28px -18px rgba(26,24,21,.35);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#121110; --card:#1B1917; --sunk:#221F1C;
+    --ink:#F0EDE7; --ink2:#B3ABA0; --ink3:#847D73;
+    --line:#2E2A26; --line2:#26221F;
+    --accent:#E0A96A; --studio:#7FB2DE; --gas:#E0A96A;
+    --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121110; --card:#1B1917; --sunk:#221F1C;
+  --ink:#F0EDE7; --ink2:#B3ABA0; --ink3:#847D73;
+  --line:#2E2A26; --line2:#26221F;
+  --accent:#E0A96A; --studio:#7FB2DE; --gas:#E0A96A;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.85;
+  font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",Meiryo,system-ui,sans-serif}
+.wrap{max-width:920px;margin:0 auto;padding:48px 22px 96px;display:flex;
+  flex-direction:column;gap:36px}
+h1{margin:.2rem 0 .4rem;font-size:30px;letter-spacing:-.01em;text-wrap:balance}
+.eyebrow{margin:0;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:700}
+.meta{margin:0;color:var(--ink2);font-size:13.5px}
+.blk{display:flex;flex-direction:column}
+.sh{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line);
+  padding-bottom:10px;margin-bottom:16px;flex-wrap:wrap}
+.sh h2{margin:0;font-size:18px}
+.sh .hint{margin-left:auto;font-size:12.5px;color:var(--ink3)}
+.lead{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:18px 22px;box-shadow:var(--sh);margin-bottom:14px}
+.lead p{margin:0 0 10px}
+.lead p:last-child{margin-bottom:0}
+
+.splits{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:12px}
+.sp{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:18px 22px;box-shadow:var(--sh)}
+.sp.studio{border-top:3px solid var(--studio)}
+.sp.gas{border-top:3px solid var(--gas)}
+.sp h3{margin:0 0 12px;font-size:15px}
+.sp.studio h3{color:var(--studio)} .sp.gas h3{color:var(--gas)}
+.sp ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.sp li b{display:block;font-size:14px;margin-bottom:2px}
+.sp li span{font-size:12.5px;color:var(--ink3);line-height:1.7}
+
+.rule{background:var(--card);border:1px solid var(--line);border-radius:11px;
+  padding:14px 18px;box-shadow:var(--sh);margin-bottom:10px}
+.rt{font-weight:700;font-size:14px;margin-bottom:4px}
+.rule p{margin:0;font-size:13px;color:var(--ink2);line-height:1.8}
+
+.rc{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.rc-h{display:flex;align-items:center;gap:11px;padding:15px 22px;
+  border-bottom:1px solid var(--line);font-weight:700;font-size:15.5px}
+.rc-n{font-size:11.5px;background:var(--accent);color:var(--card);
+  width:23px;height:23px;border-radius:50%;display:grid;place-items:center;flex:none}
+.rc-b{padding:16px 22px 20px}
+.rc-b p{margin:0 0 10px;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.rc-b .where{color:var(--ink)}
+.rc-b .ok{margin:12px 0 0;padding:11px 15px;background:var(--sunk);
+  border-radius:9px;font-size:13px;color:var(--ink)}
+.il{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--ink3);
+  margin:16px 0 6px}
+pre{margin:0;background:var(--sunk);border:1px solid var(--line2);border-radius:9px;
+  padding:15px 17px;overflow-x:auto;font-size:12.5px;line-height:1.8;
+  font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;
+  word-break:break-word}
+p code,td code{background:var(--sunk);padding:1px 6px;border-radius:5px;font-size:12.5px}
+
+.cards2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.card2{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:18px 22px;box-shadow:var(--sh)}
+.card2 h4{margin:0 0 8px;font-size:14.5px}
+.card2 p{margin:0;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.box{background:var(--card);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:12px;padding:18px 22px;
+  box-shadow:var(--sh)}
+.box h4{margin:0 0 8px;font-size:14.5px}
+.box p{margin:0 0 8px;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.box p:last-child{margin-bottom:0}
+a{color:var(--accent)}
+footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;
+  color:var(--ink3)}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Workspace Studio ＋ Apps Script</p>
+  <h1>コードを書かずに、コードを使う</h1>
+  <p class="meta">ノーコードで組める部分は画面で、
+    そうでない部分はコードで。ただしコードは書きません。
+    決まった文章を Gemini に投げて出させ、決まった場所に貼ります。</p>
+</header>
+
+<section class="blk">
+  <div class="sh"><h2>どちらに何をやらせるか</h2></div>
+  <div class="lead">
+    <p>境目は<b>「あとから直したくなるか」</b>で決めます。</p>
+    <p>読み方や判定の基準は、運用しながら何度も変わります。ここは画面で直せるほうがよい。
+      一方、表に整える処理や文字列の突き合わせは、
+      <b>一度決めたら変わりません</b>。ここはコードに任せて、以後は触りません。</p>
+  </div>
+  <div class="splits">
+<div class='sp studio'><h3>Studio が担当</h3><ul><li><b>図面を読む</b><span>指示文を画面で直せる。読み方を変えたければ文章を書き換えるだけ</span></li><li><b>項目ごとに判定する</b><span>チェック項目はスプレッドシートの行。増やすのは人</span></li><li><b>結果を1行書き出す</b><span>判定結果をまとめて1セルに入れる</span></li><li><b>担当者に知らせる</b><span>Chat やメールで通知する</span></li></ul></div>
+<div class='sp gas'><h3>Apps Script が担当</h3><ul><li><b>表に整える</b><span>1セルの塊を、1項目1行に分ける</span></li><li><b>根拠を突き合わせる</b><span>AIが挙げた根拠が本当に読み取り結果にあるか</span></li><li><b>前回との差を取る</b><span>同じ図面を2回チェックしたとき、何が変わったか</span></li><li><b>表記の揺れを揃える</b><span>全角と半角、空白の有無を吸収して比べる</span></li></ul></div>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>指示文に必ず入れる5つ</h2>
+    <span class="hint">ここに知識を埋め込みます</span></div>
+  <div class="lead">
+    <p>下の5つは、いずれも<b>実際につまずいたもの</b>です。
+      知らないまま作ると、同じ場所で必ず止まります。</p>
+    <p>逆に言えば、<b>この5行を指示文に入れておけば、知らないままでも避けられます</b>。
+      次章のレシピには、すべて組み込んであります。</p>
+  </div>
+<div class='rule'><div class='rt'>書き込む前に、全部の行を同じ列数に揃えてください</div><p>行によって列数が違うと、スプレッドシートへの書き込みが丸ごと失敗します。空行が1つ混じっただけで止まります。</p></div>
+<div class='rule'><div class='rt'>同じデータを二度処理しないようにしてください</div><p>処理済みの印を付け、次回はそこを飛ばす作りにします。これが無いと、実行のたびに同じ行が増えていきます。</p></div>
+<div class='rule'><div class='rt'>分からないものは、分からないと出力してください</div><p>それらしい値で埋められると、間違いに気づけません。空欄のままにするか、理由を書かせます。</p></div>
+<div class='rule'><div class='rt'>エラーを握りつぶさないでください</div><p>失敗したときに何も起きないのが一番困ります。何が起きたかを画面に出させます。</p></div>
+<div class='rule'><div class='rt'>何件処理したかを、実行ログに出してください</div><p>動いたかどうかを、開かずに確かめられます。</p></div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>レシピ</h2>
+    <span class="hint">枠の中をそのままコピーして使います</span></div>
+  <div class="lead">
+    <p>やりたいこと単位で並べています。
+      枠の中の文章を Gemini に貼り付けると、コードが出てきます。
+      それを「貼る場所」に貼って実行してください。</p>
+    <p><b>出てきたコードを読む必要はありません。</b>
+      「動いたかの確認」に書いてある表示が出るかどうかだけ見てください。</p>
+  </div>
+<div class='rc'><div class='rc-h'><span class='rc-n'>1</span>判定結果を、1項目1行に分ける</div><div class='rc-b'><p>Studio が1つのセルにまとめて書いた判定結果を、項目ごとの行に展開します。Studio の繰り返しでは分けられないため、ここだけコードに任せます。</p><p class='where'><b>貼る場所</b>　チェック結果のスプレッドシート</p><div class='il'>この文章をそのまま Gemini に投げてください</div><pre><code>Google スプレッドシートに付ける Apps Script を書いてください。
+
+やりたいこと:
+「ログ」シートの各行には、判定結果が1つのセルにまとめて入っています。
+1行に1項目ずつ、縦棒（|）で7つに区切られた形で並んでいます。
+
+  項目番号|チェック項目|判定|根拠|理由|基準|出典
+
+これを「チェック結果」シートに、1項目1行で展開してください。
+
+満たしてほしいこと:
+・書き込む前に、全部の行を同じ列数に揃えてください
+・同じ行を二度処理しないでください。処理済みの印を付け、次回は飛ばす形にします
+・縦棒が含まれない行は無視してください
+・区切りが7つに満たない行は、足りない分を空欄で埋めてください
+・行頭に「•」や「list_item:」が付いていることがあります。取り除いてください
+・エラーを握りつぶさないでください
+・何行を展開したかを、実行ログに出してください
+
+コードだけでなく、次も教えてください:
+・どの関数を実行すればよいか
+・実行して成功したとき、実行ログに何が出るか</code></pre><p class='ok'><b>動いたかの確認</b>　実行ログに「◯行を展開しました」と出て、「チェック結果」シートに項目ごとの行が並べば成功です。</p></div></div>
+<div class='rc'><div class='rc-h'><span class='rc-n'>2</span>AIの根拠が本当にあるか、突き合わせる</div><div class='rc-b'><p>AIは、実際には図面に無い文言を根拠として挙げることがあります。読み取り結果に含まれているかを機械的に確かめ、無ければ判定を採用しません。ここが品質の要になります。</p><p class='where'><b>貼る場所</b>　同じスプレッドシート（前のレシピに追記）</p><div class='il'>この文章をそのまま Gemini に投げてください</div><pre><code>先ほどのスクリプトに、根拠の照合を追加してください。
+
+やりたいこと:
+「判定」が「適合」になっている行について、
+その行の「根拠」に書かれた文字列が、
+同じログ行の「読み取り結果」の中に実際に含まれているかを確かめてください。
+
+含まれていない場合、または根拠が空欄の場合は、
+判定を「要確認」に変え、理由の欄に
+「根拠とされた記載が読み取り結果にありません」と書いてください。
+
+満たしてほしいこと:
+・比べる前に、全角と半角、大文字と小文字、空白の有無を揃えてください
+　（NFKC 正規化を使ってください）
+・AIに判断させないでください。文字列として含まれるかどうかだけで決めてください
+・同じ行を二度処理しないでください。処理済みの印を付け、次回は飛ばす形にします
+・分からない場合は書き換えず、そのままにしてください。推測で埋めないでください
+・エラーを握りつぶさないでください
+・書き換えた件数を、実行ログに出してください
+
+なぜこうするのか:
+AIに「この根拠は正しいか」と聞くと、自分の出力を自分で肯定します。
+文字列として存在するかどうかは、コードなら確実に判定できます。</code></pre><p class='ok'><b>動いたかの確認</b>　実行ログに「◯件を要確認に変更しました」と出れば動いています。0件でも正常です（すべての根拠が実在したということです）。</p></div></div>
+<div class='rc'><div class='rc-h'><span class='rc-n'>3</span>前回との違いだけを見る</div><div class='rc-b'><p>同じ図面を修正して再チェックしたとき、全項目を読み直すのは大変です。前回から変わった項目だけを抜き出します。</p><p class='where'><b>貼る場所</b>　同じスプレッドシート（別の関数として追加）</p><div class='il'>この文章をそのまま Gemini に投げてください</div><pre><code>先ほどのスクリプトに、差分を出す機能を追加してください。
+
+やりたいこと:
+「チェック結果」シートには、同じ図面の結果が複数回ぶん入っています。
+同じ図面名の最新2回を比べて、判定が変わった項目だけを
+「差分」シートに書き出してください。
+
+出力する列:
+実行日時 / 図面 / 項目番号 / チェック項目 / 前回の判定 / 今回の判定
+
+満たしてほしいこと:
+・比較は項目番号で対応づけてください
+・前回に無く今回だけある項目は「新規」としてください
+・今回に無く前回だけある項目は「消滅」としてください
+・書き込む前に、全部の行を同じ列数に揃えてください
+・同じ比較を二度書き込まないでください。処理済みの印を付けてください
+・判断がつかない項目は「不明」とし、推測で埋めないでください
+・エラーを握りつぶさないでください
+・何件の差分があったかを、実行ログに出してください
+
+その図面の結果が1回ぶんしか無い場合は、
+「比較できる前回の結果がありません」と実行ログに出して終わってください。</code></pre><p class='ok'><b>動いたかの確認</b>　実行ログに「◯件の差分」と出て、「差分」シートに変わった項目だけが並べば成功です。</p></div></div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>出てきたコードの確かめ方</h2>
+    <span class="hint">読めなくても確かめられます</span></div>
+  <div class="cards2">
+<div class='card2'><h4>小さく試す</h4><p>いきなり本番のシートで動かさない。ログシートに2〜3行だけ入れた状態で実行し、期待どおりの行数が出るかを見ます。</p></div>
+<div class='card2'><h4>実行ログを見る</h4><p>Apps Script の画面下部に実行ログが出ます。「◯行を展開しました」のような数字が出ていれば動いています。何も出ない場合は、途中で止まっています。</p></div>
+<div class='card2'><h4>2回実行してみる</h4><p>同じ状態でもう一度実行して、行が増えなければ二重処理の防止が効いています。増えたら、その旨を伝えて直させます。</p></div>
+<div class='card2'><h4>わざと壊してみる</h4><p>ログの1行を空にする、区切りを1つ減らすなどして実行します。そこで止まらず、その行だけ飛ばして進めば、実運用に耐えます。</p></div>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>うまくいかないとき</h2></div>
+  <div class="box">
+    <h4>コードを直そうとしないでください</h4>
+    <p>期待どおりに動かないときは、<b>何が起きたかをそのまま Gemini に伝えて、
+      直したコード全体を出し直してもらいます</b>。部分的に手を入れると、
+      どこを変えたか分からなくなります。</p>
+    <p>伝え方の例です。</p>
+    <p><code>実行したら「◯◯」というエラーが出ました。
+      修正したコードの全体を出してください。</code></p>
+    <p><code>2回実行したら同じ行が2つ入りました。
+      二度処理しないように直したコードの全体を出してください。</code></p>
+    <p><b>「全体を出してください」と付けるのが要点です。</b>
+      差分だけ渡されると、どこに入れるか判断が要ります。</p>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>この作りの限界</h2></div>
+  <div class="box">
+    <h4>先に申し上げておきます</h4>
+    <p><b>生成されたコードの中身は、誰も検証していません。</b>
+      「動いたかの確認」で見ているのは、期待した表示が出るかどうかだけです。
+      間違った処理をしていても、表示が出れば気づけません。</p>
+    <p>そのため、<b>この作りは業務の記録を整えるところまで</b>としてください。
+      判定そのものや、判定の根拠を扱う部分は、
+      内容を確認したコードで動かすべきです。</p>
+    <p>大きく作り変えたくなったときも、生成に頼らず一度ご相談ください。</p>
+  </div>
+</section>
+
+<footer>
+  株式会社デジライズ ／ 本ページに施主名・住所・図面・作図基準の具体的な数値は含みません。
+</footer>
+
+</div>
