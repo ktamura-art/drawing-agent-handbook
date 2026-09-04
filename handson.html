@@ -139,6 +139,42 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;
 </section>
 
 <section class="blk">
+  <div class="sh"><h2>道は2つあります</h2>
+    <span class="hint">目的で選んでください</span></div>
+  <div class="cards">
+    <div class="c rule">
+      <h4>A　できあがったコードを貼る（10分）</h4>
+      <p>お渡ししている <b>02_コード.gs（貼り付け用）.docx</b> を貼ります。
+        検証済みのものがそのまま動きます。<b>今日はこちらです。</b></p>
+    </div>
+    <div class="c rule">
+      <h4>B　自分で書かせる（2回・約5時間）</h4>
+      <p>下の工程1〜9で、Gemini に書かせます。
+        <b>作り方を理解したいとき</b>や、別のものを作りたいときはこちらです。</p>
+    </div>
+  </div>
+
+  <h3 style="margin:24px 0 10px;font-size:15px">A の手順　02 のどこを、どこへ貼るか</h3>
+  <div class="lead">
+    <p><b>1つの Word の中に、貼る先の違うものが2つ入っています。</b>
+      「appsscript.json」という見出しが境目です。</p>
+  </div>
+  <pre>02_コード.gs（貼り付け用）.docx
+  ├ 表紙                   貼りません
+  ├ コード本体 1544行       → Apps Script の「コード.gs」へ
+  └ appsscript.json 16行   → Apps Script の「appsscript.json」へ</pre>
+<ol class='steps'><li>https://script.new を開く（または既存のプロジェクトを開く）</li><li>エディタの「コード.gs」の中身を、すべて選択して消す</li><li><b>02 のコード本体</b>（表紙の次から「appsscript.json」の見出しの手前まで）を選択してコピーし、貼り付けて保存する</li><li>⚙プロジェクトの設定 →「appsscript.json マニフェスト ファイルをエディタで表示する」にチェックを入れる</li><li>エディタに現れた appsscript.json の中身を全部消し、<b>02 の末尾16行</b>を貼り付けて保存する</li><li>関数を4つ、この順で実行する<br>　<code>setupProperties</code> → <code>setupSettingsSheet</code> → <code>setupAppSheetSheets</code> → <code>installPendingTrigger</code></li><li>AppSheet で画面を作る</li></ol>
+  <div class="warn">
+    <p><b>手順3と手順5で、貼る先が違います。</b>
+      同じ Word の中にありますが、Apps Script 側では別のファイルです。
+      手順4〜5を飛ばすと、AIを呼ぶところで
+      <code>HTTP 403</code> になり、トリガーを作るところでも止まります。</p>
+    <p>正しく貼れていれば、コード.gs の先頭がこの行で始まります。<br>
+      <code> * 図面チェック（作図基準）― 1ファイル版</code></p>
+  </div>
+</section>
+
+<section class="blk">
   <div class="sh"><h2>当日までに用意するもの</h2></div>
   <div class="cards">
 <div class='c'><h4>Google Cloud のプロジェクト</h4><p>Vertex AI API を有効にしておきます。当日その場でも有効化できますが、反映に数分かかることがあります。前日までに済ませてください。</p></div>

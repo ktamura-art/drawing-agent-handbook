@@ -86,6 +86,8 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);
   gap:5px 14px;font-size:12px;line-height:1.7}
 .ex dt{color:var(--ink3);white-space:nowrap}
 .ex dd{margin:0;color:var(--ink2)}
+.ex-f{margin:11px 0 0 !important;padding-top:10px;
+  border-top:1px solid var(--line2);font-size:12px;line-height:1.8}
 
 .out{background:var(--card);border:1px solid var(--line);border-radius:12px;
   box-shadow:var(--sh);overflow:hidden}
@@ -129,6 +131,7 @@ a{color:var(--accent)}
       <button class="act" id="fill" type="button">この例を入れる</button></div>
     <p>実際に作って動いているものです。この入力から出た指示文でコードを書かせ、図面1枚から57項目を判定するところまで通っています。</p>
     <dl id="exlist"></dl>
+    <p class="ex-f">この例で出てくる指示文は、お渡ししている「GAS構築プロンプト集」9本を1つにまとめたものに当たります。集のほうは工程ごとに分けてあるので、1つずつ動かして確かめながら進めるならそちら、まとめて頼んで全体を出させるならここを使ってください。できあがったコードそのものは 「02_コード.gs（貼り付け用）.docx」でお渡ししています。</p>
   </div>
 
   <h2><span class="n">1</span>何をさせますか<span class="sub">いくつでも</span></h2>
@@ -196,7 +199,7 @@ const FIELDS = [
    ph:'例: 依頼シートに「受付」の行が現れたとき / 毎朝7時'},
 ];
 
-const EXAMPLE = {"name": "図面チェックの仕組み", "why": "実際に作って動いているものです。この入力から出た指示文でコードを書かせ、図面1枚から57項目を判定するところまで通っています。", "tasks": ["read", "judge", "lookup", "write", "auto"], "maintain": "other", "f": {"source": "ドライブのフォルダに置いた図面PDF。1枚あたり4〜14MB", "basis": "スプレッドシートに並べたチェック項目の表。No・対象・チェック項目・判定の根拠となる基準・出典 の列", "lookup": "図面から抜き出した品番を、メーカー公式ページで調べて仕様が載っているURLと値を取る", "dest": "同じスプレッドシートの判定シート。1項目1行で追記する。確認済みと担当コメントの欄は人が書くので触らない", "trigger": "依頼シートに「受付」の行が現れたとき。1分ごとに見に行く", "extra": "チェック項目は将来300件まで増える\n利用者は非エンジニア。コマンドは打てない\n画面は別のノーコードツールで作るので、ここでは作らない"}};
+const EXAMPLE = {"name": "図面チェックの仕組み", "why": "実際に作って動いているものです。この入力から出た指示文でコードを書かせ、図面1枚から57項目を判定するところまで通っています。", "tasks": ["read", "judge", "lookup", "write", "auto"], "maintain": "other", "note": "この例で出てくる指示文は、お渡ししている「GAS構築プロンプト集」9本を1つにまとめたものに当たります。集のほうは工程ごとに分けてあるので、1つずつ動かして確かめながら進めるならそちら、まとめて頼んで全体を出させるならここを使ってください。できあがったコードそのものは 「02_コード.gs（貼り付け用）.docx」でお渡ししています。", "f": {"source": "ドライブのフォルダに置いた図面PDF。1枚あたり4〜14MB", "basis": "スプレッドシートに並べたチェック項目の表。No・対象・チェック項目・判定の根拠となる基準・出典 の列", "lookup": "図面から抜き出した品番を、メーカー公式ページで調べて仕様が載っているURLと値を取る", "dest": "同じスプレッドシートの判定シート。1項目1行で追記する。確認済みと担当コメントの欄は人が書くので触らない", "trigger": "依頼シートに「受付」の行が現れたとき。1分ごとに見に行く", "extra": "チェック項目は将来300件まで増える\n利用者は非エンジニア。コマンドは打てない\n画面は別のノーコードツールで作るので、ここでは作らない"}};
 const state = {tasks:new Set(), off:new Set(), f:{}, maintain:'other', plat:'gas'};
 
 const $ = s => document.querySelector(s);
