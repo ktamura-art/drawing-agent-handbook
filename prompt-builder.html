@@ -75,6 +75,17 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);
 .rule.off{opacity:.45}
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:10px;
   padding:16px;font-size:13px;color:var(--ink3);text-align:center}
+.ex{background:var(--card);border:1px solid var(--line);
+  border-left:3px solid var(--ok);border-radius:11px;padding:14px 17px;
+  box-shadow:var(--sh);margin-bottom:16px}
+.ex-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.ex-h b{font-size:13.5px}
+.ex-h button{margin-left:auto}
+.ex p{margin:0;font-size:12.5px;color:var(--ink3);line-height:1.75}
+.ex dl{margin:10px 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);
+  gap:5px 14px;font-size:12px;line-height:1.7}
+.ex dt{color:var(--ink3);white-space:nowrap}
+.ex dd{margin:0;color:var(--ink2)}
 
 .out{background:var(--card);border:1px solid var(--line);border-radius:12px;
   box-shadow:var(--sh);overflow:hidden}
@@ -113,6 +124,13 @@ a{color:var(--accent)}
 <div class="cols">
 
 <div>
+  <div class="ex">
+    <div class="ex-h"><b>例: 図面チェックの仕組み</b>
+      <button class="act" id="fill" type="button">この例を入れる</button></div>
+    <p>実際に作って動いているものです。この入力から出た指示文でコードを書かせ、図面1枚から57項目を判定するところまで通っています。</p>
+    <dl id="exlist"></dl>
+  </div>
+
   <h2><span class="n">1</span>何をさせますか<span class="sub">いくつでも</span></h2>
   <div class="tasks" id="tasks"></div>
 
@@ -178,6 +196,7 @@ const FIELDS = [
    ph:'例: 依頼シートに「受付」の行が現れたとき / 毎朝7時'},
 ];
 
+const EXAMPLE = {"name": "図面チェックの仕組み", "why": "実際に作って動いているものです。この入力から出た指示文でコードを書かせ、図面1枚から57項目を判定するところまで通っています。", "tasks": ["read", "judge", "lookup", "write", "auto"], "maintain": "other", "f": {"source": "ドライブのフォルダに置いた図面PDF。1枚あたり4〜14MB", "basis": "スプレッドシートに並べたチェック項目の表。No・対象・チェック項目・判定の根拠となる基準・出典 の列", "lookup": "図面から抜き出した品番を、メーカー公式ページで調べて仕様が載っているURLと値を取る", "dest": "同じスプレッドシートの判定シート。1項目1行で追記する。確認済みと担当コメントの欄は人が書くので触らない", "trigger": "依頼シートに「受付」の行が現れたとき。1分ごとに見に行く", "extra": "チェック項目は将来300件まで増える\n利用者は非エンジニア。コマンドは打てない\n画面は別のノーコードツールで作るので、ここでは作らない"}};
 const state = {tasks:new Set(), off:new Set(), f:{}, maintain:'other', plat:'gas'};
 
 const $ = s => document.querySelector(s);
@@ -310,6 +329,32 @@ function draw(all){
   $('#cnt').textContent = state.tasks.size
     ? txt.split('\n').length + '行' : '';
 }
+
+// 例の中身を一覧で見せる。押さなくても、何を書けばよいか分かるように。
+(function drawExample(){
+  const dl = $('#exlist');
+  const names = {source:'読ませるもの', basis:'照らす基準', lookup:'調べること',
+                 dest:'書き出し先', trigger:'きっかけ', extra:'前提'};
+  dl.append(el('dt',{textContent:'させること'}),
+            el('dd',{textContent:EXAMPLE.tasks
+              .map(id=>(TASKS.find(t=>t.id===id)||{}).name).join(' ／ ')}));
+  Object.keys(names).forEach(k=>{
+    if(!EXAMPLE.f[k]) return;
+    dl.append(el('dt',{textContent:names[k]}),
+              el('dd',{textContent:EXAMPLE.f[k]
+                .split(String.fromCharCode(10)).join(' ／ ')}));
+  });
+})();
+
+$('#fill').onclick = ()=>{
+  state.tasks = new Set(EXAMPLE.tasks);
+  state.f = Object.assign({}, EXAMPLE.f);
+  state.off.clear();
+  state.maintain = EXAMPLE.maintain;
+  $('#maintain').value = EXAMPLE.maintain;
+  draw();
+  window.scrollTo({top:0, behavior:'smooth'});
+};
 
 $('#maintain').onchange = ev=>{ state.maintain=ev.target.value; draw(); };
 $('#copy').onclick = async ()=>{
