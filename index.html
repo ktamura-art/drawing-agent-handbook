@@ -464,55 +464,140 @@ hay.indexOf(norm_(rec.evidence)) &lt; 0
 </section>
 
 <section class="blk">
-  <div class="sh"><h2>画面はどう作るのか</h2>
-    <span class="hint">Apps Script だけで完結します</span></div>
+  <div class="sh"><h2>画面は AppSheet が持ちます</h2>
+    <span class="hint">Apps Script から HTML を外しました</span></div>
   <div class="cards2">
     <div class="card2">
-      <h4>画面もApps Scriptが作成します</h4>
-      <p><code>doGet</code> が HTML を返し、画面から
-         <code>google.script.run</code> でサーバー側の関数を呼びます。
-         <b>画面用のサーバーは立てません。</b></p>
-      <p>図面の一覧はドライブから、項目数はチェック項目表から
-         その場で読み込むため、増えても画面の直しは要りません。</p>
-      <p>用途は<b>図面チェック</b>と<b>品番リピート確認</b>の2つです。
-         図面は同じものを使うので、画面は1つにしてタブで分けています。</p>
+      <h4>担当者が触るのは画面と表だけ</h4>
+      <p>画面はノーコードの <b>AppSheet</b> で作ります。
+         Apps Script 側は読み取り・判定・照合に専念し、
+         <b>HTML は1行も持ちません</b>（1843行 → 1544行）。</p>
+      <p>担当者がコードを開く場面はありません。触るのは
+         <b>チェック項目表・設定シート・AppSheet の画面</b>の3つだけです。</p>
     </div>
     <div class="card2">
       <h4>チャット画面にはしません</h4>
-      <p>担当者の操作は<b>「図面を選ぶ」「押す」の2つだけ</b>です。
-         指示文はこちら側で固定しています。</p>
+      <p>操作は<b>「図面を選ぶ」「押す」の2つだけ</b>です。
+         指示文は設定シートに固定しています。</p>
       <p>自由に書ける入力欄にすると、聞き方で結果が変わり、
          <b>担当者ごとに判定がばらつきます</b>。
          同じ図面なら誰が動かしても同じ結果になる必要があります。</p>
     </div>
   </div>
+
+  <h3 style="margin:24px 0 8px;font-size:15px">画面から処理を直接呼びません</h3>
+  <p class="lead">AppSheet には実行時間の上限があります。</p>
+<div class='tw'><table><thead><tr><th>区分</th><th>AppSheet 上の呼び名</th><th>上限</th></tr></thead><tbody><tr><td>アプリの操作をきっかけにした実行</td><td>app event</td><td>2 分</td></tr><tr><td>時刻をきっかけにした実行</td><td>schedule event</td><td>5 分</td></tr></tbody></table></div>
+  <p class="note">出典: AppSheet ヘルプ「Automation limits」。
+    読み取りから判定までの実測は<b>5ページの図面で1分10秒</b>で、
+    2分に対して余裕がありません。ページ数の多い図面では確実に超えます。
+    そこで <b>AppSheet には「依頼を1行足す」ことだけをさせ</b>、
+    重い処理は Apps Script 側の1分ごとの巡回に任せます。</p>
+  <p class="note">同じ理由で <code>onEdit</code> も使いません。
+    AppSheet からの同期では発火しないためです。Google 自身が時間指定の
+    トリガーを使うよう案内しています。</p>
+
   <div class="scr">
-    <div class="scr-h">押したあとに出るもの</div>
-    <div class="st done"><span class="ic"></span><span class="sn">図面を読み取る</span>
-      <span class="sw">AI</span><span class="sv">104件</span></div>
-    <div class="st now"><span class="ic"></span><span class="sn">基準に当てはめる</span>
-      <span class="sw">AI</span><span class="sv">実行中</span></div>
-    <div class="st"><span class="ic"></span><span class="sn">根拠を照合する</span>
-      <span class="sw code">コード</span><span class="sv"></span></div>
+    <div class="scr-h">依頼を出したあとに起きること</div>
+    <div class="st done"><span class="ic"></span><span class="sn">依頼を1行足す</span>
+      <span class="sw">AppSheet</span><span class="sv">状態＝受付</span></div>
+    <div class="st done"><span class="ic"></span><span class="sn">巡回が拾う</span>
+      <span class="sw code">トリガー</span><span class="sv">1分以内</span></div>
+    <div class="st done"><span class="ic"></span><span class="sn">読む→判定→照合</span>
+      <span class="sw">AI ／ コード</span><span class="sv">状態＝処理中</span></div>
+    <div class="st done"><span class="ic"></span><span class="sn">1項目1行で書き出す</span>
+      <span class="sw code">コード</span><span class="sv">状態＝完了</span></div>
   </div>
-  <p class="note">工程を3つに分けて呼んでいます。1回で最後まで走らせると画面は固まって見え、
-    止まったと思われて再読み込みされます。分けたことで、
-    1回あたりが Apps Script の6分制限にも収まりやすくなります。
-    失敗した工程はそこで止まるため、どこで落ちたかがその場で分かります。</p>
+  <p class="note">両側とも<b>同じスプレッドシートを見ているだけ</b>です。
+    APIも認証も要りません。</p>
 </section>
 
 <section class="blk">
-  <div class="sh"><h2>品番リピート確認 ― もう1つのタブ</h2>
-    <span class="hint">同じアプリの中に入れています</span></div>
+  <div class="sh"><h2>AppSheet の組み立て</h2>
+    <span class="hint">実際に手を動かした順</span></div>
+
+  <h3 style="margin:0 0 8px;font-size:15px">1. コードが作る5つのシート</h3>
+  <p class="lead">従来の結果シートは毎回消して書き直す帳票の形で、AppSheet では扱えません。
+    行を一意に指すキーが無く、毎回消えるので担当者の書き込みが残らないためです。
+    <b>1行1レコード・キー列つき・追記型</b>のシートを別に持ちます。</p>
+<div class='tw'><table><thead><tr><th>シート</th><th>誰が書くか</th><th>内容</th></tr></thead><tbody><tr><td>図面</td><td>Apps Script</td><td>図面フォルダにあるPDFの一覧。選択肢に使う</td></tr><tr><td>依頼</td><td>AppSheet が追加 → Apps Script が状態を書き戻す</td><td>1行＝1回の依頼</td></tr><tr><td>判定</td><td>Apps Script</td><td>1行＝1チェック項目。確認済みとコメントだけ担当者が書く</td></tr><tr><td>品番</td><td>Apps Script</td><td>1行＝1品番。同上</td></tr><tr><td>実行ログ</td><td>Apps Script</td><td>何が起きたかの記録。詰まったとき最初に見る。画面には取り込まない</td></tr></tbody></table></div>
+
+  <h3 style="margin:24px 0 8px;font-size:15px">2. 依頼テーブルの列</h3>
+  <p class="lead">ここがいちばん手が要ります。初期値の設定が4つあります。</p>
+<div class='tw'><table><thead><tr><th>列</th><th>型</th><th>キー</th><th>初期値</th><th>担当者が編集</th></tr></thead><tbody><tr><td>依頼ID</td><td>Text</td><td>✓</td><td>UNIQUEID()</td><td>しない</td></tr><tr><td>受付日時</td><td>DateTime</td><td></td><td>NOW()</td><td>しない</td></tr><tr><td>種別</td><td>Enum</td><td></td><td>図面チェック</td><td>する</td></tr><tr><td>図面ID</td><td>Ref（参照先＝図面）</td><td></td><td></td><td>する</td></tr><tr><td>ファイル名</td><td>Text</td><td></td><td></td><td>しない</td></tr><tr><td>対象</td><td>Text</td><td></td><td></td><td>する</td></tr><tr><td>ページ</td><td>Number</td><td></td><td>1</td><td>する</td></tr><tr><td>状態</td><td>Enum</td><td></td><td>受付</td><td>しない</td></tr><tr><td>件数</td><td>Number</td><td></td><td></td><td>しない</td></tr><tr><td>メッセージ</td><td>LongText</td><td></td><td></td><td>しない</td></tr><tr><td>完了日時</td><td>DateTime</td><td></td><td></td><td>しない</td></tr></tbody></table></div>
+  <div class="note-box">
+    <b>「状態」の初期値に「受付」を入れてください。</b>
+    ここが空だと巡回が依頼を見つけられず、いつまでも動きません。<br>
+    <b>初期値と式（App formula）は別物です。</b>式のほうに書くと毎回上書きされ、
+    処理が終わっても永久に「受付」に戻ります。
+  </div>
+
+  <h3 style="margin:24px 0 8px;font-size:15px">3. 判定テーブルの列</h3>
+<div class='tw'><table><thead><tr><th>列</th><th>型</th><th>キー</th><th>担当者が編集</th></tr></thead><tbody><tr><td>判定ID</td><td>Text</td><td>✓</td><td>しない</td></tr><tr><td>依頼ID</td><td>Ref（参照先＝依頼）</td><td></td><td>しない</td></tr><tr><td>区分</td><td>Enum（確定 / 要確認 / 棄却）</td><td></td><td>しない</td></tr><tr><td>No ・ チェック項目 ・ 判定 ・ 根拠 ・ 理由 ・ 基準 ・ 出典</td><td>Text / LongText</td><td></td><td>しない</td></tr><tr><td>確認済み</td><td>Yes/No</td><td></td><td>する</td></tr><tr><td>担当コメント</td><td>LongText</td><td></td><td>する</td></tr></tbody></table></div>
+  <p class="note"><b>確認済みと担当コメント以外は編集不可</b>にします。
+    コードが書く列を担当者が上書きすると、次の実行結果と食い違って
+    原因が追えなくなります。</p>
+
+  <h3 style="margin:24px 0 8px;font-size:15px">4. 画面（ビュー）</h3>
+  <div class="note-box">
+    <b>ビューは自動では作られません。</b>
+    自動でできる Detail や Form は裏で使う部品で、画面の入口にはなりません。
+    <b>PRIMARY NAVIGATION の ＋</b> から自分で作ります。
+    「No items selected」としか出ないときは、これが原因です。
+  </div>
+  <p class="note">依頼は deck、判定と品番は table、図面は menu に逃がします。
+    設定と実行ログは画面に取り込みません。</p>
+
+  <h3 style="margin:24px 0 8px;font-size:15px">5. 実際に流した結果</h3>
+  <div class="strip">
+    <div class="cell"><div class="l">判定した項目</div><div class="v num">36</div></div>
+    <div class="cell a"><div class="l">確定</div><div class="v num">3</div></div>
+    <div class="cell b"><div class="l">要確認</div><div class="v num">33</div></div>
+    <div class="cell"><div class="l">読み取り</div><div class="v num">16</div></div>
+  </div>
+  <p class="note">依頼を1件作ってから完了まで、約2分。確定3件はいずれも
+    根拠が図面から取れています。うち1件は
+    <code>納戸１ (8.28㎡ 5帖) CH=2400</code> ――
+    <b>図面枠の外、図面本体の記載</b>です。ノーコード経路では取れなかった部分が
+    取れていることが、実データで確認できました。</p>
+  <div class="note-box">
+    <b>ただし、まだ実用の精度ではありません。</b>
+    読み取り16件は少なく（別の図面では104件）、要確認33件の大半は
+    「読み取り結果に無いから判断できない」です。
+    対象を絞る・読み取りの指示を強くする、の2つで改善します。
+    <b>どちらも設定シートの書き換えだけで、コードは触りません。</b>
+  </div>
+
+  <h3 style="margin:24px 0 8px;font-size:15px">6. 当日つまずいた12箇所</h3>
+  <div class="cards">
+<div class='card'><h4>スプレッドシートがファイル選択の一覧に出てこない</h4><p class='what'>そのファイルが「共有アイテム」にあるためです。AppSheet のピッカーは マイドライブ と 共有ドライブ しか見ません。オーナーを自分に移すか、スプレッドシートを開いて 拡張機能 → AppSheet → アプリを作成 から作ってください。ピッカーを通らずに済みます。</p></div>
+<div class='card'><h4>アプリを作ろうとすると 400 で失敗する</h4><p class='what'>スプレッドシートが空だと作れません。見出し行とデータが1つも無いと、テーブルの形を判断できないためです。先にコード側の準備を全部済ませ、シートに中身が入った状態で作ってください。</p></div>
+<div class='card'><h4>アプリ全体が「読み込めませんでした」になる</h4><p class='what'>空のタブが1つでもあると、そのテーブルで No columns found となり、アプリ全体が起動しません。新規作成時にできる空のシートは、スプレッドシート側とアプリ側の両方から削除してください。</p></div>
+<div class='card'><h4>画面に何も出ない／「No items selected」と出る</h4><p class='what'>ビューは自動では作られません。自動でできるのは Detail や Form といった裏で使う部品だけで、画面の入口にはなりません。PRIMARY NAVIGATION の ＋ から自分で作ります。</p></div>
+<div class='card'><h4>キーが2つある、という警告が出る</h4><p class='what'>行番号（_RowNumber）にチェックが残っています。行番号は単独でしかキーにできません。外して、ID列だけを残してください。行番号をキーにすると、行の増減で紐づけが壊れます。</p></div>
+<div class='card'><h4>依頼を出しても、いつまでも状態が変わらない</h4><p class='what'>「状態」の初期値が「受付」になっていません。しかも初期値と式（App formula）は別物です。式のほうに書くと毎回上書きされ、処理が終わっても永久に「受付」に戻ります。列の詳細を開いて Initial value に入れてください。</p></div>
+<div class='card'><h4>参照の選択肢に、見覚えのない8桁の文字列が並ぶ</h4><p class='what'>参照先のテーブルが設定されていないか、プルダウンの New を押して仮の行を作ってしまっています。参照先を指定し、参照される側のテーブルを読み取り専用にすれば、New 自体が出なくなります。</p></div>
+<div class='card'><h4>ファイル名が文字ではなくアイコンで表示される</h4><p class='what'>値が .pdf で終わるため、型が File と自動判定されています。Text に戻してください。File のままだと表示名として使えません。</p></div>
+<div class='card'><h4>Vertex AI の呼び出しが HTTP 403 になる</h4><p class='what'>マニフェスト（appsscript.json）を差し替えていません。権限はコードから推測されないため、明示が要ります。</p></div>
+<div class='card'><h4>図面の選択肢が空になる</h4><p class='what'>図面フォルダのIDが違うか、そのフォルダに権限がありません。実行ログにフォルダIDつきで理由が書かれています。</p></div>
+<div class='card'><h4>品番のURLが押せない</h4><p class='what'>URL 列の型が Text のままです。Url に変えてください。</p></div>
+<div class='card'><h4>状態が「処理中」のまま止まる</h4><p class='what'>6分の制限に当たった可能性があります。ページ数の多い図面は、ページを指定して1ページずつ依頼してください。</p></div>
+  </div>
+</section>
+
+<section class="blk">
+  <div class="sh"><h2>品番リピート確認 ― もう1つの依頼</h2>
+    <span class="hint">同じ仕組みの中に入れています</span></div>
 
   <div class="lead2">
-    <p>用途は2つあります。図面は同じものを使うので、画面は1つにしてタブで分けました。
-      押すボタンも1つのままです。</p>
+    <p>用途は2つあります。図面は同じものを使うので、
+      別の画面は作りません。<b>依頼を出すときに「種別」で選び分けます</b>。
+      押す場所も手順も同じです。</p>
   </div>
 
   <div class="tabdemo">
     <div class="tbtn">図面チェック</div>
-    <div class="tbtn on">品番リピート確認</div>
+    <div class="tbtn on">品番リピート</div>
   </div>
 
   <div class="scr">
@@ -665,7 +750,7 @@ hay.indexOf(norm_(rec.evidence)) &lt; 0
  * ここだけ差し替えれば済むようにするため。
  */
 const CONFIG_KEYS = {
-  GCP_PROJECT_ID: &#x27;GCP_PROJECT_ID&#x27;,     // 例 sapient-stacker-504215-u4
+  GCP_PROJECT_ID: &#x27;GCP_PROJECT_ID&#x27;,     // 例 &lt;GCPプロジェクトID&gt;
   VERTEX_LOCATION: &#x27;VERTEX_LOCATION&#x27;,   // 例 asia-northeast1
   VERTEX_MODEL: &#x27;VERTEX_MODEL&#x27;,         // 例 gemini-3.5-flash
   ITEMS_SHEET_ID: &#x27;ITEMS_SHEET_ID&#x27;,     // チェック項目表のスプレッドシートID
@@ -702,21 +787,21 @@ function getConfig() {
  * 差し替えて、もう一度この関数を実行する。
  * 貼るファイルを分けると、どちらを貼ったか分からなくなる。
  *
- *   zumen（既定） 1s2Er6n7Iq2Wam9igHMwKd0F2-2z63zu9
- *   先方フォルダ  1_-VNjp7jFvqBIdy4ukvt6PWegnHL5v6T
+ *   zumen（既定） &lt;図面フォルダID&gt;
+ *   先方フォルダ  &lt;図面フォルダID&gt;
  *
  * スプレッドシートを切り替えるときは ITEMS_SHEET_ID を差し替える。
- *   図面検証用    1fybB0V-aYlYNCJrRfJokBxtNCs3t2N9R-k3qVWO8uN0（既定）
+ *   図面検証用    &lt;スプレッドシートID&gt;（既定）
  */
 function setupProperties() {
   PropertiesService.getScriptProperties().setProperties({
-    GCP_PROJECT_ID: &#x27;sapient-stacker-504215-u4&#x27;,
+    GCP_PROJECT_ID: &#x27;&lt;GCPプロジェクトID&gt;&#x27;,
     VERTEX_LOCATION: &#x27;asia-northeast1&#x27;,
     VERTEX_MODEL: &#x27;gemini-3.5-flash&#x27;,
-    ITEMS_SHEET_ID: &#x27;1fybB0V-aYlYNCJrRfJokBxtNCs3t2N9R-k3qVWO8uN0&#x27;,
+    ITEMS_SHEET_ID: &#x27;&lt;スプレッドシートID&gt;&#x27;,
     ITEMS_SHEET_NAME: &#x27;チェック項目&#x27;,
     RESULT_SHEET_NAME: &#x27;チェック結果&#x27;,
-    DRAWING_FOLDER_ID: &#x27;1s2Er6n7Iq2Wam9igHMwKd0F2-2z63zu9&#x27;  // ←ここだけ差し替える
+    DRAWING_FOLDER_ID: &#x27;&lt;図面フォルダID&gt;&#x27;  // ←ここだけ差し替える
   }, true);
   Logger.log(&#x27;設定を保存しました。値を自社のものに書き換えてから使ってください。&#x27;);
 }
@@ -2200,13 +2285,13 @@ function listTriggers() {
   ITEMS_SHEET_ID     チェック項目表
   DRAWING_FOLDER_ID  図面を置くフォルダ</code></pre><details class='embed'><summary>書き換える箇所（コード.gs の中） を開く（11行）</summary><div class='embed-bar'><button class='copy' data-target='pre-setup'>すべてコピー</button></div><pre id='pre-setup' class='full'><code>function setupProperties() {
   PropertiesService.getScriptProperties().setProperties({
-    GCP_PROJECT_ID: &#x27;sapient-stacker-504215-u4&#x27;,
+    GCP_PROJECT_ID: &#x27;&lt;GCPプロジェクトID&gt;&#x27;,
     VERTEX_LOCATION: &#x27;asia-northeast1&#x27;,
     VERTEX_MODEL: &#x27;gemini-3.5-flash&#x27;,
-    ITEMS_SHEET_ID: &#x27;1fybB0V-aYlYNCJrRfJokBxtNCs3t2N9R-k3qVWO8uN0&#x27;,
+    ITEMS_SHEET_ID: &#x27;&lt;スプレッドシートID&gt;&#x27;,
     ITEMS_SHEET_NAME: &#x27;チェック項目&#x27;,
     RESULT_SHEET_NAME: &#x27;チェック結果&#x27;,
-    DRAWING_FOLDER_ID: &#x27;1s2Er6n7Iq2Wam9igHMwKd0F2-2z63zu9&#x27;  // ←ここだけ差し替える
+    DRAWING_FOLDER_ID: &#x27;&lt;図面フォルダID&gt;&#x27;  // ←ここだけ差し替える
   }, true);
   Logger.log(&#x27;設定を保存しました。値を自社のものに書き換えてから使ってください。&#x27;);
 }</code></pre></details><p class='note'>実行ログに「設定を保存しました。」と出れば成功です。IDは御社のものに書き換えてから実行してください。</p></div></section>
@@ -2215,14 +2300,15 @@ function listTriggers() {
 承認画面が出たら:
   権限を確認 → アカウントを選択 →
   「詳細」→「プロジェクトに移動」→ 許可</code></pre><p class='note'>自作のスクリプトのため、確認されていないアプリとして表示されます。1〜3分で結果が出ます。</p></div></section>
-<section class='step'><div class='n'>06</div><div class='body'><h3>社内に公開する</h3><p>ウェブアプリとして公開します。URLが1つ発行され、自社のアカウントを持つ方なら誰でも開けるようになります。</p><pre><code>1. 右上の「デプロイ」→「新しいデプロイ」
-2. 歯車アイコン →「ウェブアプリ」を選ぶ
-3. 次のように設定する
-     次のユーザーとして実行  自分
-     アクセスできるユーザー  &lt;自社ドメイン&gt;内の全員
-4.「デプロイ」を押す</code></pre><p class='note'>発行されたURLが、担当者に配るものです。社外の方はログインしても開けません。</p></div></section>
-<section class='step'><div class='n'>07</div><div class='body'><h3>担当者に配る</h3><p>配るのはURLだけです。担当者側の準備は要りません。図面を選んで「確認する」を押すと、結果が画面に出ます。</p><pre><code>https://script.google.com/a/macros/&lt;ドメイン&gt;/s/……/exec</code></pre><p class='note'>結果はスプレッドシートの「チェック結果」タブにも残ります。</p></div></section>
-<section class='step'><div class='n'>08</div><div class='body'><h3>項目を増やす・減らす</h3><p>チェック項目はスプレッドシートから毎回読み込んでいます。行を足せば次の実行から判定され、「採用」列に × を入れればその項目は外れます。</p><pre><code>チェック項目表を開いて、行を足す／× を入れる
+<section class='step'><div class='n'>06</div><div class='body'><h3>受け皿のシートを作る</h3><p>AppSheet が読み書きするシートを、関数を実行して用意します。図面の一覧は、この時点でドライブから取り込まれます。</p><pre><code>setupSettingsSheet     設定シートを作る
+setupAppSheetSheets    図面／依頼／判定／品番／実行ログ
+installPendingTrigger  1分ごとに依頼を拾う予約を付ける</code></pre><p class='note'>図面シートにPDFが並べば成功です。空の場合はフォルダの指定が違います。</p></div></section>
+<section class='step'><div class='n'>07</div><div class='body'><h3>画面を作る</h3><p>スプレッドシートを開き、拡張機能 → AppSheet → アプリを作成。ファイル選択の画面を通らないので確実です。取り込むのは 図面・依頼・判定・品番 の4つだけです。</p><pre><code>1. 空のタブがあれば先に削除する（1つでもあると起動しません）
+2. Data の ＋ でテーブルを足す（図面 → 依頼 → 判定 → 品番 の順）
+3. 列を設定する（依頼の「状態」の初期値は 受付）
+4. PRIMARY NAVIGATION の ＋ でビューを作る（自動では作られません）</code></pre><p class='note'>詳しい列の設定は、上の「AppSheet の組み立て」にまとめています。</p></div></section>
+<section class='step'><div class='n'>08</div><div class='body'><h3>担当者に配る</h3><p>AppSheet の共有から、使う方を追加します。担当者側の準備は要りません。図面と対象を選んで保存するだけです。</p><pre><code>依頼を1行足す　→　1分以内に処理が始まる　→　判定タブに結果が並ぶ</code></pre><p class='note'>AppSheet Core は、主要な Google Workspace のエディションに含まれています。作成とテストは無料です。</p></div></section>
+<section class='step'><div class='n'>09</div><div class='body'><h3>項目を増やす・減らす</h3><p>チェック項目はスプレッドシートから毎回読み込んでいます。行を足せば次の実行から判定され、「採用」列に × を入れればその項目は外れます。</p><pre><code>チェック項目表を開いて、行を足す／× を入れる
 
 → コードの修正も、再公開も不要</code></pre><p class='note'>1項目ずつ開発していては費用が見合わないため、ここが要点になります。</p></div></section>
 </section>
