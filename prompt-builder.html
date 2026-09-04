@@ -1,0 +1,327 @@
+<title>プロンプトを組み立てる</title>
+<style>
+:root{
+  --bg:#F6F5F8; --card:#FFFFFF; --sunk:#EEECF2;
+  --ink:#16151A; --ink2:#54525C; --ink3:#88858F;
+  --line:#E0DDE6; --line2:#EAE7EF;
+  --accent:#5B4B8A; --warn:#8B4A05; --ok:#2C6E5B;
+  --sh:0 1px 2px rgba(22,21,26,.05),0 10px 28px -18px rgba(22,21,26,.35);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#111014; --card:#1A181F; --sunk:#211E27;
+    --ink:#EFEDF2; --ink2:#AAA6B3; --ink3:#7E7A87;
+    --line:#2C2934; --line2:#25222C;
+    --accent:#A796D8; --warn:#E0A96A; --ok:#6FBFA3;
+    --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111014; --card:#1A181F; --sunk:#211E27;
+  --ink:#EFEDF2; --ink2:#AAA6B3; --ink3:#7E7A87;
+  --line:#2C2934; --line2:#25222C;
+  --accent:#A796D8; --warn:#E0A96A; --ok:#6FBFA3;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 12px 30px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.8;
+  font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",Meiryo,system-ui,sans-serif}
+.wrap{max-width:1160px;margin:0 auto;padding:44px 22px 90px}
+h1{margin:.2rem 0 .4rem;font-size:30px;letter-spacing:-.01em;text-wrap:balance}
+.eyebrow{margin:0;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:700}
+.meta{margin:0 0 30px;color:var(--ink2);font-size:13.5px;max-width:64ch}
+.meta b{color:var(--ink)}
+
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;
+  align-items:start}
+@media (max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
+.pane{position:sticky;top:20px}
+@media (max-width:900px){.pane{position:static}}
+
+h2{margin:26px 0 10px;font-size:15px;display:flex;align-items:baseline;gap:9px}
+h2:first-child{margin-top:0}
+h2 .n{flex:none;width:21px;height:21px;border-radius:50%;background:var(--accent);
+  color:var(--card);font-size:11px;font-weight:700;display:grid;place-items:center}
+h2 .sub{margin-left:auto;font-size:11.5px;color:var(--ink3);font-weight:400}
+
+.tasks{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:11px;
+  padding:13px 15px;box-shadow:var(--sh);cursor:pointer;text-align:left;
+  font:inherit;color:inherit;transition:border-color .12s,background .12s}
+.task:hover{border-color:var(--accent)}
+.task[aria-pressed="true"]{border-color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 9%,var(--card))}
+.task b{display:block;font-size:14px;margin-bottom:3px}
+.task[aria-pressed="true"] b{color:var(--accent)}
+.task span{font-size:11.5px;color:var(--ink3);line-height:1.65;display:block}
+
+label.f{display:block;margin-bottom:11px}
+label.f .lb{display:block;font-size:12.5px;color:var(--ink2);margin-bottom:4px}
+label.f .lb i{font-style:normal;color:var(--ink3);font-size:11.5px}
+input[type=text],textarea,select{width:100%;background:var(--card);color:var(--ink);
+  border:1px solid var(--line);border-radius:9px;padding:9px 12px;font:inherit;
+  font-size:13.5px;line-height:1.6}
+textarea{resize:vertical;min-height:74px}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);
+  outline-offset:1px;border-color:transparent}
+
+.rules{display:flex;flex-direction:column;gap:7px}
+.rule{background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:11px 14px;box-shadow:var(--sh);display:flex;gap:10px;align-items:flex-start}
+.rule input{margin:4px 0 0;accent-color:var(--accent);flex:none}
+.rule .rt{font-size:13px;font-weight:700;line-height:1.6}
+.rule .rw{font-size:11.5px;color:var(--ink3);line-height:1.7;margin-top:2px}
+.rule.off{opacity:.45}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:10px;
+  padding:16px;font-size:13px;color:var(--ink3);text-align:center}
+
+.out{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--sh);overflow:hidden}
+.out-h{display:flex;align-items:center;gap:10px;padding:11px 16px;
+  border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink3)}
+.out-h b{color:var(--ink);font-size:13.5px}
+.out-h .sp{margin-left:auto;display:flex;gap:7px}
+button.act{background:var(--accent);color:var(--card);border:0;border-radius:8px;
+  padding:6px 14px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+button.act.ghost{background:transparent;color:var(--ink2);
+  border:1px solid var(--line)}
+button.act:active{transform:translateY(1px)}
+pre{margin:0;padding:16px;overflow-x:auto;font-size:12.5px;line-height:1.75;
+  font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;
+  word-break:break-word;color:var(--ink);max-height:64vh;overflow-y:auto}
+.note{margin:12px 0 0;background:var(--card);border:1px solid var(--line);
+  border-left:3px solid var(--warn);border-radius:10px;padding:13px 16px;
+  font-size:12.5px;color:var(--ink2);line-height:1.75}
+.note b{color:var(--ink)}
+footer{margin-top:44px;border-top:1px solid var(--line);padding-top:16px;
+  font-size:12px;color:var(--ink3);line-height:1.8}
+a{color:var(--accent)}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">要件を選ぶと、指示文ができます</p>
+  <h1>プロンプトを組み立てる</h1>
+  <p class="meta">やりたいことは、頼む人が分かっています。分からないのは
+    <b>「どう作らせるか」</b>のほう。ここを外すと、動くけれど運用に耐えないコードが出てきます。<br>
+    選んだ内容に応じて、実際に踏んだ失敗から来る<b>守らせること</b>を自動で差し込みます。
+    出てきた文章をそのまま Gemini に貼り、返ってきたコードを所定の場所に貼ってください。</p>
+</header>
+
+<div class="cols">
+
+<div>
+  <h2><span class="n">1</span>何をさせますか<span class="sub">いくつでも</span></h2>
+  <div class="tasks" id="tasks"></div>
+
+  <h2><span class="n">2</span>中身を書く<span class="sub">空欄でも組み上がります</span></h2>
+  <div id="fields"></div>
+
+  <h2><span class="n">3</span>誰が保守しますか</h2>
+  <label class="f">
+    <select id="maintain">
+      <option value="other">自分以外の人（非エンジニアを含む）</option>
+      <option value="self">自分だけ</option>
+    </select>
+  </label>
+
+  <h2><span class="n">4</span>守らせること<span class="sub">外せますが、理由を読んでから</span></h2>
+  <div class="rules" id="rules"></div>
+</div>
+
+<div class="pane">
+  <div class="out">
+    <div class="out-h"><b>できあがった指示文</b><span id="cnt"></span>
+      <span class="sp">
+        <button class="act ghost" id="reset" type="button">はじめから</button>
+        <button class="act" id="copy" type="button">コピー</button>
+      </span>
+    </div>
+    <pre><code id="out"></code></pre>
+  </div>
+  <div class="note">
+    <b>出てきたコードは読まなくて構いません。</b>
+    指示文の末尾に「確かめ方」が付きます。そこに書いた表示が出るかどうかだけ見てください。<br>
+    期待どおりでなければ、<b>起きたことをそのまま伝えて、修正したコードの全体を出し直してもらいます。</b>
+    部分的に直すと、どこを変えたか分からなくなります。
+  </div>
+</div>
+
+</div>
+
+<footer>
+  株式会社デジライズ ／
+  差し込まれる制約は、実際の構築で踏んだ失敗から作っています。<br>
+  本ページに顧客名・施主名・図面名・作図基準の具体的な数値は含みません。
+</footer>
+</div>
+
+<script>
+const TASKS = [{"id": "read", "name": "読み取る", "hint": "PDF・画像・文書からAIに中身を取り出させる", "body": "・{source}をAIに読ませ、必要な項目を構造化して取り出す", "rules": [["読み取れなかった箇所は、読み取れなかったと明記させる", "それらしい値で埋められると、間違いに気づけません。空欄か、理由を書かせます。"], ["ファイルは変換せず、そのまま渡す", "画像化やテキスト抽出を挟むと、そこで情報が落ちます。PDFはPDFのまま送れる経路を選ばせます。"], ["出力の形をJSONで指定し、その形だけを返させる", "前後に説明文が付くと、後段の処理が壊れます。"]], "checks": ["取り出した件数がログに出ること。0件なら読めていません", "元データに無い値が混ざっていないこと。1つ選んで原典と照合します"]}, {"id": "judge", "name": "判定する", "hint": "基準や項目表に照らして、合否や要確認を出させる", "body": "・取り出した内容を、{basis}に照らして1件ずつ判定する", "rules": [["判定の根拠として、元の文字列をそのまま引用させる", "要約させると、元にない表現が混ざります。引用できないときは根拠を空にさせ、引用文を作らせません。"], ["判定と検証を別の工程に分ける", "AIに自分の出力を検証させても、実在しない根拠をそのまま通します。根拠が元データに実在するかの照合は、コードで行わせます。"], ["判定の材料は、直前の工程の出力だけに限る", "元データを見直させると、工程1で読めなかったものを勝手に補い始めます。"], ["判定できないものは「要確認」に寄せる", "白黒つけさせると、根拠のない断定が増えます。"]], "checks": ["「確定◯／要確認◯／棄却◯」のように区分ごとの件数が出ること", "棄却という区分が存在すること。0件でも構いません", "確定した行の根拠が、元データに実在すること"]}, {"id": "lookup", "name": "外部サイトを調べる", "hint": "メーカーサイトなどに実際にアクセスして値を取る", "body": "・{lookup}を、公式サイトにアクセスして調べる", "rules": [["URLをAIに答えさせない。コードで組み立てさせる", "検索エンジンのURLを返してくることがあります。「人が後で確認する」目的を満たしません。"], ["組み立てたURLに実際にアクセスし、開けることを確かめさせる", "リンク切れのURLを残しても確認になりません。"], ["ページの決まった位置にある値は、正規表現で取らせる", "AIに読ませると読み違いが起きます。決まった場所にあるものは、決まった取り方をさせます。"], ["取れなかったときは「不明」とさせる", "推測で埋めさせません。"]], "checks": ["出てきたURLを実際に押して、目的のページが開くこと", "検索エンジンのURLになっていないこと", "取れなかった行が「不明」になっていること"]}, {"id": "write", "name": "表に書き出す", "hint": "スプレッドシートなどに結果を残す", "body": "・結果を{dest}に書き出す", "rules": [["書き込む前に、すべての行を同じ列数に揃えさせる", "行によって列数が違うと、書き込みが丸ごと失敗します。空行が1つ混じっただけで止まります。"], ["書き込み先の列は、列名で探させる。列番号で決め打ちさせない", "列を足したり並べ替えたりしたときに、書き込み先がずれます。"], ["問題のあった行も消さずに残させる", "消すと「問題なし」に見えます。区分を付けて分けさせます。"], ["人が書き込む欄は、処理が触らないようにさせる", "確認済みやコメントを上書きすると、次の実行結果と食い違って原因が追えなくなります。"]], "checks": ["何件書いたかがログに出ること", "空行や短い行が混じっても落ちないこと。わざと1行空けて試します", "2回実行して、同じ行が重複しないこと"]}, {"id": "ui", "name": "画面を作る", "hint": "担当者が押して使う画面を用意する", "body": "・担当者が操作する画面を用意する", "rules": [["チャット画面にしない", "何を入力すればよいか分からない画面になります。選ぶ・押すだけで完結させます。"], ["工程ごとに区切って呼び、進捗を画面に出させる", "1回で最後まで走らせると、画面は固まって見えます。担当者は止まったと判断して再読み込みします。"], ["実行時間の上限を先に伝え、その中に収める設計にさせる", "上限を超えると、原因の分からない失敗になります。"]], "checks": ["押したあと、いま何をしているかが画面に出ること", "エラーのときに理由が画面に出ること。黙って止まらないこと"]}, {"id": "auto", "name": "自動で動かす", "hint": "定期実行や、依頼を拾って処理する", "body": "・{trigger}をきっかけに、自動で処理を始める", "rules": [["同じものを二度処理しないようにさせる", "処理済みの印を付け、次回はそこを飛ばさせます。これが無いと、実行のたびに同じ行が増えます。"], ["失敗しても、状態を必ず書き戻させる", "「処理中」のまま残ると、動いているのか壊れているのか担当者に分かりません。"], ["実行時間の制限の手前で、自分から止めさせる", "途中で打ち切られると状態が中途半端に残り、次の起動が二重に動きます。"], ["同名の予約を消してから作らせる", "実行するたびに増えて、同じ処理が何本も同時に走ります。"]], "checks": ["2回実行して、結果が増えないこと", "わざと失敗させて、状態とエラー理由が記録されること", "予約の一覧を見て、1つしか無いこと"]}];
+const ALWAYS = [["エラーを握りつぶさせない", "失敗したときに何も起きないのが、いちばん困ります。何が起きたかを、理由を添えて残させます。"], ["何件処理したかを、実行ログに出させる", "動いたかどうかを、中を開かずに確かめられます。"], ["必要な権限や設定を、コードとは別に書き出させる", "権限はコードから推測されません。明示しないと、実行時に権限エラーで止まります。"]];
+const MAINTAIN = {"self": [], "other": [["後から変わる値は、コードではなく表に持たせる", "判定の基準・対象の一覧・AIへの指示文。運用しながら必ず変わります。そのたびに開発を挟まない形にします。"], ["表が無くても、既定値で動くようにさせる", "設定を用意しないと動かない、という状態を作らせません。表を消しても止まらないのが正しい形です。"], ["処理の途中経過を、担当者が見られる場所に残させる", "開発画面を開かないと理由が分からない作りにしない、ということです。"]]};
+const PLATFORMS = [["gas", "Google Apps Script", "Google スプレッドシート・ドライブ・Gmail を扱う。1回の実行は6分まで"], ["other", "指定しない", "先に設計だけ出させて、動かす場所も含めて提案させる"]];
+
+// 入力欄。どのタスクを選んだときに出すかを id で紐づける。
+const FIELDS = [
+  {id:'source', when:'read',   label:'何を読ませますか',
+   ph:'例: ドライブに置いたPDF / 受信したメールの添付ファイル'},
+  {id:'basis',  when:'judge',  label:'何に照らして判定しますか',
+   ph:'例: スプレッドシートに並べたチェック項目の表'},
+  {id:'lookup', when:'lookup', label:'何を調べますか',
+   ph:'例: 品番から、メーカー公式ページに載っている仕様'},
+  {id:'dest',   when:'write',  label:'どこに書き出しますか',
+   ph:'例: 同じスプレッドシートの「結果」シート。1行1件で追記'},
+  {id:'trigger',when:'auto',   label:'何をきっかけに動かしますか',
+   ph:'例: 依頼シートに「受付」の行が現れたとき / 毎朝7時'},
+];
+
+const state = {tasks:new Set(), off:new Set(), f:{}, maintain:'other', plat:'gas'};
+
+const $ = s => document.querySelector(s);
+const el = (t,a,c) => { const n=document.createElement(t);
+  Object.assign(n,a||{}); (c||[]).forEach(x=>n.append(x)); return n; };
+
+function drawTasks(){
+  const box = $('#tasks'); box.textContent='';
+  TASKS.forEach(t=>{
+    const on = state.tasks.has(t.id);
+    const b = el('button',{className:'task',type:'button'});
+    b.setAttribute('aria-pressed', on?'true':'false');
+    b.append(el('b',{textContent:t.name}), el('span',{textContent:t.hint}));
+    b.onclick = ()=>{ on?state.tasks.delete(t.id):state.tasks.add(t.id); draw(); };
+    box.append(b);
+  });
+}
+
+function drawFields(){
+  const box = $('#fields'); box.textContent='';
+  const shown = FIELDS.filter(f=>state.tasks.has(f.when));
+  if(!shown.length){
+    box.append(el('div',{className:'empty',
+      textContent:'上で「何をさせるか」を選ぶと、書く欄が出ます'}));
+    return;
+  }
+  shown.forEach(f=>{
+    const lb = el('label',{className:'f'});
+    lb.append(el('span',{className:'lb',textContent:f.label}));
+    const i = el('input',{type:'text',placeholder:f.ph,value:state.f[f.id]||''});
+    i.oninput = ev=>{ state.f[f.id]=ev.target.value; draw(false); };
+    lb.append(i); box.append(lb);
+  });
+  const lb = el('label',{className:'f'});
+  lb.append(el('span',{className:'lb',textContent:'補足があれば（任意）'}));
+  const ta = el('textarea',{placeholder:
+    '例: 図面は1枚あたり数MB。項目は将来300件まで増える。利用者はコマンドを打てない',
+    value:state.f.extra||''});
+  ta.oninput = ev=>{ state.f.extra=ev.target.value; draw(false); };
+  lb.append(ta); box.append(lb);
+}
+
+function activeRules(){
+  const out = [];
+  TASKS.forEach(t=>{ if(state.tasks.has(t.id))
+    t.rules.forEach(r=>out.push({k:t.id+'|'+r[0], t:r[0], w:r[1]})); });
+  MAINTAIN[state.maintain].forEach(r=>out.push({k:'m|'+r[0], t:r[0], w:r[1]}));
+  ALWAYS.forEach(r=>out.push({k:'a|'+r[0], t:r[0], w:r[1]}));
+  return out;
+}
+
+function drawRules(){
+  const box = $('#rules'); box.textContent='';
+  const rs = activeRules();
+  if(!state.tasks.size){
+    box.append(el('div',{className:'empty',
+      textContent:'選ぶと、その内容に効く制約がここに出ます'}));
+    return;
+  }
+  rs.forEach(r=>{
+    const on = !state.off.has(r.k);
+    const d = el('div',{className:'rule'+(on?'':' off')});
+    const c = el('input',{type:'checkbox',checked:on});
+    c.onchange = ()=>{ on?state.off.add(r.k):state.off.delete(r.k); draw(); };
+    const w = el('div');
+    w.append(el('div',{className:'rt',textContent:r.t}),
+             el('div',{className:'rw',textContent:r.w}));
+    d.append(c,w); box.append(d);
+  });
+}
+
+function build(){
+  if(!state.tasks.size) return '上で「何をさせるか」を1つ以上選んでください。';
+  const plat = PLATFORMS.find(p=>p[0]===state.plat);
+  const L = [];
+
+  L.push(plat[0]==='gas'
+    ? 'Google Apps Script で、次の仕組みを作ってください。'
+    : '次の仕組みを作ってください。まずコードは書かず、設計だけを提案してください。');
+  L.push('');
+  L.push('# やりたいこと');
+  TASKS.forEach(t=>{
+    if(!state.tasks.has(t.id)) return;
+    let line = t.body;
+    Object.keys(state.f).forEach(k=>{
+      line = line.replace('{'+k+'}', (state.f[k]||'').trim() || '（未記入）');
+    });
+    line = line.replace(/\{\w+\}/g, '（未記入）');
+    L.push(line);
+  });
+  if((state.f.extra||'').trim()){
+    L.push('');
+    L.push('# 前提');
+    (state.f.extra||'').trim().split('\n').forEach(x=>L.push('・'+x.trim()));
+  }
+  if(plat[0]==='gas'){
+    L.push('');
+    L.push('# 制約');
+    L.push('・1回の実行は6分まで。この中に収まる作りにする');
+  }
+
+  const rs = activeRules().filter(r=>!state.off.has(r.k));
+  if(rs.length){
+    L.push('');
+    L.push('# 守ってほしいこと');
+    L.push('いずれも実際に踏んだ失敗です。ここを外さないでください。');
+    rs.forEach((r,i)=>L.push((i+1)+'. '+r.t));
+  }
+
+  const cs = [];
+  TASKS.forEach(t=>{ if(state.tasks.has(t.id)) t.checks.forEach(c=>cs.push(c)); });
+  if(cs.length){
+    L.push('');
+    L.push('# 出力に含めてほしいもの');
+    L.push('・コードだけでなく、貼り付ける場所と実行する順番');
+    L.push('・必要な権限や事前の設定を、コードとは別に箇条書きで');
+    L.push('・次の点を、コードを読まずに確かめる方法');
+    cs.forEach(c=>L.push('　- '+c));
+  }
+  L.push('');
+  L.push('修正が必要になったときは、差分ではなく' +
+         'コード全体を出し直してください。');
+  return L.join('\n');
+}
+
+function draw(all){
+  if(all!==false){ drawTasks(); drawFields(); drawRules(); }
+  const txt = build();
+  $('#out').textContent = txt;
+  $('#cnt').textContent = state.tasks.size
+    ? txt.split('\n').length + '行' : '';
+}
+
+$('#maintain').onchange = ev=>{ state.maintain=ev.target.value; draw(); };
+$('#copy').onclick = async ()=>{
+  const b = $('#copy');
+  try{ await navigator.clipboard.writeText($('#out').textContent);
+       b.textContent='コピーしました'; }
+  catch(e){ b.textContent='コピーできません'; }
+  setTimeout(()=>{ b.textContent='コピー'; },1600);
+};
+$('#reset').onclick = ()=>{
+  state.tasks.clear(); state.off.clear(); state.f={};
+  state.maintain='other'; $('#maintain').value='other'; draw();
+};
+draw();
+</script>
