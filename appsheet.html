@@ -238,7 +238,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;
     <p>コードを最新版に貼り替えてから、<code>setupAppSheetSheets</code> を実行します。
       チェック項目表と同じスプレッドシートに、4つのシートができます。</p>
   </div>
-<div class='tw'><table class=''><thead><tr><th>シート</th><th>誰が書くか</th><th>内容</th></tr></thead><tbody><tr><td>図面</td><td>Apps Script</td><td>図面フォルダにあるPDFの一覧。選択肢に使う</td></tr><tr><td>依頼</td><td>AppSheet が追加 → Apps Script が状態を書き戻す</td><td>1行＝1回の依頼</td></tr><tr><td>判定</td><td>Apps Script</td><td>1行＝1チェック項目。確認済みとコメントだけ担当者が書く</td></tr><tr><td>品番</td><td>Apps Script</td><td>1行＝1品番。同上</td></tr></tbody></table></div>
+<div class='tw'><table class=''><thead><tr><th>シート</th><th>誰が書くか</th><th>内容</th></tr></thead><tbody><tr><td>図面</td><td>Apps Script</td><td>図面フォルダにあるPDFの一覧。選択肢に使う</td></tr><tr><td>依頼</td><td>AppSheet が追加 → Apps Script が状態を書き戻す</td><td>1行＝1回の依頼</td></tr><tr><td>判定</td><td>Apps Script</td><td>1行＝1チェック項目。確認済みとコメントだけ担当者が書く</td></tr><tr><td>品番</td><td>Apps Script</td><td>1行＝1品番。同上</td></tr><tr><td>実行ログ</td><td>Apps Script</td><td>何が起きたかの記録。詰まったとき最初に見る。画面には取り込まない</td></tr></tbody></table></div>
   <div class="warn">
     <p>従来の「チェック結果」シートはそのまま残ります。<b>用途が違います。</b>
       あちらは帳票（毎回上書き）、こちらは台帳（追記）です。
@@ -248,7 +248,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;
 
 <section class="blk">
   <div class="sh"><h2>手順2　アプリを作る</h2></div>
-<ol class='steps'><li>appsheet.com にアクセスし、Workspace のアカウントでログインする</li><li>My Apps ページで <b>＋ Create</b> → 自分のデータから始める を選ぶ</li><li>チェック項目表のスプレッドシートを選ぶ</li><li>アプリエディタが開く。最初のシートがテーブルとして取り込まれる</li><li>左メニューの <b>Data</b> → <b>＋ Add new table</b> で 「図面」「依頼」「判定」「品番」の4つを足す</li></ol>
+<ol class='steps'><li><b>先にコード側を全部済ませておく。</b>空のスプレッドシートからはアプリを作れません</li><li>スプレッドシートを開き、<b>拡張機能 → AppSheet → アプリを作成</b>。ファイル選択の画面を通らないので確実です</li><li>アプリエディタが開く。開いていたシートがテーブルとして取り込まれる</li><li>左メニューの <b>Data</b> の <b>＋</b> で 「図面」「依頼」「判定」「品番」を足す</li><li><b>空のタブがあれば削除する。</b>1つでもあるとアプリ全体が起動しません</li></ol>
   <div class="warn">
     <p>取り込む順番は <b>図面 → 依頼 → 判定 → 品番</b> にしてください。
       依頼は図面を参照し、判定と品番は依頼を参照します。
@@ -301,8 +301,15 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;
 
 <section class="blk">
   <div class="sh"><h2>手順4　画面を作る</h2></div>
+  <div class="warn">
+    <p><b>ビューは自動では作られません。</b>
+      自動でできる 依頼_Detail や 依頼_Form は裏で使う部品で、画面の入口にはなりません。
+      <b>PRIMARY NAVIGATION の ＋</b> から自分で作ります。
+      「No items selected」としか出ないときは、これが原因です。</p>
+  </div>
   <div class="lead">
-    <p>左メニューの Views で作ります。最低限これだけあれば回ります。</p>
+    <p>最低限これだけあれば回ります。作るときに View name・対象テーブル・
+      View type・Position の4つを指定します。</p>
   </div>
 <div class='tw'><table class=''><thead><tr><th>画面</th><th>種類</th><th>役割</th></tr></thead><tbody><tr><td>依頼</td><td>Deck</td><td>依頼の一覧。状態が色で分かる</td></tr><tr><td>新規依頼</td><td>Form</td><td>図面と対象を選んで依頼を出す</td></tr><tr><td>判定</td><td>Table</td><td>結果の一覧。確認済みを付ける</td></tr><tr><td>品番</td><td>Table</td><td>品番とリピートの一覧</td></tr></tbody></table></div>
   <div class="lead">
@@ -330,20 +337,24 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;
 
 <section class="blk">
   <div class="sh"><h2>実行する関数のまとめ</h2></div>
-<div class='tw'><table class='mono1'><thead><tr><th>関数</th><th>いつ実行するか</th><th>何が起きるか</th></tr></thead><tbody><tr><td>setupProperties</td><td>コードを貼り直したとき（毎回）</td><td>設定値をスクリプトプロパティに入れます</td></tr><tr><td>setupSettingsSheet</td><td>最初に1回</td><td>「設定」シートを作り、指示文の既定値を入れます</td></tr><tr><td>setupAppSheetSheets</td><td>最初に1回</td><td>図面・依頼・判定・品番の4シートを作ります</td></tr><tr><td>installPendingTrigger</td><td>最初に1回</td><td>1分ごとに依頼を拾うトリガーを付けます</td></tr><tr><td>installDrawingsTrigger</td><td>最初に1回（任意）</td><td>毎朝、図面の一覧をそろえます</td></tr><tr><td>refreshDrawings</td><td>図面を足してすぐ反映したいとき</td><td>図面フォルダの中身をシートに反映します</td></tr><tr><td>listTriggers</td><td>確認したいとき</td><td>付いているトリガーを表示します</td></tr></tbody></table></div>
+<div class='tw'><table class='mono1'><thead><tr><th>関数</th><th>いつ実行するか</th><th>何が起きるか</th></tr></thead><tbody><tr><td>setupProperties</td><td>コードを貼り直したとき（毎回）</td><td>設定値をスクリプトプロパティに入れます</td></tr><tr><td>setupSettingsSheet</td><td>最初に1回</td><td>「設定」シートを作り、指示文の既定値を入れます</td></tr><tr><td>setupAppSheetSheets</td><td>最初に1回</td><td>図面・依頼・判定・品番・実行ログの5シートを作ります</td></tr><tr><td>installPendingTrigger</td><td>最初に1回</td><td>1分ごとに依頼を拾うトリガーを付けます</td></tr><tr><td>installDrawingsTrigger</td><td>最初に1回（任意）</td><td>毎朝、図面の一覧をそろえます</td></tr><tr><td>refreshDrawings</td><td>図面を足してすぐ反映したいとき</td><td>図面フォルダの中身をシートに反映します</td></tr><tr><td>listTriggers</td><td>確認したいとき</td><td>付いているトリガーを表示します</td></tr></tbody></table></div>
 </section>
 
 <section class="blk">
   <div class="sh"><h2>つまずきやすい点</h2>
     <span class="hint">こちらで実際に当たったものだけ</span></div>
-<div class='tr'><div class='tr-q'>依頼を出しても、いつまでも状態が変わらない</div><p>「状態」列の初期値が「受付」になっていません。AppSheet の Data → Columns → 状態 → Initial value を確認してください。つまずくとしたら、まずここです。</p></div>
-<div class='tr'><div class='tr-q'>トリガーを作るところで権限エラーになる</div><p>appsscript.json に script.scriptapp が入っていません。今回から増えた権限です。前回のままだと必ず出ます。</p></div>
-<div class='tr'><div class='tr-q'>Vertex AI の呼び出しが HTTP 403 になる</div><p>appsscript.json を差し替えていません。cloud-platform の権限はコードから推測されないため、明示が要ります。</p></div>
-<div class='tr'><div class='tr-q'>図面の選択肢が空になる</div><p>図面フォルダのIDが未設定です。setupProperties を実行してください。コードを貼り直したあとは、もう一度実行が要ります。</p></div>
-<div class='tr'><div class='tr-q'>図面の選択肢にIDが並ぶ</div><p>図面テーブルの「ファイル名」に LABEL が付いていません。</p></div>
+<div class='tr'><div class='tr-q'>スプレッドシートがファイル選択の一覧に出てこない</div><p>そのファイルが「共有アイテム」にあるためです。AppSheet のピッカーは マイドライブ と 共有ドライブ しか見ません。オーナーを自分に移すか、スプレッドシートを開いて 拡張機能 → AppSheet → アプリを作成 から作ってください。ピッカーを通らずに済みます。</p></div>
+<div class='tr'><div class='tr-q'>アプリを作ろうとすると 400 で失敗する</div><p>スプレッドシートが空だと作れません。見出し行とデータが1つも無いと、テーブルの形を判断できないためです。先にコード側の準備を全部済ませ、シートに中身が入った状態で作ってください。</p></div>
+<div class='tr'><div class='tr-q'>アプリ全体が「読み込めませんでした」になる</div><p>空のタブが1つでもあると、そのテーブルで No columns found となり、アプリ全体が起動しません。新規作成時にできる空のシートは、スプレッドシート側とアプリ側の両方から削除してください。</p></div>
+<div class='tr'><div class='tr-q'>画面に何も出ない／「No items selected」と出る</div><p>ビューは自動では作られません。自動でできるのは Detail や Form といった裏で使う部品だけで、画面の入口にはなりません。PRIMARY NAVIGATION の ＋ から自分で作ります。</p></div>
+<div class='tr'><div class='tr-q'>キーが2つある、という警告が出る</div><p>行番号（_RowNumber）にチェックが残っています。行番号は単独でしかキーにできません。外して、ID列だけを残してください。行番号をキーにすると、行の増減で紐づけが壊れます。</p></div>
+<div class='tr'><div class='tr-q'>依頼を出しても、いつまでも状態が変わらない</div><p>「状態」の初期値が「受付」になっていません。しかも初期値と式（App formula）は別物です。式のほうに書くと毎回上書きされ、処理が終わっても永久に「受付」に戻ります。列の詳細を開いて Initial value に入れてください。</p></div>
+<div class='tr'><div class='tr-q'>参照の選択肢に、見覚えのない8桁の文字列が並ぶ</div><p>参照先のテーブルが設定されていないか、プルダウンの New を押して仮の行を作ってしまっています。参照先を指定し、参照される側のテーブルを読み取り専用にすれば、New 自体が出なくなります。</p></div>
+<div class='tr'><div class='tr-q'>ファイル名が文字ではなくアイコンで表示される</div><p>値が .pdf で終わるため、型が File と自動判定されています。Text に戻してください。File のままだと表示名として使えません。</p></div>
+<div class='tr'><div class='tr-q'>Vertex AI の呼び出しが HTTP 403 になる</div><p>マニフェスト（appsscript.json）を差し替えていません。権限はコードから推測されないため、明示が要ります。</p></div>
+<div class='tr'><div class='tr-q'>図面の選択肢が空になる</div><p>図面フォルダのIDが違うか、そのフォルダに権限がありません。実行ログにフォルダIDつきで理由が書かれています。</p></div>
 <div class='tr'><div class='tr-q'>品番のURLが押せない</div><p>URL 列の型が Text のままです。Url に変えてください。</p></div>
-<div class='tr'><div class='tr-q'>状態が「処理中」のまま止まる</div><p>Apps Script の6分制限に当たった可能性があります。ページ数の多い図面は、ページを指定して1ページずつ依頼してください。</p></div>
-<div class='tr'><div class='tr-q'>品番の一部が「未確認」になる</div><p>時間切れです。もう一度同じ依頼を出すと、その分を調べ直します。</p></div>
+<div class='tr'><div class='tr-q'>状態が「処理中」のまま止まる</div><p>6分の制限に当たった可能性があります。ページ数の多い図面は、ページを指定して1ページずつ依頼してください。</p></div>
 </section>
 
 <section class="blk">
