@@ -707,9 +707,19 @@ hay.indexOf(norm_(rec.evidence)) &lt; 0
   <div class="sh"><h2>組み立ての手順</h2><span class="hint">ブラウザだけで完結します。1回だけ30分ほど</span></div>
 <section class='step'><div class='n'>01</div><div class='body'><h3>だれが何をするのか</h3><p>業務でお使いになる方は、コマンドもコードも触りません。公開されたURLを開いて、図面を選ぶだけです。以下は、仕組みを最初に組み立てる方が1回だけ行う作業です。</p><pre><code>業務担当者   … ブラウザでURLを開く。それだけ
 組み立てる方 … 以下を1回だけ実施する（30分ほど）</code></pre><p class='note'>パソコンに入れるものはありません。ブラウザだけで完結します。</p></div></section>
-<section class='step'><div class='n'>02</div><div class='body'><h3>コードを貼り付ける</h3><p>Apps Script の新規プロジェクトを開き、お渡しするコードを貼り付けます。script.new を開くと空のプロジェクトが作られます。</p><pre><code>1. https://script.new を開く
-2. 既定の myFunction ごと消す
-3. 下の「コード.gs」をすべてコピーして貼り付ける
+<section class='step'><div class='n'>02</div><div class='body'><h3>お渡しするもの</h3><p>4つのファイルをお渡しします。このうち&lt;b&gt;02 の中身が、Apps Script に貼るもの&lt;/b&gt;です。01 は当日これを見ながら進めるための手順書、03 は同じコードを Gemini に書かせるための指示文です。</p><pre><code>00_はじめに.txt                 作業の順番・つまずきどころ・各種URL
+01_A案構築手順書.docx           全手順（20ページ）
+02_コード.gs（貼り付け用）.docx  ← 貼るのはこれ
+03_GAS構築プロンプト集.docx      コードを書かせた指示文（9本）</code></pre><p class='note'>02 の中に、コード本体と権限の指定の両方が入っています。別ファイルにはしていません。</p></div></section>
+<section class='step'><div class='n'>03</div><div class='body'><h3>02 を開いて、2つのブロックを確かめる</h3><p>02_コード.gs（貼り付け用）.docx は、&lt;b&gt;1つのWordの中が2つに分かれて&lt;/b&gt;います。表紙のあとにコード本体が続き、末尾に「appsscript.json」という見出しがあり、そこから下が権限の指定です。&lt;b&gt;貼る先が違うので、分けてコピーします。&lt;/b&gt;</p><pre><code>02_コード.gs（貼り付け用）.docx
+  ├ 表紙                  ← 貼りません
+  ├ コード本体 1544行      → Apps Script の「コード.gs」へ
+  └ appsscript.json 16行  → Apps Script の「appsscript.json」へ
+     （「appsscript.json」という見出しが境目）</code></pre><p class='note'>表ではなく段落として作ってあるので、コピーしても崩れません。行番号も入れていないので、そのまま貼れます。</p></div></section>
+<section class='step'><div class='n'>04</div><div class='body'><h3>コード本体を貼り付ける</h3><p>Apps Script の新規プロジェクトを開き、02 の&lt;b&gt;コード本体&lt;/b&gt;を貼ります。script.new を開くと空のプロジェクトが作られます。</p><pre><code>1. https://script.new を開く
+2. 既定の myFunction ごと、エディタの中身を全部消す
+3. 02 のコード本体（表紙の次から「appsscript.json」の見出しの手前まで）を
+   すべて選択してコピーし、貼り付ける
 4. 保存する（Ctrl + S）</code></pre><details class='embed'><summary>コード.gs を開く（1545行）</summary><div class='embed-bar'><button class='copy' data-target='pre-code'>すべてコピー</button></div><pre id='pre-code' class='full'><code>/**
  * 図面チェック（作図基準）― 1ファイル版
  *
@@ -2255,12 +2265,12 @@ function listTriggers() {
   return list;
 }
 
-</code></pre></details><p class='note'>左のファイル一覧に「コード.gs」があれば成功です。</p></div></section>
-<section class='step'><div class='n'>03</div><div class='body'><h3>権限の指定を差し替える</h3><p>コードを貼っただけでは、AIを呼ぶ権限が付きません。設定ファイルに明示する必要があります。ここを飛ばすと必ず失敗します。</p><pre><code>1. 左メニューの ⚙プロジェクトの設定 を開く
+</code></pre></details><p class='note'>左のファイル一覧に「コード.gs」があり、先頭が「図面チェック（作図基準）― 1ファイル版」で始まっていれば成功です。</p></div></section>
+<section class='step'><div class='n'>05</div><div class='body'><h3>権限の指定を差し替える</h3><p>コードを貼っただけでは、AIを呼ぶ権限が付きません。02 の&lt;b&gt;末尾にある appsscript.json&lt;/b&gt; を、Apps Script 側の同名ファイルに差し替えます。ここを飛ばすと必ず失敗します。</p><pre><code>1. 左メニューの ⚙プロジェクトの設定 を開く
 2.「appsscript.json マニフェスト ファイルをエディタで表示する」に
    チェックを入れる
-3. エディタに戻ると appsscript.json が現れるので、
-   下の内容に差し替えて保存する</code></pre><details class='embed'><summary>appsscript.json を開く（16行）</summary><div class='embed-bar'><button class='copy' data-target='pre-manifest'>すべてコピー</button></div><pre id='pre-manifest' class='full'><code>{
+3. エディタに戻ると appsscript.json が現れる
+4. 中身を全部消して、02 の末尾にある16行を貼り付けて保存する</code></pre><details class='embed'><summary>appsscript.json を開く（16行）</summary><div class='embed-bar'><button class='copy' data-target='pre-manifest'>すべてコピー</button></div><pre id='pre-manifest' class='full'><code>{
   &quot;timeZone&quot;: &quot;Asia/Tokyo&quot;,
   &quot;exceptionLogging&quot;: &quot;STACKDRIVER&quot;,
   &quot;runtimeVersion&quot;: &quot;V8&quot;,
@@ -2276,8 +2286,8 @@ function listTriggers() {
     &quot;access&quot;: &quot;DOMAIN&quot;
   }
 }
-</code></pre></details><p class='note'>飛ばすと「HTTP 403 insufficient authentication scopes」で止まります。コードから権限は推測されないため、必ず明示します。</p></div></section>
-<section class='step'><div class='n'>04</div><div class='body'><h3>設定を保存する</h3><p>使うGCPプロジェクトと、チェック項目表の場所を登録します。画面上部の関数名から setupProperties を選んで実行するだけです。</p><pre><code>上部のプルダウン → setupProperties → ▶実行
+</code></pre></details><p class='note'>飛ばすと「HTTP 403 insufficient authentication scopes」で止まります。権限はコードから推測されないため、必ず明示します。今回 script.scriptapp が1つ増えているので、前回の内容のままだとトリガーを作るところでも止まります。</p></div></section>
+<section class='step'><div class='n'>06</div><div class='body'><h3>設定を保存する</h3><p>使うGCPプロジェクトと、チェック項目表の場所を登録します。画面上部の関数名から setupProperties を選んで実行するだけです。</p><pre><code>上部のプルダウン → setupProperties → ▶実行
 
 登録される内容:
   GCP_PROJECT_ID     使用するGCPプロジェクト
@@ -2295,20 +2305,20 @@ function listTriggers() {
   }, true);
   Logger.log(&#x27;設定を保存しました。値を自社のものに書き換えてから使ってください。&#x27;);
 }</code></pre></details><p class='note'>実行ログに「設定を保存しました。」と出れば成功です。IDは御社のものに書き換えてから実行してください。</p></div></section>
-<section class='step'><div class='n'>05</div><div class='body'><h3>動作を確認する</h3><p>公開する前に、1枚だけ試します。初回は権限の承認画面が出るので、内容を確認して許可します。</p><pre><code>上部のプルダウン → runCheck → ▶実行
+<section class='step'><div class='n'>07</div><div class='body'><h3>動作を確認する</h3><p>公開する前に、1枚だけ試します。初回は権限の承認画面が出るので、内容を確認して許可します。</p><pre><code>上部のプルダウン → runCheck → ▶実行
 
 承認画面が出たら:
   権限を確認 → アカウントを選択 →
   「詳細」→「プロジェクトに移動」→ 許可</code></pre><p class='note'>自作のスクリプトのため、確認されていないアプリとして表示されます。1〜3分で結果が出ます。</p></div></section>
-<section class='step'><div class='n'>06</div><div class='body'><h3>受け皿のシートを作る</h3><p>AppSheet が読み書きするシートを、関数を実行して用意します。図面の一覧は、この時点でドライブから取り込まれます。</p><pre><code>setupSettingsSheet     設定シートを作る
+<section class='step'><div class='n'>08</div><div class='body'><h3>受け皿のシートを作る</h3><p>AppSheet が読み書きするシートを、関数を実行して用意します。図面の一覧は、この時点でドライブから取り込まれます。</p><pre><code>setupSettingsSheet     設定シートを作る
 setupAppSheetSheets    図面／依頼／判定／品番／実行ログ
 installPendingTrigger  1分ごとに依頼を拾う予約を付ける</code></pre><p class='note'>図面シートにPDFが並べば成功です。空の場合はフォルダの指定が違います。</p></div></section>
-<section class='step'><div class='n'>07</div><div class='body'><h3>画面を作る</h3><p>スプレッドシートを開き、拡張機能 → AppSheet → アプリを作成。ファイル選択の画面を通らないので確実です。取り込むのは 図面・依頼・判定・品番 の4つだけです。</p><pre><code>1. 空のタブがあれば先に削除する（1つでもあると起動しません）
+<section class='step'><div class='n'>09</div><div class='body'><h3>画面を作る</h3><p>スプレッドシートを開き、拡張機能 → AppSheet → アプリを作成。ファイル選択の画面を通らないので確実です。取り込むのは 図面・依頼・判定・品番 の4つだけです。</p><pre><code>1. 空のタブがあれば先に削除する（1つでもあると起動しません）
 2. Data の ＋ でテーブルを足す（図面 → 依頼 → 判定 → 品番 の順）
 3. 列を設定する（依頼の「状態」の初期値は 受付）
 4. PRIMARY NAVIGATION の ＋ でビューを作る（自動では作られません）</code></pre><p class='note'>詳しい列の設定は、上の「AppSheet の組み立て」にまとめています。</p></div></section>
-<section class='step'><div class='n'>08</div><div class='body'><h3>担当者に配る</h3><p>AppSheet の共有から、使う方を追加します。担当者側の準備は要りません。図面と対象を選んで保存するだけです。</p><pre><code>依頼を1行足す　→　1分以内に処理が始まる　→　判定タブに結果が並ぶ</code></pre><p class='note'>AppSheet Core は、主要な Google Workspace のエディションに含まれています。作成とテストは無料です。</p></div></section>
-<section class='step'><div class='n'>09</div><div class='body'><h3>項目を増やす・減らす</h3><p>チェック項目はスプレッドシートから毎回読み込んでいます。行を足せば次の実行から判定され、「採用」列に × を入れればその項目は外れます。</p><pre><code>チェック項目表を開いて、行を足す／× を入れる
+<section class='step'><div class='n'>10</div><div class='body'><h3>担当者に配る</h3><p>AppSheet の共有から、使う方を追加します。担当者側の準備は要りません。図面と対象を選んで保存するだけです。</p><pre><code>依頼を1行足す　→　1分以内に処理が始まる　→　判定タブに結果が並ぶ</code></pre><p class='note'>AppSheet Core は、主要な Google Workspace のエディションに含まれています。作成とテストは無料です。</p></div></section>
+<section class='step'><div class='n'>11</div><div class='body'><h3>項目を増やす・減らす</h3><p>チェック項目はスプレッドシートから毎回読み込んでいます。行を足せば次の実行から判定され、「採用」列に × を入れればその項目は外れます。</p><pre><code>チェック項目表を開いて、行を足す／× を入れる
 
 → コードの修正も、再公開も不要</code></pre><p class='note'>1項目ずつ開発していては費用が見合わないため、ここが要点になります。</p></div></section>
 </section>
