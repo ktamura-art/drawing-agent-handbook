@@ -1,1 +1,6 @@
-.DS_Store
+# 図面の画像を埋め込んだページは公開しない。
+# 施主邸の平面図が入っており、公開の可否は田村さんの判断による。
+# アーティファクト（claude.ai・既定で非公開）で共有する。
+vision-demo.html
+browser-mark.html
+handson2.html
